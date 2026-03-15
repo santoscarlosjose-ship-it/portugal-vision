@@ -40,7 +40,8 @@
         .btn-circle { width: 32px; height: 32px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -57,7 +58,7 @@
         <div id="f-login">
             <input type="email" id="l-email" placeholder="E-mail da loja">
             <input type="password" id="l-pass" placeholder="Password">
-            <button onclick="login()">ACEDER AO PAINEL</button>
+            <button id="btn-login" onclick="login()">ACEDER AO PAINEL</button>
         </div>
 
         <div id="f-reg" class="hidden">
@@ -67,7 +68,7 @@
             <input type="text" id="r-morada" placeholder="Morada Completa">
             <input type="text" id="r-nif" placeholder="NIF">
             <input type="password" id="r-pass" placeholder="Criar Password">
-            <button style="background:var(--ok)" onclick="registar()">SOLICITAR ACESSO</button>
+            <button id="btn-reg" style="background:var(--ok)" onclick="registar()">SOLICITAR ACESSO</button>
         </div>
     </div>
 
@@ -82,7 +83,7 @@
                     <h2 id="v-nome" style="margin:0">---</h2>
                     <small id="v-slug-display" style="color:#666"></small>
                 </div>
-                <button onclick="location.reload()" style="width:auto; background:#666">Sair</button>
+                <button onclick="location.reload()" style="width:auto; background:#666; padding: 5px 15px">Sair</button>
             </div>
 
             <div class="stats">
@@ -115,7 +116,7 @@
                     <input type="date" id="v-ferias-fim">
                 </div>
             </div>
-            <button onclick="salvarConfig()" style="background:var(--s); margin-top:10px">ATUALIZAR AGENDA E FÉRIAS</button>
+            <button id="btn-save-config" onclick="salvarConfig()" style="background:var(--s); margin-top:10px">ATUALIZAR AGENDA E FÉRIAS</button>
         </div>
 
         <div class="card">
@@ -134,7 +135,7 @@
             <div id="foto-input-area">
                 <input type="file" id="p-foto" accept="image/*">
             </div>
-            <button id="btn-save" onclick="salvarProduto()" style="background:var(--s)">GUARDAR PRODUTO</button>
+            <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--s)">GUARDAR PRODUTO</button>
             <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR EDIÇÃO</button>
         </div>
 
@@ -174,12 +175,18 @@
     }
 
     async function registar() {
-        const nome = document.getElementById('r-nome').value;
+        const btn = document.getElementById('btn-reg');
+        const nome = document.getElementById('r-nome').value.trim();
+        if(!nome) return alert("Insira o nome do negócio");
+        
+        btn.disabled = true;
+        btn.innerText = "A PROCESSAR...";
+
         const slug = nome.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
         
         const { error } = await _sb.from('lojas').insert([{
             nome: nome,
-            email: document.getElementById('r-email').value,
+            email: document.getElementById('r-email').value.trim(),
             whatsapp: document.getElementById('r-zap').value,
             morada: document.getElementById('r-morada').value,
             nif: document.getElementById('r-nif').value,
@@ -189,23 +196,37 @@
         }]);
 
         if(!error) { 
-            alert("Pedido de registo enviado com sucesso! Aguarde ativação."); 
+            alert("Pedido de registo enviado com sucesso! Aguarde ativação pelo administrador."); 
             location.reload(); 
         } else { 
-            alert("Erro detalhado: " + error.message); 
-            console.error("Erro completo:", error);
+            alert("Erro ao registar: " + error.message); 
+            btn.disabled = false;
+            btn.innerText = "SOLICITAR ACESSO";
         }
     }
 
     async function login() {
+        const btn = document.getElementById('btn-login');
         const email = document.getElementById('l-email').value.trim();
         const pass = document.getElementById('l-pass').value;
+
+        if(!email || !pass) return alert("Preencha todos os campos");
+
+        btn.disabled = true;
+        btn.innerText = "A VERIFICAR...";
 
         const { data, error } = await _sb.from('lojas')
             .select('*')
             .eq('email', email)
             .eq('password', pass)
-            .single();
+            .maybeSingle();
+
+        if (error) {
+            alert("Erro na base de dados: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "ACEDER AO PAINEL";
+            return;
+        }
 
         if (data) {
             lojaAtiva = data;
@@ -218,24 +239,31 @@
             document.getElementById('v-ferias-inicio').value = data.ferias_inicio || "";
             document.getElementById('v-ferias-fim').value = data.ferias_fim || "";
             if(data.horario) {
-                const h = JSON.parse(data.horario);
-                diasSemana.forEach((_, i) => {
-                    if(h[i]) {
-                        document.getElementById(`h-${i}-m1`).value = h[i].m1;
-                        document.getElementById(`h-${i}-m2`).value = h[i].m2;
-                        document.getElementById(`h-${i}-t1`).value = h[i].t1;
-                        document.getElementById(`h-${i}-t2`).value = h[i].t2;
-                        document.getElementById(`h-${i}-status`).value = h[i].status;
-                    }
-                });
+                try {
+                    const h = JSON.parse(data.horario);
+                    diasSemana.forEach((_, i) => {
+                        if(h[i]) {
+                            document.getElementById(`h-${i}-m1`).value = h[i].m1 || "";
+                            document.getElementById(`h-${i}-m2`).value = h[i].m2 || "";
+                            document.getElementById(`h-${i}-t1`).value = h[i].t1 || "";
+                            document.getElementById(`h-${i}-t2`).value = h[i].t2 || "";
+                            document.getElementById(`h-${i}-status`).value = h[i].status || "aberto";
+                        }
+                    });
+                } catch(e) { console.error("Erro ao ler horários"); }
             }
             carregarDados();
         } else {
-            alert("Login falhou. Verifique e-mail/password ou se a conta foi ativada.");
+            alert("Login falhou. E-mail ou password incorretos.");
+            btn.disabled = false;
+            btn.innerText = "ACEDER AO PAINEL";
         }
     }
 
     async function salvarConfig() {
+        const btn = document.getElementById('btn-save-config');
+        btn.disabled = true;
+        
         let agenda = {};
         diasSemana.forEach((_, i) => {
             agenda[i] = {
@@ -246,12 +274,17 @@
                 status: document.getElementById(`h-${i}-status`).value
             };
         });
-        await _sb.from('lojas').update({ 
+
+        const { error } = await _sb.from('lojas').update({ 
             horario: JSON.stringify(agenda),
             ferias_inicio: document.getElementById('v-ferias-inicio').value,
             ferias_fim: document.getElementById('v-ferias-fim').value
         }).eq('id', lojaAtiva.id);
-        alert("Configurações atualizadas!");
+
+        if(!error) alert("Configurações atualizadas!");
+        else alert("Erro ao salvar: " + error.message);
+        
+        btn.disabled = false;
     }
 
     async function carregarDados() {
@@ -263,7 +296,7 @@
 
         document.getElementById('grid-prods').innerHTML = (prods || []).map(p => `
             <div class="prod-card" style="${p.oculto ? 'opacity:0.5' : ''}">
-                <img src="${p.imagem_url || p.url_foto}" class="prod-img">
+                <img src="${p.imagem_url || p.url_foto || 'https://via.placeholder.com/150'}" class="prod-img">
                 <div class="prod-actions">
                     <button class="btn-circle" style="background:#f1c40f" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
@@ -276,24 +309,35 @@
     }
 
     async function salvarProduto() {
+        const btn = document.getElementById('btn-save-prod');
         const id = document.getElementById('edit-id').value;
         const precoBase = parseFloat(document.getElementById('p-preco').value);
         const desc = parseInt(document.getElementById('p-desc').value) || 0;
         const precoFinal = desc > 0 ? (precoBase * (1 - desc/100)).toFixed(2) : precoBase;
+
+        if(!document.getElementById('p-nome').value || isNaN(precoBase)) return alert("Nome e Preço são obrigatórios");
+
+        btn.disabled = true;
+        btn.innerText = "A GUARDAR...";
 
         const dados = {
             nome: document.getElementById('p-nome').value,
             nome_artigo: document.getElementById('p-nome').value,
             preco: precoFinal,
             desconto_percent: desc,
-            loja_id: lojaAtiva.id
+            loja_id: lojaAtiva.id,
+            tipo_tag: document.getElementById('p-tipo').value
         };
 
         if(id) {
             await _sb.from('produtos').update(dados).eq('id', id);
         } else {
             const file = document.getElementById('p-foto').files[0];
-            if(!file) return alert("Selecione uma foto!");
+            if(!file) {
+                btn.disabled = false;
+                btn.innerText = "GUARDAR PRODUTO";
+                return alert("Selecione uma foto para o novo produto!");
+            }
             const fileName = `p_${Date.now()}.webp`;
             await _sb.storage.from('produtos').upload(fileName, file);
             const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
@@ -301,8 +345,11 @@
             dados.url_foto = url.publicUrl;
             await _sb.from('produtos').insert([dados]);
         }
+        
         cancelarEdicao();
         carregarDados();
+        btn.disabled = false;
+        btn.innerText = "GUARDAR PRODUTO";
     }
 
     function prepararEdicao(p) {
@@ -311,7 +358,10 @@
         document.getElementById('p-nome').value = p.nome || p.nome_artigo;
         document.getElementById('p-preco').value = p.preco;
         document.getElementById('p-desc').value = p.desconto_percent || 0;
+        document.getElementById('p-tipo').value = p.tipo_tag || "normal";
         document.getElementById('btn-cancel').classList.remove('hidden');
+        document.getElementById('foto-input-area').classList.add('hidden');
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function cancelarEdicao() {
@@ -320,15 +370,21 @@
         document.getElementById('p-preco').value = "";
         document.getElementById('p-desc').value = "";
         document.getElementById('btn-cancel').classList.add('hidden');
+        document.getElementById('foto-input-area').classList.remove('hidden');
         document.getElementById('form-title').innerText = "📸 Publicar Produto";
     }
 
-    async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
+    async function apagarProd(id) { 
+        if(confirm("Tem a certeza que deseja apagar este produto?")) { 
+            await _sb.from('produtos').delete().eq('id', id); 
+            carregarDados(); 
+        } 
+    }
 
     async function subirLogo(input) {
         const file = input.files[0];
         if(!file) return;
-        const fileName = `logo_${lojaAtiva.id}.webp`;
+        const fileName = `logo_${lojaAtiva.id}_${Date.now()}.webp`;
         await _sb.storage.from('produtos').upload(fileName, file, {upsert:true});
         const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
         await _sb.from('lojas').update({ logo_url: url.publicUrl }).eq('id', lojaAtiva.id);
