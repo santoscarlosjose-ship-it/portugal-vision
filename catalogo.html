@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo | Portugal Vision</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --p: #1d3557; --s: #457b9d; --ok: #27ae60; --err: #e63946; --gray: #f4f4f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--gray); margin: 0; padding: 0; }
+        .header { background: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--p); background: #eee; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 15px; }
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+        .info { padding: 12px; }
+        .price { color: var(--ok); font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<div id="loja-header" class="header">
+    <img id="v-logo" class="logo" src="">
+    <h2 id="v-nome">A carregar...</h2>
+</div>
+
+<div id="lista-produtos" class="grid"></div>
+
+<script>
+    const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
+
+    async function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('loja');
+        
+        const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
+        if (loja) {
+            document.getElementById('v-nome').innerText = loja.nome_loja;
+            document.title = loja.nome_loja + " | Portugal Vision";
+            
+            const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id);
+            document.getElementById('lista-produtos').innerHTML = produtos.map(p => `
+                <div class="card">
+                    <img src="${p.url_foto}">
+                    <div class="info">
+                        <strong>${p.nome_artigo}</strong><br>
+                        <span class="price">${p.preco}€</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    init();
+</script>
+</body>
+</html>
