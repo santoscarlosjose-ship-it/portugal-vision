@@ -40,6 +40,7 @@
 
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
 
+        /* Stats Section */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
@@ -111,6 +112,16 @@
         .btn-action:hover { color: var(--accent); }
         .btn-del:hover { color: var(--danger); }
 
+        /* Animação do Botão Atualizar */
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         #modal { 
             display: none; position: fixed; inset: 0; 
             background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
@@ -126,8 +137,8 @@
 
 <nav class="top-nav">
     <div style="font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px;">PORTUGAL VISION <span style="font-weight: 300; opacity: 0.6;">| ADMIN</span></div>
-    <button class="btn-action" style="color:white; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 8px;" onclick="carregarDados()">
-        <i class="fas fa-sync-alt"></i> Atualizar
+    <button id="btn-refresh" class="btn-action" style="color:white; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 8px;" onclick="carregarDados()">
+        <i class="fas fa-sync-alt"></i> <span id="text-refresh">Atualizar</span>
     </button>
 </nav>
 
@@ -204,12 +215,30 @@
     let myChart = null;
 
     async function carregarDados() {
-        const { data, error } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
-        if (error) return console.error(error.message);
-        todasAsLojas = data || [];
-        atualizarStats(todasAsLojas);
-        renderizar(todasAsLojas);
-        gerarGrafico(todasAsLojas);
+        const btn = document.getElementById('btn-refresh');
+        const txt = document.getElementById('text-refresh');
+        
+        // Ativar estado de loading
+        btn.classList.add('loading');
+        btn.disabled = true;
+        txt.innerText = "A carregar...";
+
+        try {
+            const { data, error } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
+            if (error) throw error;
+            
+            todasAsLojas = data || [];
+            atualizarStats(todasAsLojas);
+            renderizar(todasAsLojas);
+            gerarGrafico(todasAsLojas);
+        } catch (err) {
+            console.error(err.message);
+        } finally {
+            // Desativar estado de loading
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            txt.innerText = "Atualizar";
+        }
     }
 
     function renderizar(lista) {
