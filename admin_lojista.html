@@ -175,7 +175,7 @@
 
     async function registar() {
         const nome = document.getElementById('r-nome').value;
-        const slug = nome.toLowerCase().trim().replace(/\s+/g, '-');
+        const slug = nome.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
         
         const { error } = await _sb.from('lojas').insert([{
             nome: nome,
@@ -185,15 +185,15 @@
             nif: document.getElementById('r-nif').value,
             password: document.getElementById('r-pass').value,
             slug: slug,
-            status_catalogo: false // Master Admin deve ativar depois
+            status_catalogo: false 
         }]);
 
         if(!error) { 
-            alert("Pedido de registo enviado com sucesso!"); 
+            alert("Pedido de registo enviado com sucesso! Aguarde ativação."); 
             location.reload(); 
         } else { 
-            alert("Erro ao criar conta. Verifique se o e-mail já existe."); 
-            console.error(error);
+            alert("Erro detalhado: " + error.message); 
+            console.error("Erro completo:", error);
         }
     }
 
@@ -215,7 +215,6 @@
             document.getElementById('v-slug-display').innerText = "@" + data.slug;
             if(data.logo_url) document.getElementById('v-logo').src = data.logo_url;
             
-            // Carregar Férias e Horários
             document.getElementById('v-ferias-inicio').value = data.ferias_inicio || "";
             document.getElementById('v-ferias-fim').value = data.ferias_fim || "";
             if(data.horario) {
@@ -232,12 +231,10 @@
             }
             carregarDados();
         } else {
-            alert("Dados incorretos ou conta inativa.");
+            alert("Login falhou. Verifique e-mail/password ou se a conta foi ativada.");
         }
     }
 
-    // ... (restante das funções de salvarConfig, carregarDados, salvarProduto permanecem iguais para garantir funcionamento)
-    
     async function salvarConfig() {
         let agenda = {};
         diasSemana.forEach((_, i) => {
@@ -264,7 +261,7 @@
         document.getElementById('s-views').innerText = m ? m.filter(i => i.tipo === 'view_loja').length : 0;
         document.getElementById('s-waps').innerText = m ? m.filter(i => i.tipo === 'click_whatsapp').length : 0;
 
-        document.getElementById('grid-prods').innerHTML = prods.map(p => `
+        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => `
             <div class="prod-card" style="${p.oculto ? 'opacity:0.5' : ''}">
                 <img src="${p.imagem_url || p.url_foto}" class="prod-img">
                 <div class="prod-actions">
@@ -330,6 +327,7 @@
 
     async function subirLogo(input) {
         const file = input.files[0];
+        if(!file) return;
         const fileName = `logo_${lojaAtiva.id}.webp`;
         await _sb.storage.from('produtos').upload(fileName, file, {upsert:true});
         const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
