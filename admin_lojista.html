@@ -152,7 +152,7 @@
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-    // Gerar tabela de horários
+    // Gerar tabela de horários dinamicamente
     document.getElementById('horarios-body').innerHTML = diasSemana.map((dia, i) => `
         <tr>
             <td><b>${dia}</b></td>
@@ -196,12 +196,11 @@
         }]);
 
         if(!error) { 
-            alert("Pedido de registo enviado com sucesso! Aguarde ativação pelo administrador."); 
+            alert("Pedido de registo enviado! Aguarde ativação."); 
             location.reload(); 
         } else { 
-            alert("Erro ao registar: " + error.message); 
+            alert("Erro: " + error.message); 
             btn.disabled = false;
-            btn.innerText = "SOLICITAR ACESSO";
         }
     }
 
@@ -210,54 +209,45 @@
         const email = document.getElementById('l-email').value.trim();
         const pass = document.getElementById('l-pass').value;
 
-        if(!email || !pass) return alert("Preencha todos os campos");
-
+        if(!email || !pass) return alert("Preencha tudo");
         btn.disabled = true;
-        btn.innerText = "A VERIFICAR...";
 
-        const { data, error } = await _sb.from('lojas')
-            .select('*')
-            .eq('email', email)
-            .eq('password', pass)
-            .maybeSingle();
+        // CORREÇÃO AQUI: maybeSingle() evita o erro de "multiple rows"
+        const { data, error } = await _sb.from('lojas').select('*').eq('email', email).eq('password', pass).maybeSingle();
 
-        if (error) {
-            alert("Erro na base de dados: " + error.message);
+        if (error || !data) {
+            alert("Login falhou. Verifique os dados.");
             btn.disabled = false;
-            btn.innerText = "ACEDER AO PAINEL";
             return;
         }
 
-        if (data) {
-            lojaAtiva = data;
-            document.getElementById('auth-area').classList.add('hidden');
-            document.getElementById('dash-area').classList.remove('hidden');
-            document.getElementById('v-nome').innerText = data.nome;
-            document.getElementById('v-slug-display').innerText = "@" + data.slug;
-            if(data.logo_url) document.getElementById('v-logo').src = data.logo_url;
-            
-            document.getElementById('v-ferias-inicio').value = data.ferias_inicio || "";
-            document.getElementById('v-ferias-fim').value = data.ferias_fim || "";
-            if(data.horario) {
-                try {
-                    const h = JSON.parse(data.horario);
-                    diasSemana.forEach((_, i) => {
-                        if(h[i]) {
-                            document.getElementById(`h-${i}-m1`).value = h[i].m1 || "";
-                            document.getElementById(`h-${i}-m2`).value = h[i].m2 || "";
-                            document.getElementById(`h-${i}-t1`).value = h[i].t1 || "";
-                            document.getElementById(`h-${i}-t2`).value = h[i].t2 || "";
-                            document.getElementById(`h-${i}-status`).value = h[i].status || "aberto";
-                        }
-                    });
-                } catch(e) { console.error("Erro ao ler horários"); }
-            }
-            carregarDados();
-        } else {
-            alert("Login falhou. E-mail ou password incorretos.");
-            btn.disabled = false;
-            btn.innerText = "ACEDER AO PAINEL";
+        lojaAtiva = data;
+        document.getElementById('auth-area').classList.add('hidden');
+        document.getElementById('dash-area').classList.remove('hidden');
+        document.getElementById('v-nome').innerText = data.nome;
+        document.getElementById('v-slug-display').innerText = "@" + data.slug;
+        if(data.logo_url) document.getElementById('v-logo').src = data.logo_url;
+        
+        // Carregar datas de férias
+        document.getElementById('v-ferias-inicio').value = data.ferias_inicio || "";
+        document.getElementById('v-ferias-fim').value = data.ferias_fim || "";
+
+        // Carregar horários
+        if(data.horario) {
+            try {
+                const h = JSON.parse(data.horario);
+                diasSemana.forEach((_, i) => {
+                    if(h[i]) {
+                        document.getElementById(`h-${i}-m1`).value = h[i].m1 || "";
+                        document.getElementById(`h-${i}-m2`).value = h[i].m2 || "";
+                        document.getElementById(`h-${i}-t1`).value = h[i].t1 || "";
+                        document.getElementById(`h-${i}-t2`).value = h[i].t2 || "";
+                        document.getElementById(`h-${i}-status`).value = h[i].status || "aberto";
+                    }
+                });
+            } catch(e) {}
         }
+        carregarDados();
     }
 
     async function salvarConfig() {
@@ -281,9 +271,7 @@
             ferias_fim: document.getElementById('v-ferias-fim').value
         }).eq('id', lojaAtiva.id);
 
-        if(!error) alert("Configurações atualizadas!");
-        else alert("Erro ao salvar: " + error.message);
-        
+        alert(!error ? "Configurações guardadas!" : "Erro ao salvar.");
         btn.disabled = false;
     }
 
@@ -315,11 +303,9 @@
         const desc = parseInt(document.getElementById('p-desc').value) || 0;
         const precoFinal = desc > 0 ? (precoBase * (1 - desc/100)).toFixed(2) : precoBase;
 
-        if(!document.getElementById('p-nome').value || isNaN(precoBase)) return alert("Nome e Preço são obrigatórios");
+        if(!document.getElementById('p-nome').value || isNaN(precoBase)) return alert("Preencha Nome e Preço");
 
         btn.disabled = true;
-        btn.innerText = "A GUARDAR...";
-
         const dados = {
             nome: document.getElementById('p-nome').value,
             nome_artigo: document.getElementById('p-nome').value,
@@ -333,11 +319,7 @@
             await _sb.from('produtos').update(dados).eq('id', id);
         } else {
             const file = document.getElementById('p-foto').files[0];
-            if(!file) {
-                btn.disabled = false;
-                btn.innerText = "GUARDAR PRODUTO";
-                return alert("Selecione uma foto para o novo produto!");
-            }
+            if(!file) { btn.disabled = false; return alert("Selecione uma foto!"); }
             const fileName = `p_${Date.now()}.webp`;
             await _sb.storage.from('produtos').upload(fileName, file);
             const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
@@ -349,7 +331,6 @@
         cancelarEdicao();
         carregarDados();
         btn.disabled = false;
-        btn.innerText = "GUARDAR PRODUTO";
     }
 
     function prepararEdicao(p) {
@@ -375,7 +356,7 @@
     }
 
     async function apagarProd(id) { 
-        if(confirm("Tem a certeza que deseja apagar este produto?")) { 
+        if(confirm("Apagar produto?")) { 
             await _sb.from('produtos').delete().eq('id', id); 
             carregarDados(); 
         } 
