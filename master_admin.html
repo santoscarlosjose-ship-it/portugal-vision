@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Control | Portugal Vision</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        
+        /* Filtros e Busca */
+        .search-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        th { background: #1d3557; color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        
+        /* Status */
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .ativa { background: #d4edda; color: #155724; }
+        .suspensa { background: #f8d7da; color: #721c24; }
+
+        /* Botões */
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; margin-right: 5px; }
+        .btn-sus { background: #f39c12; color: white; }
+        .btn-act { background: #27ae60; color: white; }
+        .btn-del { background: #e74c3c; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🚀 Master Control - Portugal Vision</h1>
+        <div id="count-lojas" style="background: #1d3557; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold;">0 Lojas</div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Procurar loja por nome ou slug..." onkeyup="filtrarLojas()">
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Loja / Slug</th>
+                <th>Status</th>
+                <th>WhatsApp</th>
+                <th>Desempenho</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="lista-lojas">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
+    let todasAsLojas = [];
+
+    async function carregarDados() {
+        // Busca da View SQL que criámos para ser super rápido
+        const { data, error } = await _sb.from('resumo_lojas').select('*').order('created_at', {ascending: false});
+        
+        if (data) {
+            todasAsLojas = data;
+            document.getElementById('count-lojas').innerText = data.length + " Lojas";
+            renderizar(todasAsLojas);
+        }
+    }
+
+    function renderizar(lista) {
+        document.getElementById('lista-lojas').innerHTML = lista.map(l => `
+            <tr>
+                <td>
+                    <strong>${l.nome}</strong><br>
+                    <small style="color:#666">@${l.slug}</small>
+                </td>
+                <td><span class="status ${l.status}">${l.status}</span></td>
+                <td>${l.whatsapp || '---'}</td>
+                <td>
+                    <span title="Visualizações">👁️ ${l.views}</span> | 
+                    <span title="Cliques WhatsApp">📱 ${l.waps}</span>
+                </td>
+                <td>
+                    ${l.status === 'ativa' 
+                        ? `<button class="btn btn-sus" onclick="mudarStatus(${l.id}, 'suspensa')">Suspender</button>`
+                        : `<button class="btn btn-act" onclick="mudarStatus(${l.id}, 'ativa')">Ativar</button>`
+                    }
+                    <button class="btn btn-del" onclick="apagarLoja(${l.id})">Apagar</button>
+                    <a href="catalogo.html?loja=${l.slug}" target="_blank" style="text-decoration:none; font-size:18px">🔗</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function filtrarLojas() {
+        const termo = document.getElementById('search').value.toLowerCase();
+        const filtradas = todasAsLojas.filter(l => 
+            l.nome.toLowerCase().includes(termo) || 
+            l.slug.toLowerCase().includes(termo)
+        );
+        renderizar(filtradas);
+    }
+
+    async function mudarStatus(id, novoStatus) {
+        await _sb.from('lojas').update({ status: novoStatus }).eq('id', id);
+        carregarDados();
+    }
+
+    async function apagarLoja(id) {
+        if(confirm("ATENÇÃO: Isto apagará a loja, todos os produtos e todas as métricas permanentemente. Continuar?")) {
+            await _sb.from('lojas').delete().eq('id', id);
+            carregarDados();
+        }
+    }
+
+    carregarDados();
+</script>
+</body>
+</html>
