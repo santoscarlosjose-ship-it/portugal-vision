@@ -16,167 +16,304 @@
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #999; }
         .tab.active { color: var(--p); border-bottom: 3px solid var(--p); }
         
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-sec { background: var(--s); }
+        /* Dashboard */
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .header-loja { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .logo-box { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--p); overflow: hidden; position: relative; background: #eee; flex-shrink: 0; }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-box input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
 
-        .hidden { display: none; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
-        .card { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; }
-        .card img { width: 100%; h-eight: 120px; object-fit: cover; border-radius: 10px; }
-        .price { color: var(--ok); font-weight: bold; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; }
+        .stat-card b { display: block; font-size: 1.5rem; }
+
+        .horarios-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        .horarios-table th, .horarios-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .horarios-table th { background: #eee; }
+        .horarios-table input { padding: 4px; border: 1px solid #eee; text-align: center; width: 65px; border-radius: 4px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
+        .prod-img { width: 100%; height: 150px; object-fit: cover; }
+        
+        .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; }
+        .btn-circle { width: 32px; height: 32px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="auth-section" class="auth-card">
-        <h2 style="text-align:center; color:var(--p);">Portugal Vision</h2>
+    <div id="auth-area" class="auth-card">
+        <h2 style="text-align:center; color: var(--p)">Portugal Vision</h2>
         <div class="tabs">
-            <div id="tab-login" class="tab active" onclick="switchTab('login')">Entrar</div>
-            <div id="tab-reg" class="tab" onclick="switchTab('reg')">Criar Conta</div>
-        </div>
-        
-        <div id="form-login">
-            <input type="email" id="l-email" placeholder="E-mail da loja">
-            <input type="password" id="l-pass" placeholder="Palavra-passe">
-            <button onclick="login()">Entrar no Painel</button>
+            <div id="t-login" class="tab active" onclick="selTab('login')">ENTRAR</div>
+            <div id="t-reg" class="tab" onclick="selTab('reg')">CRIAR CONTA</div>
         </div>
 
-        <div id="form-reg" class="hidden">
-            <input type="text" id="r-nome" placeholder="Nome da Loja (ex: Café Central)">
+        <div id="f-login">
+            <input type="email" id="l-email" placeholder="E-mail da loja">
+            <input type="password" id="l-pass" placeholder="Password">
+            <button onclick="login()">ACEDER AO PAINEL</button>
+        </div>
+
+        <div id="f-reg" class="hidden">
+            <input type="text" id="r-nome" placeholder="Nome do Negócio">
             <input type="email" id="r-email" placeholder="E-mail">
+            <input type="text" id="r-zap" placeholder="Telefone / WhatsApp">
+            <input type="text" id="r-morada" placeholder="Morada Completa">
             <input type="text" id="r-nif" placeholder="NIF">
-            <input type="password" id="r-pass" placeholder="Criar Palavra-passe">
-            <button onclick="registar()" class="btn-sec">Solicitar Acesso</button>
+            <input type="password" id="r-pass" placeholder="Criar Password">
+            <button style="background:var(--ok)" onclick="registar()">SOLICITAR ACESSO</button>
         </div>
     </div>
 
-    <div id="main-panel" class="hidden">
-        <header style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 id="v-nome-loja">Painel da Loja</h2>
-            <button onclick="location.reload()" style="width:auto; padding:5px 15px; background:var(--err)">Sair</button>
-        </header>
-
-        <div style="background:white; padding:20px; border-radius:20px; margin-top:20px;">
-            <h3 id="form-title">📸 Publicar Produto</h3>
-            <input type="hidden" id="edit-id">
-            <input type="text" id="p-nome" placeholder="Nome do Artigo">
-            <input type="number" id="p-preco" placeholder="Preço (€)">
-            <input type="number" id="p-desc" placeholder="Desconto % (opcional)" value="0">
-            
-            <div id="foto-input-area">
-                <label>Foto do Produto:</label>
-                <input type="file" id="p-foto" accept="image/*">
+    <div id="dash-area" class="hidden">
+        <div class="card">
+            <div class="header-loja">
+                <div class="logo-box">
+                    <img id="v-logo" src="https://via.placeholder.com/80">
+                    <input type="file" accept="image/*" onchange="subirLogo(this)">
+                </div>
+                <div style="flex:1">
+                    <h2 id="v-nome" style="margin:0">---</h2>
+                    <small id="v-slug-display" style="color:#666"></small>
+                </div>
+                <button onclick="location.reload()" style="width:auto; background:#666">Sair</button>
             </div>
 
-            <button onclick="salvarProduto()" id="btn-save">Guardar Produto</button>
-            <button onclick="cancelarEdicao()" id="btn-cancel" class="hidden" style="background:#999">Cancelar Edição</button>
+            <div class="stats">
+                <div class="stat-card">Visitas <b id="s-views">0</b></div>
+                <div class="stat-card">Cliques Zap <b id="s-waps">0</b></div>
+            </div>
+
+            <h3 style="margin: 20px 0 5px 0">📅 Horários e Férias</h3>
+            <div style="overflow-x: auto;">
+                <table class="horarios-table">
+                    <thead>
+                        <tr>
+                            <th>Dia</th>
+                            <th>Manhã</th>
+                            <th>Tarde</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="horarios-body"></tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:15px">
+                <div>
+                    <label style="font-size:11px; font-weight:bold">🏖️ INÍCIO FÉRIAS:</label>
+                    <input type="date" id="v-ferias-inicio">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:bold">🔙 FIM FÉRIAS:</label>
+                    <input type="date" id="v-ferias-fim">
+                </div>
+            </div>
+            <button onclick="salvarConfig()" style="background:var(--s); margin-top:10px">ATUALIZAR AGENDA E FÉRIAS</button>
         </div>
 
-        <h3>Os Meus Produtos</h3>
-        <div id="lista-produtos" class="grid"></div>
+        <div class="card">
+            <h3 id="form-title" style="margin-top:0">📸 Publicar Produto</h3>
+            <input type="hidden" id="edit-id">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
+                <input type="text" id="p-nome" placeholder="Nome do Artigo">
+                <input type="number" id="p-preco" placeholder="Preço Base (€)">
+                <input type="number" id="p-desc" placeholder="Desconto %">
+                <select id="p-tipo">
+                    <option value="normal">Padrão</option>
+                    <option value="promo">Promoção</option>
+                    <option value="novo">Novidade</option>
+                </select>
+            </div>
+            <div id="foto-input-area">
+                <input type="file" id="p-foto" accept="image/*">
+            </div>
+            <button id="btn-save" onclick="salvarProduto()" style="background:var(--s)">GUARDAR PRODUTO</button>
+            <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR EDIÇÃO</button>
+        </div>
+
+        <h3>📦 Minha Montra</h3>
+        <div id="grid-prods" class="grid"></div>
     </div>
 </div>
 
 <script>
-    const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
+    const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
+    const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
+    const _sb = supabase.createClient(_URL, _KEY);
+    
     let lojaAtiva = null;
+    const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-    function switchTab(t) {
-        document.getElementById('form-login').classList.toggle('hidden', t === 'reg');
-        document.getElementById('form-reg').classList.toggle('hidden', t === 'login');
-        document.getElementById('tab-login').classList.toggle('active', t === 'login');
-        document.getElementById('tab-reg').classList.toggle('active', t === 'reg');
-    }
+    // Gerar tabela de horários
+    document.getElementById('horarios-body').innerHTML = diasSemana.map((dia, i) => `
+        <tr>
+            <td><b>${dia}</b></td>
+            <td><input type="time" id="h-${i}-m1"> - <input type="time" id="h-${i}-m2"></td>
+            <td><input type="time" id="h-${i}-t1"> - <input type="time" id="h-${i}-t2"></td>
+            <td>
+                <select id="h-${i}-status" style="padding:2px; height:25px; width:80px">
+                    <option value="aberto">Aberto</option>
+                    <option value="fechado">Fechado</option>
+                </select>
+            </td>
+        </tr>
+    `).join('');
 
-    async function login() {
-        const email = document.getElementById('l-email').value;
-        const pass = document.getElementById('l-pass').value;
-        const { data, error } = await _sb.from('lojas').select('*').eq('email', email).eq('password', pass).single();
-        
-        if (data) {
-            lojaAtiva = data;
-            abrirPainel();
-        } else { alert("Dados incorretos ou conta ainda não ativa."); }
+    function selTab(m) {
+        document.getElementById('f-login').classList.toggle('hidden', m==='reg');
+        document.getElementById('f-reg').classList.toggle('hidden', m==='login');
+        document.getElementById('t-login').classList.toggle('active', m==='login');
+        document.getElementById('t-reg').classList.toggle('active', m==='reg');
     }
 
     async function registar() {
         const nome = document.getElementById('r-nome').value;
-        const email = document.getElementById('r-email').value;
-        const nif = document.getElementById('r-nif').value;
-        const pass = document.getElementById('r-pass').value;
-        const slug = nome.toLowerCase().replace(/ /g, '-');
+        const slug = nome.toLowerCase().trim().replace(/\s+/g, '-');
+        
+        const { error } = await _sb.from('lojas').insert([{
+            nome: nome,
+            email: document.getElementById('r-email').value,
+            whatsapp: document.getElementById('r-zap').value,
+            morada: document.getElementById('r-morada').value,
+            nif: document.getElementById('r-nif').value,
+            password: document.getElementById('r-pass').value,
+            slug: slug,
+            status_catalogo: false // Master Admin deve ativar depois
+        }]);
 
-        const { error } = await _sb.from('lojas').insert([{ nome_loja: nome, email, nif, password: pass, slug, status_catalogo: false }]);
-        if (!error) { alert("Pedido enviado! Aguarde a ativação pelo Master Admin."); location.reload(); }
-        else { alert("Erro ao registar. E-mail já existe?"); }
+        if(!error) { 
+            alert("Pedido de registo enviado com sucesso!"); 
+            location.reload(); 
+        } else { 
+            alert("Erro ao criar conta. Verifique se o e-mail já existe."); 
+            console.error(error);
+        }
     }
 
-    function abrirPainel() {
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('main-panel').classList.remove('hidden');
-        document.getElementById('v-nome-loja').innerText = lojaAtiva.nome_loja;
-        carregarDados();
+    async function login() {
+        const email = document.getElementById('l-email').value.trim();
+        const pass = document.getElementById('l-pass').value;
+
+        const { data, error } = await _sb.from('lojas')
+            .select('*')
+            .eq('email', email)
+            .eq('password', pass)
+            .single();
+
+        if (data) {
+            lojaAtiva = data;
+            document.getElementById('auth-area').classList.add('hidden');
+            document.getElementById('dash-area').classList.remove('hidden');
+            document.getElementById('v-nome').innerText = data.nome;
+            document.getElementById('v-slug-display').innerText = "@" + data.slug;
+            if(data.logo_url) document.getElementById('v-logo').src = data.logo_url;
+            
+            // Carregar Férias e Horários
+            document.getElementById('v-ferias-inicio').value = data.ferias_inicio || "";
+            document.getElementById('v-ferias-fim').value = data.ferias_fim || "";
+            if(data.horario) {
+                const h = JSON.parse(data.horario);
+                diasSemana.forEach((_, i) => {
+                    if(h[i]) {
+                        document.getElementById(`h-${i}-m1`).value = h[i].m1;
+                        document.getElementById(`h-${i}-m2`).value = h[i].m2;
+                        document.getElementById(`h-${i}-t1`).value = h[i].t1;
+                        document.getElementById(`h-${i}-t2`).value = h[i].t2;
+                        document.getElementById(`h-${i}-status`).value = h[i].status;
+                    }
+                });
+            }
+            carregarDados();
+        } else {
+            alert("Dados incorretos ou conta inativa.");
+        }
+    }
+
+    // ... (restante das funções de salvarConfig, carregarDados, salvarProduto permanecem iguais para garantir funcionamento)
+    
+    async function salvarConfig() {
+        let agenda = {};
+        diasSemana.forEach((_, i) => {
+            agenda[i] = {
+                m1: document.getElementById(`h-${i}-m1`).value,
+                m2: document.getElementById(`h-${i}-m2`).value,
+                t1: document.getElementById(`h-${i}-t1`).value,
+                t2: document.getElementById(`h-${i}-t2`).value,
+                status: document.getElementById(`h-${i}-status`).value
+            };
+        });
+        await _sb.from('lojas').update({ 
+            horario: JSON.stringify(agenda),
+            ferias_inicio: document.getElementById('v-ferias-inicio').value,
+            ferias_fim: document.getElementById('v-ferias-fim').value
+        }).eq('id', lojaAtiva.id);
+        alert("Configurações atualizadas!");
     }
 
     async function carregarDados() {
-        const { data } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
-        const lista = document.getElementById('lista-produtos');
-        lista.innerHTML = data.map(p => `
-            <div class="card">
-                <img src="${p.url_foto}">
-                <div style="padding:5px">
-                    <small>${p.nome_artigo}</small><br>
-                    <span class="price">${p.preco}€</span>
-                    <div style="margin-top:5px">
-                        <button onclick="editarProduto(${JSON.stringify(p).replace(/"/g, '&quot;')})" style="padding:4px; font-size:10px; width:45%">Edit</button>
-                        <button onclick="apagarProduto(${p.id})" style="padding:4px; font-size:10px; width:45%; background:var(--err)">Apagar</button>
-                    </div>
+        const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
+        const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
+        
+        document.getElementById('s-views').innerText = m ? m.filter(i => i.tipo === 'view_loja').length : 0;
+        document.getElementById('s-waps').innerText = m ? m.filter(i => i.tipo === 'click_whatsapp').length : 0;
+
+        document.getElementById('grid-prods').innerHTML = prods.map(p => `
+            <div class="prod-card" style="${p.oculto ? 'opacity:0.5' : ''}">
+                <img src="${p.imagem_url || p.url_foto}" class="prod-img">
+                <div class="prod-actions">
+                    <button class="btn-circle" style="background:#f1c40f" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
+                    <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
-            </div>
-        `).join('');
+                <div style="padding:8px">
+                    <div style="font-weight:bold; font-size:0.85rem">${p.nome || p.nome_artigo}</div>
+                    <div style="color:var(--ok); font-weight:bold">${p.preco}€</div>
+                </div>
+            </div>`).join('');
     }
 
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
-        const nome = document.getElementById('p-nome').value;
-        const preco = document.getElementById('p-preco').value;
-        const desc = document.getElementById('p-desc').value;
-        const fotoFile = document.getElementById('p-foto').files[0];
+        const precoBase = parseFloat(document.getElementById('p-preco').value);
+        const desc = parseInt(document.getElementById('p-desc').value) || 0;
+        const precoFinal = desc > 0 ? (precoBase * (1 - desc/100)).toFixed(2) : precoBase;
 
-        if (id) {
-            // Update
-            await _sb.from('produtos').update({ nome_artigo: nome, preco, desconto_percent: desc }).eq('id', id);
+        const dados = {
+            nome: document.getElementById('p-nome').value,
+            nome_artigo: document.getElementById('p-nome').value,
+            preco: precoFinal,
+            desconto_percent: desc,
+            loja_id: lojaAtiva.id
+        };
+
+        if(id) {
+            await _sb.from('produtos').update(dados).eq('id', id);
         } else {
-            // Novo - Primeiro sobe a foto
-            const ext = fotoFile.name.split('.').pop();
-            const fileName = `${Date.now()}.${ext}`;
-            const { data: uploadData } = await _sb.storage.from('produtos').upload(fileName, fotoFile);
-            
-            if (uploadData) {
-                const { data: urlData } = _sb.storage.from('produtos').getPublicUrl(fileName);
-                await _sb.from('produtos').insert([{ 
-                    loja_id: lojaAtiva.id, 
-                    nome_artigo: nome, 
-                    preco, 
-                    url_foto: urlData.publicUrl,
-                    desconto_percent: desc
-                }]);
-            }
+            const file = document.getElementById('p-foto').files[0];
+            if(!file) return alert("Selecione uma foto!");
+            const fileName = `p_${Date.now()}.webp`;
+            await _sb.storage.from('produtos').upload(fileName, file);
+            const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
+            dados.imagem_url = url.publicUrl;
+            dados.url_foto = url.publicUrl;
+            await _sb.from('produtos').insert([dados]);
         }
         cancelarEdicao();
         carregarDados();
     }
 
-    function editarProduto(p) {
-        document.getElementById('form-title').innerText = "📝 Editar Produto";
+    function prepararEdicao(p) {
+        document.getElementById('form-title').innerText = "✏️ Editar Produto";
         document.getElementById('edit-id').value = p.id;
-        document.getElementById('p-nome').value = p.nome_artigo;
+        document.getElementById('p-nome').value = p.nome || p.nome_artigo;
         document.getElementById('p-preco').value = p.preco;
-        document.getElementById('p-desc').value = p.desconto_percent;
-        document.getElementById('foto-input-area').classList.add('hidden');
+        document.getElementById('p-desc').value = p.desconto_percent || 0;
         document.getElementById('btn-cancel').classList.remove('hidden');
     }
 
@@ -184,17 +321,20 @@
         document.getElementById('edit-id').value = "";
         document.getElementById('p-nome').value = "";
         document.getElementById('p-preco').value = "";
-        document.getElementById('p-desc').value = "0";
-        document.getElementById('foto-input-area').classList.remove('hidden');
+        document.getElementById('p-desc').value = "";
         document.getElementById('btn-cancel').classList.add('hidden');
         document.getElementById('form-title').innerText = "📸 Publicar Produto";
     }
 
-    async function apagarProduto(id) {
-        if(confirm("Apagar produto?")) {
-            await _sb.from('produtos').delete().eq('id', id);
-            carregarDados();
-        }
+    async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
+
+    async function subirLogo(input) {
+        const file = input.files[0];
+        const fileName = `logo_${lojaAtiva.id}.webp`;
+        await _sb.storage.from('produtos').upload(fileName, file, {upsert:true});
+        const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
+        await _sb.from('lojas').update({ logo_url: url.publicUrl }).eq('id', lojaAtiva.id);
+        document.getElementById('v-logo').src = url.publicUrl;
     }
 </script>
 </body>
