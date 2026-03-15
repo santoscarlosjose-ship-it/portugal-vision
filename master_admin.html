@@ -11,8 +11,8 @@
         :root {
             --bg-body: #f0f2f5;
             --panel-bg: #ffffff;
-            --primary: #0f172a; /* Azul Navy Profundo */
-            --accent: #3b82f6;  /* Azul Moderno */
+            --primary: #0f172a; 
+            --accent: #3b82f6;  
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
@@ -28,7 +28,6 @@
             display: none; 
         }
 
-        /* Sidebar Simulado / Header */
         .top-nav {
             background: var(--primary);
             color: white;
@@ -41,7 +40,6 @@
 
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
 
-        /* Stats Pro */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
@@ -76,7 +74,6 @@
         .stat-info h3 { margin: 0; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-info p { margin: 0.2rem 0 0; font-size: 1.5rem; font-weight: 700; }
 
-        /* Main Content Layout */
         .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
 
         .card-panel { 
@@ -87,7 +84,6 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
-        /* Tabela Profissional */
         .search-bar {
             width: 100%; padding: 0.8rem 1rem;
             border-radius: 10px; border: 1px solid var(--border);
@@ -103,7 +99,6 @@
         td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         tr:hover { background: #f8fafc; }
 
-        /* Badges & Buttons */
         .badge {
             padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
         }
@@ -117,7 +112,6 @@
         .btn-action:hover { color: var(--accent); }
         .btn-del:hover { color: var(--danger); }
 
-        /* Modal Moderno */
         #modal { 
             display: none; position: fixed; inset: 0; 
             background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
@@ -202,7 +196,6 @@
 </div>
 
 <script>
-    // CONFIGURAÇÃO
     const SB_URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
     const SENHA_MESTRA = "1234";
@@ -216,13 +209,15 @@
     let myChart = null;
 
     async function carregarDados() {
-        const { data } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
-        if (data) {
-            todasAsLojas = data;
-            atualizarStats(data);
-            renderizar(data);
-            gerarGrafico(data);
+        const { data, error } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
+        if (error) {
+            console.error("Erro Supabase:", error.message);
+            return;
         }
+        todasAsLojas = data || [];
+        atualizarStats(todasAsLojas);
+        renderizar(todasAsLojas);
+        gerarGrafico(todasAsLojas);
     }
 
     function renderizar(lista) {
@@ -256,10 +251,18 @@
         `).join('');
     }
 
-    // (As funções carregarDados, gerarGrafico, toggleFeature, toggleStatus, etc., permanecem as mesmas logicamente)
-    // [Mantendo a lógica do script anterior...]
-    async function toggleFeature(id, campo, val) { await _sb.from('lojas').update({ [campo]: !val }).eq('id', id); carregarDados(); }
-    async function toggleStatus(id, st) { await _sb.from('lojas').update({ status: st === 'ativa' ? 'suspensa' : 'ativa' }).eq('id', id); carregarDados(); }
+    async function toggleFeature(id, campo, val) { 
+        const { error } = await _sb.from('lojas').update({ [campo]: !val }).eq('id', id);
+        if (error) { alert("Erro ao atualizar: " + error.message); }
+        else { carregarDados(); }
+    }
+
+    async function toggleStatus(id, st) { 
+        const novoStatus = (st === 'ativa' ? 'suspensa' : 'ativa');
+        const { error } = await _sb.from('lojas').update({ status: novoStatus }).eq('id', id);
+        if (error) { alert("Erro ao mudar status: " + error.message); }
+        else { carregarDados(); }
+    }
     
     function abrirModal(l) {
         document.getElementById('edit-id').value = l.id;
@@ -271,17 +274,27 @@
 
     async function salvarEdicao() {
         const id = document.getElementById('edit-id').value;
-        const upd = { nome: document.getElementById('edit-nome').value, email: document.getElementById('edit-email').value };
-        await _sb.from('lojas').update(upd).eq('id', id);
-        fecharModal(); carregarDados();
+        const upd = { 
+            nome: document.getElementById('edit-nome').value, 
+            email: document.getElementById('edit-email').value 
+        };
+        const { error } = await _sb.from('lojas').update(upd).eq('id', id);
+        if (error) { alert("Erro ao salvar: " + error.message); }
+        else { fecharModal(); carregarDados(); }
     }
 
-    async function apagarLoja(id) { if(confirm("Deseja apagar esta loja definitivamente?")) { await _sb.from('lojas').delete().eq('id', id); carregarDados(); } }
+    async function apagarLoja(id) { 
+        if(confirm("Deseja apagar esta loja definitivamente?")) { 
+            const { error } = await _sb.from('lojas').delete().eq('id', id);
+            if (error) { alert("Erro ao apagar: " + error.message); }
+            else { carregarDados(); }
+        } 
+    }
 
     function atualizarStats(lista) {
         document.getElementById('stat-total').innerText = lista.length;
-        document.getElementById('stat-cliques').innerText = lista.reduce((acc, l) => acc + (l.views || 0), 0);
-        document.getElementById('stat-waps').innerText = lista.reduce((acc, l) => acc + (l.waps || 0), 0);
+        document.getElementById('stat-cliques').innerText = lista.reduce((acc, l) => acc + (Number(l.views) || 0), 0);
+        document.getElementById('stat-waps').innerText = lista.reduce((acc, l) => acc + (Number(l.waps) || 0), 0);
         document.getElementById('stat-cats').innerText = lista.filter(l => l.status_catalogo).length;
     }
 
