@@ -28,20 +28,20 @@
         .inputs-tempo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .periodo { font-size: 11px; color: #666; margin-bottom: 4px; display: block; }
         
-        /* Estilo para a Seleção Múltipla de Tags */
         .tags-group { background: #fdfdfd; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-top: 5px; }
         .tag-item { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 5px; cursor: pointer; }
         .tag-item input { width: auto; margin: 0; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 10px; }
         .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
-        .prod-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; cursor: pointer; display: block; }
+        .prod-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; display: block; }
         .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
         .badge-desc { position: absolute; top: 8px; left: 8px; background: var(--err); color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 5px; z-index: 9; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 0.9em; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -129,10 +129,10 @@
 
             <h3 style="margin-top:20px">📅 Férias</h3>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                <div><small>Início:</small><input type="date" id="v-ferias-inicio"></div>
-                <div><small>Fim:</small><input type="date" id="v-ferias-fim"></div>
+                <div><small>Início:</small><input type="date" id="v-ferias-inicio" oninput="marcarAltHorario()"></div>
+                <div><small>Fim:</small><input type="date" id="v-ferias-fim" oninput="marcarAltHorario()"></div>
             </div>
-            <button onclick="salvarConfig()" style="background:var(--ok); margin-top:15px">ATUALIZAR FUNCIONAMENTO</button>
+            <button id="btn-save-config" onclick="salvarConfig()" style="background:var(--s); margin-top:15px">ATUALIZAR FUNCIONAMENTO</button>
         </div>
     </div>
 </div>
@@ -149,18 +149,46 @@
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
                 <b>${dia}</b>
-                <select id="h-${i}-status" onchange="atualizarEstiloDia(${i})" style="width:100px; margin:0">
+                <select id="h-${i}-status" onchange="atualizarEstiloDia(${i}); marcarAltHorario()" style="width:100px; margin:0">
                     <option value="aberto">Aberto</option>
                     <option value="fechado">Fechado</option>
                 </select>
             </div>
             <div id="inputs-${i}">
                 <div class="inputs-tempo">
-                    <div><span class="periodo">Manhã</span><div style="display:flex; gap:4px"><input type="time" id="h-${i}-m1"><input type="time" id="h-${i}-m2"></div></div>
-                    <div><span class="periodo">Tarde</span><div style="display:flex; gap:4px"><input type="time" id="h-${i}-t1"><input type="time" id="h-${i}-t2"></div></div>
+                    <div><span class="periodo">Manhã</span><div style="display:flex; gap:4px"><input type="time" id="h-${i}-m1" oninput="marcarAltHorario()"><input type="time" id="h-${i}-m2" oninput="marcarAltHorario()"></div></div>
+                    <div><span class="periodo">Tarde</span><div style="display:flex; gap:4px"><input type="time" id="h-${i}-t1" oninput="marcarAltHorario()"><input type="time" id="h-${i}-t2" oninput="marcarAltHorario()"></div></div>
                 </div>
             </div>
         </div>`).join('');
+
+    function marcarAltHorario() {
+        const btn = document.getElementById('btn-save-config');
+        btn.style.background = "var(--ok)";
+        btn.innerText = "ATUALIZAR FUNCIONAMENTO * (Há alterações)";
+    }
+
+    async function salvarConfig() {
+        const btn = document.getElementById('btn-save-config');
+        const horarios = diasSemana.map((_, i) => ({
+            m1: document.getElementById(`h-${i}-m1`).value,
+            m2: document.getElementById(`h-${i}-m2`).value,
+            t1: document.getElementById(`h-${i}-t1`).value,
+            t2: document.getElementById(`h-${i}-t2`).value,
+            status: document.getElementById(`h-${i}-status`).value
+        }));
+        const { error } = await _sb.from('lojas').update({ 
+            horarios,
+            ferias_inicio: document.getElementById('v-ferias-inicio').value || null,
+            ferias_fim: document.getElementById('v-ferias-fim').value || null
+        }).eq('id', lojaAtiva.id);
+        
+        if(!error) {
+            btn.style.background = "var(--s)";
+            btn.innerText = "ATUALIZADO COM SUCESSO!";
+            setTimeout(() => { btn.innerText = "ATUALIZAR FUNCIONAMENTO"; }, 3000);
+        }
+    }
 
     function marcarAlteracao() {
         const btn = document.getElementById('btn-save-profile');
@@ -195,6 +223,8 @@
         document.getElementById('v-nome-edit').value = lojaAtiva.nome;
         document.getElementById('v-morada-edit').value = lojaAtiva.morada || "";
         document.getElementById('v-tel-edit').value = lojaAtiva.telefone || "";
+        document.getElementById('v-ferias-inicio').value = lojaAtiva.ferias_inicio || "";
+        document.getElementById('v-ferias-fim').value = lojaAtiva.ferias_fim || "";
         if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
         if(lojaAtiva.horarios) {
             lojaAtiva.horarios.forEach((h, i) => {
@@ -209,22 +239,6 @@
             });
         }
         carregarDados();
-    }
-
-    async function salvarConfig() {
-        const horarios = diasSemana.map((_, i) => ({
-            m1: document.getElementById(`h-${i}-m1`).value,
-            m2: document.getElementById(`h-${i}-m2`).value,
-            t1: document.getElementById(`h-${i}-t1`).value,
-            t2: document.getElementById(`h-${i}-t2`).value,
-            status: document.getElementById(`h-${i}-status`).value
-        }));
-        const { error } = await _sb.from('lojas').update({ 
-            horarios,
-            ferias_inicio: document.getElementById('v-ferias-inicio').value || null,
-            ferias_fim: document.getElementById('v-ferias-fim').value || null
-        }).eq('id', lojaAtiva.id);
-        if(!error) alert("Configurações guardadas!");
     }
 
     function selTab(m) {
@@ -251,6 +265,7 @@
             document.getElementById(`h-${i}-t1`).value = t1; document.getElementById(`h-${i}-t2`).value = t2;
             document.getElementById(`h-${i}-status`).value = status; atualizarEstiloDia(i);
         }
+        marcarAltHorario();
     }
 
     async function carregarDados() {
@@ -258,29 +273,39 @@
         const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
         document.getElementById('s-views').innerText = m ? m.filter(i => i.tipo === 'view_loja').length : 0;
         document.getElementById('s-waps').innerText = m ? m.filter(i => i.tipo === 'click_whatsapp').length : 0;
-        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => `
+        
+        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
+            const precoOriginal = parseFloat(p.preco);
+            const desconto = parseInt(p.desconto_percent) || 0;
+            const precoFinal = desconto > 0 ? (precoOriginal * (1 - desconto/100)).toFixed(2) : precoOriginal.toFixed(2);
+            
+            return `
             <div class="prod-card">
+                ${desconto > 0 ? `<div class="badge-desc">-${desconto}%</div>` : ''}
                 <div class="prod-actions">
                     <button class="btn-circle" style="background:orange" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
                     <button class="btn-circle" style="background:red" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
                 <img src="${p.imagem_url || "https://via.placeholder.com/140"}" class="prod-img">
-                <div style="padding:8px; font-size:12px"><b>${p.nome}</b><br>${p.preco}€</div>
-            </div>`).join('');
+                <div style="padding:8px; font-size:12px">
+                    <b>${p.nome}</b><br>
+                    ${desconto > 0 ? `<span class="old-price">${precoOriginal.toFixed(2)}€</span>` : ''}
+                    <b>${precoFinal}€</b>
+                </div>
+            </div>`;
+        }).join('');
     }
 
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-foto').files[0];
-        
-        // Obter todas as tags selecionadas
         const tagsMarcadas = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(el => el.value);
 
         const dados = {
             nome: document.getElementById('p-nome').value,
             preco: parseFloat(document.getElementById('p-preco').value),
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
-            tipo_tag: tagsMarcadas, // Agora envia um array de strings
+            tipo_tag: tagsMarcadas,
             loja_id: lojaAtiva.id
         };
 
@@ -312,12 +337,9 @@
         document.getElementById('p-nome').value = p.nome; 
         document.getElementById('p-preco').value = p.preco; 
         document.getElementById('p-desc').value = p.desconto_percent || 0;
-        
-        // Resetar e marcar as tags salvas
         document.querySelectorAll('#p-tags-container input').forEach(el => {
             el.checked = Array.isArray(p.tipo_tag) ? p.tipo_tag.includes(el.value) : (p.tipo_tag === el.value);
         });
-
         document.getElementById('btn-cancel').classList.remove('hidden'); 
         document.getElementById('form-title').innerText = "✏️ Editar Produto";
         window.scrollTo(0,0); 
