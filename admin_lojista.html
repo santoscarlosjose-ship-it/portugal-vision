@@ -21,19 +21,17 @@
         .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .stat-card b { display: block; font-size: 1.5rem; }
-        .horarios-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; }
-        .horarios-table td { padding: 10px 5px; border-bottom: 1px solid #eee; }
-        .horarios-table input[type="time"] { padding: 6px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; width: 75px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 10px; }
         .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
-        .prod-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; cursor: pointer; }
+        .prod-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
         .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
-        .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
-        .tag-info { font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 4px; margin-right: 3px; }
-        .price-preview { font-size: 11px; color: var(--ok); font-weight: bold; margin-bottom: 5px; }
+        .tag-info { font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 4px; margin-right: 3px; font-weight: bold; color: var(--p); }
+        .price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+        .final-price-small { font-size: 11px; color: var(--ok); font-weight: bold; margin-top: -5px; height: 14px; }
     </style>
 </head>
 <body>
@@ -89,45 +87,42 @@
             <h3 id="form-title">📸 Publicar Novo Produto</h3>
             <input type="hidden" id="edit-id">
             
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                <input type="text" id="p-nome" placeholder="Nome do Artigo">
-                <select id="p-tipo">
-                    <option value="normal">Padrão</option>
-                    <option value="promo">Promoção</option>
-                    <option value="novo">Novidade</option>
-                    <option value="destaque">Destaque</option>
-                    <option value="hoje">Produto do Dia</option>
-                </select>
+            <input type="text" id="p-nome" placeholder="Nome do Artigo">
+            
+            <div class="price-row">
                 <div>
-                    <input type="number" id="p-preco" placeholder="Preço (€)" oninput="calcularPreco()">
+                    <label style="font-size: 11px;">Preço (€):</label>
+                    <input type="number" id="p-preco" placeholder="0.00" oninput="calcularPreco()">
                 </div>
                 <div>
-                    <input type="number" id="p-desc" placeholder="Desconto %" oninput="calcularPreco()">
-                    <div id="preview-final" class="price-preview"></div>
+                    <label style="font-size: 11px;">Desconto (%):</label>
+                    <input type="number" id="p-desc" placeholder="0" oninput="calcularPreco()">
                 </div>
             </div>
+            <div id="preview-final" class="final-price-small"></div>
 
-            <div id="foto-input-area">
-                <label id="foto-label" style="font-size: 11px;">Tirar Foto / Carregar (WebP automático):</label>
+            <label style="font-size: 11px;">Tipo de Tag:</label>
+            <select id="p-tipo">
+                <option value="normal">Padrão</option>
+                <option value="promo">Promoção</option>
+                <option value="novo">Novidade</option>
+                <option value="destaque">Destaque</option>
+                <option value="hoje">Produto do Dia</option>
+            </select>
+
+            <div id="foto-input-area" style="margin-top:10px">
+                <label id="foto-label" style="font-size: 11px;">Foto (WebP automático):</label>
                 <input type="file" id="p-foto" accept="image/*" capture="environment">
             </div>
 
-            <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok); margin-top:10px">GUARDAR</button>
-            <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR</button>
+            <div style="display:flex; gap:10px; margin-top:10px">
+                <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok)">GUARDAR</button>
+                <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR</button>
+            </div>
         </div>
 
         <div class="section-title"><h3>📦 Minha Montra</h3></div>
         <div id="grid-prods" class="grid"></div>
-        
-        <div class="card" style="margin-top:30px">
-            <h3>⚙️ Horário e Férias</h3>
-            <table class="horarios-table"><tbody id="horarios-body"></tbody></table>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px">
-                <input type="date" id="v-ferias-inicio">
-                <input type="date" id="v-ferias-fim">
-            </div>
-            <button onclick="salvarConfig()" style="background:var(--s)">ATUALIZAR FUNCIONAMENTO</button>
-        </div>
     </div>
 </div>
 
@@ -137,26 +132,15 @@
     const _sb = supabase.createClient(_URL, _KEY);
     
     let lojaAtiva = null;
-    const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-
-    // Render Horário
-    document.getElementById('horarios-body').innerHTML = diasSemana.map((dia, i) => `
-        <tr>
-            <td><b>${dia}</b></td>
-            <td><input type="time" id="h-${i}-m1"> - <input type="time" id="h-${i}-m2"></td>
-            <td><select id="h-${i}-status"><option value="aberto">Aberto</option><option value="fechado">Fechado</option></select></td>
-        </tr>
-    `).join('');
 
     function calcularPreco() {
         const preco = parseFloat(document.getElementById('p-preco').value) || 0;
         const desc = parseInt(document.getElementById('p-desc').value) || 0;
-        if (desc > 0) {
+        const div = document.getElementById('preview-final');
+        if (desc > 0 && preco > 0) {
             const final = preco - (preco * (desc / 100));
-            document.getElementById('preview-final').innerText = `Fica por: ${final.toFixed(2)}€`;
-        } else {
-            document.getElementById('preview-final').innerText = "";
-        }
+            div.innerText = `Preço final: ${final.toFixed(2)}€`;
+        } else { div.innerText = ""; }
     }
 
     async function login() {
@@ -193,19 +177,23 @@
                 <img src="${p.imagem_url || p.url_foto}" class="prod-img">
                 <div style="padding:8px; font-size:12px">
                     <b>${p.nome}</b><br>
-                    <span style="color:green">${p.preco}€ ${p.desconto_percent > 0 ? '(-'+p.desconto_percent+'%)' : ''}</span>
+                    <span style="color:green; font-weight:bold">${p.preco}€ ${p.desconto_percent > 0 ? '<small>(-'+p.desconto_percent+'%)</small>' : ''}</span>
                     <div style="margin-top:4px">
-                        ${p.tipo_tag !== 'normal' ? `<span class="tag-info">${p.tipo_tag}</span>` : ''}
+                        <span class="tag-info">${getTagName(p.tipo_tag)}</span>
                     </div>
                 </div>
             </div>
         `).join('');
     }
 
+    function getTagName(val) {
+        const tags = { 'normal': 'Padrão', 'promo': 'Promoção', 'novo': 'Novidade', 'destaque': 'Destaque', 'hoje': 'Produto do Dia' };
+        return tags[val] || 'Padrão';
+    }
+
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-foto').files[0];
-        
         const dados = {
             nome: document.getElementById('p-nome').value,
             preco: parseFloat(document.getElementById('p-preco').value),
@@ -221,12 +209,8 @@
             dados.imagem_url = url.publicUrl;
         }
 
-        if(id) {
-            await _sb.from('produtos').update(dados).eq('id', id);
-        } else {
-            if(!file) return alert("Falta a foto!");
-            await _sb.from('produtos').insert([dados]);
-        }
+        if(id) { await _sb.from('produtos').update(dados).eq('id', id); } 
+        else { if(!file) return alert("Falta a foto!"); await _sb.from('produtos').insert([dados]); }
         cancelarEdicao(); carregarDados();
     }
 
@@ -237,7 +221,7 @@
         document.getElementById('p-preco').value = p.preco;
         document.getElementById('p-desc').value = p.desconto_percent;
         document.getElementById('p-tipo').value = p.tipo_tag;
-        document.getElementById('foto-label').innerText = "Mudar Foto (opcional):";
+        document.getElementById('foto-label').innerText = "Mudar Foto (Opcional):";
         document.getElementById('btn-cancel').classList.remove('hidden');
         calcularPreco();
         window.scrollTo(0,0);
@@ -256,7 +240,7 @@
         document.getElementById('preview-final').innerText = "";
         document.getElementById('btn-cancel').classList.add('hidden');
         document.getElementById('form-title').innerText = "📸 Publicar Novo Produto";
-        document.getElementById('foto-label').innerText = "Tirar Foto / Carregar (WebP automático):";
+        document.getElementById('foto-label').innerText = "Foto (WebP automático):";
     }
 
     function selTab(m) {
@@ -267,7 +251,6 @@
     }
 
     async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
-    
     async function subirLogo(input) {
         const file = input.files[0];
         const path = `logo_${lojaAtiva.id}.webp`;
@@ -276,7 +259,6 @@
         await _sb.from('lojas').update({ logo_url: url.publicUrl }).eq('id', lojaAtiva.id);
         document.getElementById('v-logo').src = url.publicUrl;
     }
-
     async function atualizarPerfil() {
         await _sb.from('lojas').update({
             nome: document.getElementById('v-nome-edit').value,
