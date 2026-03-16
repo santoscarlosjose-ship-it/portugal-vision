@@ -33,10 +33,11 @@
         .tag-item input { width: auto; margin: 0; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 10px; }
-        .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
+        .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; transition: 0.3s; }
+        .prod-card.oculto { opacity: 0.5; filter: grayscale(1); }
         .prod-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; cursor: pointer; display: block; }
         .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
-        .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
@@ -163,7 +164,6 @@
             </div>
         </div>`).join('');
 
-    // Função para mudar cor do botão de funcionamento quando há alterações
     function marcarAltConfig() {
         const btn = document.getElementById('btn-save-config');
         btn.style.background = "var(--ok)";
@@ -280,13 +280,16 @@
             const precoOrig = parseFloat(p.preco) || 0;
             const descPerc = parseInt(p.desconto_percent) || 0;
             const precoFinal = descPerc > 0 ? (precoOrig * (1 - descPerc / 100)).toFixed(2) : precoOrig.toFixed(2);
+            const isOculto = p.oculto === true;
 
             return `
-            <div class="prod-card">
+            <div class="prod-card ${isOculto ? 'oculto' : ''}" id="prod-${p.id}">
                 ${descPerc > 0 ? `<div class="badge-desc">-${descPerc}%</div>` : ''}
                 <div class="prod-actions">
-                    <button class="btn-circle" style="background:orange" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
-                    <button class="btn-circle" style="background:red" onclick="apagarProd(${p.id})">🗑️</button>
+                    <button class="btn-circle" style="background:orange" title="Editar" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
+                    <button class="btn-circle" style="background:${isOculto ? 'var(--ok)' : '#666'}" title="${isOculto ? 'Mostrar' : 'Ocultar'}" onclick="alternarVisibilidade(${p.id}, ${isOculto})">${isOculto ? '👁️' : '🚫'}</button>
+                    <button class="btn-circle" style="background:var(--s)" title="Adicionar Novo" onclick="window.scrollTo(0,0)">➕</button>
+                    <button class="btn-circle" style="background:var(--err)" title="Eliminar" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
                 <img src="${p.imagem_url || "https://via.placeholder.com/140"}" class="prod-img">
                 <div style="padding:8px; font-size:12px">
@@ -298,6 +301,11 @@
                 </div>
             </div>`;
         }).join('');
+    }
+
+    async function alternarVisibilidade(id, statusAtual) {
+        const { error } = await _sb.from('produtos').update({ oculto: !statusAtual }).eq('id', id);
+        if(!error) carregarDados();
     }
 
     async function salvarProduto() {
