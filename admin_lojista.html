@@ -72,10 +72,10 @@
                     <input type="file" accept="image/*" onchange="subirLogo(this)">
                 </div>
                 <div style="flex:1">
-                    <input type="text" id="v-nome-edit" style="font-weight:bold; font-size:1.2rem; border:none; padding:2px; background:transparent">
+                    <input type="text" id="v-nome-edit" oninput="marcarAlteracao()" style="font-weight:bold; font-size:1.2rem; border:none; padding:2px; background:transparent">
                     <div style="display:flex; gap:5px">
-                        <input type="text" id="v-morada-edit" style="font-size:12px; border:none; padding:2px; background:transparent" placeholder="Morada">
-                        <input type="text" id="v-tel-edit" style="font-size:12px; border:none; padding:2px; background:transparent" placeholder="Telefone">
+                        <input type="text" id="v-morada-edit" oninput="marcarAlteracao()" style="font-size:12px; border:none; padding:2px; background:transparent" placeholder="Morada">
+                        <input type="text" id="v-tel-edit" oninput="marcarAlteracao()" style="font-size:12px; border:none; padding:2px; background:transparent" placeholder="Telefone">
                     </div>
                 </div>
                 <button onclick="location.reload()" style="width:auto; background:var(--err); padding: 5px 10px;">Sair</button>
@@ -154,6 +154,30 @@
             </div>
         </div>`).join('');
 
+    // --- FUNÇÕES DE INTERFACE PERFIL ---
+    function marcarAlteracao() {
+        const btn = document.getElementById('btn-save-profile');
+        btn.style.background = "var(--ok)";
+        btn.innerText = "Guardar Alterações do Perfil *";
+    }
+
+    async function atualizarPerfil() {
+        const btn = document.getElementById('btn-save-profile');
+        const { error } = await _sb.from('lojas').update({
+            nome: document.getElementById('v-nome-edit').value,
+            morada: document.getElementById('v-morada-edit').value,
+            telefone: document.getElementById('v-tel-edit').value
+        }).eq('id', lojaAtiva.id);
+
+        if(!error) {
+            btn.style.background = "var(--s)";
+            btn.innerText = "Perfil Guardado com Sucesso!";
+            setTimeout(() => { btn.innerText = "Guardar Alterações do Perfil"; }, 3000);
+        } else {
+            alert("Erro ao atualizar perfil.");
+        }
+    }
+
     async function registar() {
         const dados = {
             nome: document.getElementById('r-nome').value,
@@ -198,15 +222,6 @@
         carregarDados();
     }
 
-    async function atualizarPerfil() {
-        const { error } = await _sb.from('lojas').update({
-            nome: document.getElementById('v-nome-edit').value,
-            morada: document.getElementById('v-morada-edit').value,
-            telefone: document.getElementById('v-tel-edit').value
-        }).eq('id', lojaAtiva.id);
-        if(!error) alert("Perfil atualizado!"); else alert("Erro ao atualizar perfil.");
-    }
-
     async function salvarConfig() {
         const horarios = diasSemana.map((_, i) => ({
             m1: document.getElementById(`h-${i}-m1`).value,
@@ -223,7 +238,6 @@
         if(!error) alert("Configurações guardadas!"); else alert("Erro ao guardar.");
     }
 
-    // Mantidas todas as tuas outras funções originais (carregarDados, subirLogo, etc)
     function selTab(m) {
         document.getElementById('f-login').classList.toggle('hidden', m==='reg');
         document.getElementById('f-reg').classList.toggle('hidden', m==='login');
