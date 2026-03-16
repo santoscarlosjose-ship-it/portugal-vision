@@ -27,14 +27,15 @@
         .stat-card { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .stat-card b { display: block; font-size: 1.5rem; }
 
-        .horarios-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .horarios-table th, .horarios-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .horarios-table th { background: #eee; }
-        .horarios-table input { padding: 4px; border: 1px solid #eee; text-align: center; width: 65px; border-radius: 4px; }
+        /* Estilo Horários */
+        .horarios-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; }
+        .horarios-table td { padding: 10px 5px; border-bottom: 1px solid #eee; }
+        .horarios-table input[type="time"] { padding: 6px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; width: 75px; }
+        .horarios-table select { padding: 6px; border-radius: 5px; width: 90px; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
-        .prod-img { width: 100%; height: 150px; object-fit: cover; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 10px; }
+        .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .prod-img { width: 100%; height: 150px; object-fit: cover; background: #f9f9f9; }
         
         .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; }
         .btn-circle { width: 32px; height: 32px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -43,6 +44,7 @@
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:disabled { background: #ccc; cursor: not-allowed; }
         .hidden { display: none !important; }
+        .section-title { display: flex; align-items: center; justify-content: space-between; margin: 25px 0 10px 0; border-left: 4px solid var(--p); padding-left: 10px; }
     </style>
 </head>
 <body>
@@ -54,13 +56,11 @@
             <div id="t-login" class="tab active" onclick="selTab('login')">ENTRAR</div>
             <div id="t-reg" class="tab" onclick="selTab('reg')">CRIAR CONTA</div>
         </div>
-
         <div id="f-login">
             <input type="email" id="l-email" placeholder="E-mail da loja">
             <input type="password" id="l-pass" placeholder="Password">
             <button id="btn-login" onclick="login()">ACEDER AO PAINEL</button>
         </div>
-
         <div id="f-reg" class="hidden">
             <input type="text" id="r-nome" placeholder="Nome do Negócio">
             <input type="email" id="r-email" placeholder="E-mail">
@@ -83,30 +83,55 @@
                     <h2 id="v-nome" style="margin:0">---</h2>
                     <small id="v-slug-display" style="color:#666"></small>
                 </div>
-                <button onclick="location.reload()" style="width:auto; background:#666; padding: 5px 15px">Sair</button>
+                <button onclick="location.reload()" style="width:auto; background:#666; padding: 5px 15px; font-size: 12px;">Sair</button>
             </div>
 
             <div class="stats">
                 <div class="stat-card">Visitas <b id="s-views">0</b></div>
                 <div class="stat-card">Cliques Zap <b id="s-waps">0</b></div>
             </div>
+        </div>
 
-            <h3 style="margin: 20px 0 5px 0">📅 Horários e Férias</h3>
+        <div class="card">
+            <h3 id="form-title" style="margin-top:0">📸 Publicar Novo Produto</h3>
+            <input type="hidden" id="edit-id">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
+                <input type="text" id="p-nome" placeholder="Nome do Artigo">
+                <input type="number" id="p-preco" placeholder="Preço (€)">
+                <input type="number" id="p-desc" placeholder="Desconto %">
+                <select id="p-tipo">
+                    <option value="normal">Padrão</option>
+                    <option value="promo">Promoção</option>
+                    <option value="novo">Novidade</option>
+                </select>
+            </div>
+            <div id="foto-input-area">
+                <label style="font-size: 12px; color: #666;">Foto do Produto:</label>
+                <input type="file" id="p-foto" accept="image/*">
+            </div>
+            <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok)">GUARDAR PRODUTO</button>
+            <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR EDIÇÃO</button>
+        </div>
+
+        <div class="section-title">
+            <h3 style="margin:0">📦 Minha Montra</h3>
+        </div>
+        <div id="grid-prods" class="grid"></div>
+
+        <br><hr><br>
+
+        <div class="card" style="background: #fdfdfd; border: 1px dashed #ccc;">
+            <h3 style="margin: 0 0 15px 0">⚙️ Configurações de Funcionamento</h3>
+            
+            <p style="font-size: 13px; color: #666;">Defina o seu horário semanal e períodos de encerramento para férias.</p>
+            
             <div style="overflow-x: auto;">
                 <table class="horarios-table">
-                    <thead>
-                        <tr>
-                            <th>Dia</th>
-                            <th>Manhã</th>
-                            <th>Tarde</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
                     <tbody id="horarios-body"></tbody>
                 </table>
             </div>
 
-            <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:15px">
+            <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:15px; padding: 15px; background: #eee; border-radius: 10px;">
                 <div>
                     <label style="font-size:11px; font-weight:bold">🏖️ INÍCIO FÉRIAS:</label>
                     <input type="date" id="v-ferias-inicio">
@@ -116,31 +141,8 @@
                     <input type="date" id="v-ferias-fim">
                 </div>
             </div>
-            <button id="btn-save-config" onclick="salvarConfig()" style="background:var(--s); margin-top:10px">ATUALIZAR AGENDA E FÉRIAS</button>
+            <button id="btn-save-config" onclick="salvarConfig()" style="background:var(--s); margin-top:15px">ATUALIZAR HORÁRIO E FÉRIAS</button>
         </div>
-
-        <div class="card">
-            <h3 id="form-title" style="margin-top:0">📸 Publicar Produto</h3>
-            <input type="hidden" id="edit-id">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                <input type="text" id="p-nome" placeholder="Nome do Artigo">
-                <input type="number" id="p-preco" placeholder="Preço Base (€)">
-                <input type="number" id="p-desc" placeholder="Desconto %">
-                <select id="p-tipo">
-                    <option value="normal">Padrão</option>
-                    <option value="promo">Promoção</option>
-                    <option value="novo">Novidade</option>
-                </select>
-            </div>
-            <div id="foto-input-area">
-                <input type="file" id="p-foto" accept="image/*">
-            </div>
-            <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--s)">GUARDAR PRODUTO</button>
-            <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR EDIÇÃO</button>
-        </div>
-
-        <h3>📦 Minha Montra</h3>
-        <div id="grid-prods" class="grid"></div>
     </div>
 </div>
 
@@ -152,14 +154,19 @@
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-    // Gerar tabela de horários dinamicamente
+    // Gerar tabela de horários mais intuitiva
     document.getElementById('horarios-body').innerHTML = diasSemana.map((dia, i) => `
         <tr>
-            <td><b>${dia}</b></td>
-            <td><input type="time" id="h-${i}-m1"> - <input type="time" id="h-${i}-m2"></td>
-            <td><input type="time" id="h-${i}-t1"> - <input type="time" id="h-${i}-t2"></td>
+            <td width="100"><b>${dia}</b></td>
             <td>
-                <select id="h-${i}-status" style="padding:2px; height:25px; width:80px">
+                <div style="display:flex; align-items:center; gap:5px">
+                    <input type="time" id="h-${i}-m1"> - <input type="time" id="h-${i}-m2">
+                    <span style="color:#ccc">|</span>
+                    <input type="time" id="h-${i}-t1"> - <input type="time" id="h-${i}-t2">
+                </div>
+            </td>
+            <td align="right">
+                <select id="h-${i}-status">
                     <option value="aberto">Aberto</option>
                     <option value="fechado">Fechado</option>
                 </select>
@@ -174,36 +181,6 @@
         document.getElementById('t-reg').classList.toggle('active', m==='reg');
     }
 
-    async function registar() {
-        const btn = document.getElementById('btn-reg');
-        const nome = document.getElementById('r-nome').value.trim();
-        if(!nome) return alert("Insira o nome do negócio");
-        
-        btn.disabled = true;
-        btn.innerText = "A PROCESSAR...";
-
-        const slug = nome.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
-        
-        const { error } = await _sb.from('lojas').insert([{
-            nome: nome,
-            email: document.getElementById('r-email').value.trim(),
-            whatsapp: document.getElementById('r-zap').value,
-            morada: document.getElementById('r-morada').value,
-            nif: document.getElementById('r-nif').value,
-            password: document.getElementById('r-pass').value,
-            slug: slug,
-            status_catalogo: false 
-        }]);
-
-        if(!error) { 
-            alert("Pedido de registo enviado! Aguarde ativação."); 
-            location.reload(); 
-        } else { 
-            alert("Erro: " + error.message); 
-            btn.disabled = false;
-        }
-    }
-
     async function login() {
         const btn = document.getElementById('btn-login');
         const email = document.getElementById('l-email').value.trim();
@@ -212,7 +189,6 @@
         if(!email || !pass) return alert("Preencha tudo");
         btn.disabled = true;
 
-        // CORREÇÃO AQUI: maybeSingle() evita o erro de "multiple rows"
         const { data, error } = await _sb.from('lojas').select('*').eq('email', email).eq('password', pass).maybeSingle();
 
         if (error || !data) {
@@ -228,11 +204,9 @@
         document.getElementById('v-slug-display').innerText = "@" + data.slug;
         if(data.logo_url) document.getElementById('v-logo').src = data.logo_url;
         
-        // Carregar datas de férias
         document.getElementById('v-ferias-inicio').value = data.ferias_inicio || "";
         document.getElementById('v-ferias-fim').value = data.ferias_fim || "";
 
-        // Carregar horários
         if(data.horario) {
             try {
                 const h = JSON.parse(data.horario);
@@ -250,31 +224,6 @@
         carregarDados();
     }
 
-    async function salvarConfig() {
-        const btn = document.getElementById('btn-save-config');
-        btn.disabled = true;
-        
-        let agenda = {};
-        diasSemana.forEach((_, i) => {
-            agenda[i] = {
-                m1: document.getElementById(`h-${i}-m1`).value,
-                m2: document.getElementById(`h-${i}-m2`).value,
-                t1: document.getElementById(`h-${i}-t1`).value,
-                t2: document.getElementById(`h-${i}-t2`).value,
-                status: document.getElementById(`h-${i}-status`).value
-            };
-        });
-
-        const { error } = await _sb.from('lojas').update({ 
-            horario: JSON.stringify(agenda),
-            ferias_inicio: document.getElementById('v-ferias-inicio').value,
-            ferias_fim: document.getElementById('v-ferias-fim').value
-        }).eq('id', lojaAtiva.id);
-
-        alert(!error ? "Configurações guardadas!" : "Erro ao salvar.");
-        btn.disabled = false;
-    }
-
     async function carregarDados() {
         const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
         const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
@@ -282,18 +231,22 @@
         document.getElementById('s-views').innerText = m ? m.filter(i => i.tipo === 'view_loja').length : 0;
         document.getElementById('s-waps').innerText = m ? m.filter(i => i.tipo === 'click_whatsapp').length : 0;
 
-        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => `
+        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
+            // Garante que a imagem aparece mesmo que o campo tenha nome diferente
+            const img = p.imagem_url || p.url_foto || 'https://via.placeholder.com/150';
+            return `
             <div class="prod-card" style="${p.oculto ? 'opacity:0.5' : ''}">
-                <img src="${p.imagem_url || p.url_foto || 'https://via.placeholder.com/150'}" class="prod-img">
+                <img src="${img}" class="prod-img" onerror="this.src='https://via.placeholder.com/150'">
                 <div class="prod-actions">
                     <button class="btn-circle" style="background:#f1c40f" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
-                <div style="padding:8px">
-                    <div style="font-weight:bold; font-size:0.85rem">${p.nome || p.nome_artigo}</div>
-                    <div style="color:var(--ok); font-weight:bold">${p.preco}€</div>
+                <div style="padding:10px">
+                    <div style="font-weight:bold; font-size:0.85rem; height: 35px; overflow: hidden;">${p.nome || p.nome_artigo}</div>
+                    <div style="color:var(--ok); font-weight:bold; margin-top:5px">${p.preco}€</div>
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
     }
 
     async function salvarProduto() {
@@ -333,6 +286,28 @@
         btn.disabled = false;
     }
 
+    async function salvarConfig() {
+        const btn = document.getElementById('btn-save-config');
+        btn.disabled = true;
+        let agenda = {};
+        diasSemana.forEach((_, i) => {
+            agenda[i] = {
+                m1: document.getElementById(`h-${i}-m1`).value,
+                m2: document.getElementById(`h-${i}-m2`).value,
+                t1: document.getElementById(`h-${i}-t1`).value,
+                t2: document.getElementById(`h-${i}-t2`).value,
+                status: document.getElementById(`h-${i}-status`).value
+            };
+        });
+        const { error } = await _sb.from('lojas').update({ 
+            horario: JSON.stringify(agenda),
+            ferias_inicio: document.getElementById('v-ferias-inicio').value,
+            ferias_fim: document.getElementById('v-ferias-fim').value
+        }).eq('id', lojaAtiva.id);
+        alert(!error ? "Horário e Férias atualizados!" : "Erro ao salvar.");
+        btn.disabled = false;
+    }
+
     function prepararEdicao(p) {
         document.getElementById('form-title').innerText = "✏️ Editar Produto";
         document.getElementById('edit-id').value = p.id;
@@ -342,7 +317,7 @@
         document.getElementById('p-tipo').value = p.tipo_tag || "normal";
         document.getElementById('btn-cancel').classList.remove('hidden');
         document.getElementById('foto-input-area').classList.add('hidden');
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        window.scrollTo({top: 100, behavior: 'smooth'});
     }
 
     function cancelarEdicao() {
@@ -352,11 +327,11 @@
         document.getElementById('p-desc').value = "";
         document.getElementById('btn-cancel').classList.add('hidden');
         document.getElementById('foto-input-area').classList.remove('hidden');
-        document.getElementById('form-title').innerText = "📸 Publicar Produto";
+        document.getElementById('form-title').innerText = "📸 Publicar Novo Produto";
     }
 
     async function apagarProd(id) { 
-        if(confirm("Apagar produto?")) { 
+        if(confirm("Tem a certeza que deseja apagar este produto?")) { 
             await _sb.from('produtos').delete().eq('id', id); 
             carregarDados(); 
         } 
@@ -370,6 +345,13 @@
         const { data: url } = _sb.storage.from('produtos').getPublicUrl(fileName);
         await _sb.from('lojas').update({ logo_url: url.publicUrl }).eq('id', lojaAtiva.id);
         document.getElementById('v-logo').src = url.publicUrl;
+    }
+
+    function selTab(m) {
+        document.getElementById('f-login').classList.toggle('hidden', m==='reg');
+        document.getElementById('f-reg').classList.toggle('hidden', m==='login');
+        document.getElementById('t-login').classList.toggle('active', m==='login');
+        document.getElementById('t-reg').classList.toggle('active', m==='reg');
     }
 </script>
 </body>
