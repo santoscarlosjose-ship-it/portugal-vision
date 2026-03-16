@@ -33,6 +33,21 @@
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
         .tag-info { font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 4px; margin-right: 3px; }
+
+        /* NOVO: Estilo para o selo de desconto na imagem */
+        .badge-desc {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--err);
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 5px;
+            z-index: 9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -192,10 +207,19 @@
     async function carregarDados() {
         const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
         const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
+        
         document.getElementById('s-views').innerText = m ? m.filter(i => i.tipo === 'view_loja').length : 0;
         document.getElementById('s-waps').innerText = m ? m.filter(i => i.tipo === 'click_whatsapp').length : 0;
-        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => `
+        
+        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
+            // --- LÓGICA DE CÁLCULO DE DESCONTO ---
+            const temDesc = p.desconto_percent > 0;
+            const precoOriginal = parseFloat(p.preco);
+            const precoFinal = temDesc ? (precoOriginal * (1 - p.desconto_percent / 100)).toFixed(2) : precoOriginal.toFixed(2);
+
+            return `
             <div class="prod-card" style="${p.oculto ? 'opacity:0.4' : ''}">
+                ${temDesc ? `<div class="badge-desc">-${p.desconto_percent}%</div>` : ''}
                 <div class="prod-actions">
                     <button class="btn-circle" style="background:orange" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
                     <button class="btn-circle" style="background:gray" onclick="toggleOcultar(${p.id}, ${p.oculto})">${p.oculto ? '👁️' : '🚫'}</button>
@@ -204,16 +228,19 @@
                 <img src="${p.imagem_url || p.url_foto}" class="prod-img">
                 <div style="padding:8px; font-size:12px">
                     <b>${p.nome}</b><br>
-                    <span style="color:green">${p.preco}€</span>
+                    ${temDesc ? 
+                        `<span style="color:#777; text-decoration:line-through; font-size:10px">${precoOriginal}€</span> 
+                         <b style="color:var(--err); font-size:14px">${precoFinal}€</b>` : 
+                        `<b style="color:var(--ok); font-size:14px">${precoFinal}€</b>`
+                    }
                     <div style="margin-top:4px">
                         ${p.tipo_tag !== 'normal' ? `<span class="tag-info">${p.tipo_tag}</span>` : ''}
                     </div>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
-    // --- FUNÇÃO SALVAR ATUALIZADA PARA SUPORTAR TROCA DE IMAGEM ---
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-foto').files[0];
@@ -226,7 +253,6 @@
             loja_id: lojaAtiva.id
         };
 
-        // Se houver uma nova foto selecionada, fazemos o upload
         if (file) {
             const path = `p_${Date.now()}.webp`;
             await _sb.storage.from('produtos').upload(path, file);
@@ -235,10 +261,8 @@
         }
 
         if(id) {
-            // Edição: Só enviamos imagem_url se uma nova foto foi carregada
             await _sb.from('produtos').update(dados).eq('id', id);
         } else {
-            // Novo: Foto é obrigatória
             if(!file) return alert("Falta a foto!");
             await _sb.from('produtos').insert([dados]);
         }
@@ -254,7 +278,6 @@
         else { alert("Erro ao atualizar"); }
     }
 
-    // --- FUNÇÃO PREPARAR EDIÇÃO AJUSTADA ---
     function prepararEdicao(p) {
         document.getElementById('form-title').innerText = "✏️ Editar Produto";
         document.getElementById('edit-id').value = p.id;
@@ -263,11 +286,8 @@
         document.getElementById('p-desc').value = p.desconto_percent;
         document.getElementById('p-tipo').value = p.tipo_tag;
         document.getElementById('btn-cancel').classList.remove('hidden');
-        
-        // Mantemos a área da foto visível para permitir a troca
         document.getElementById('foto-input-area').classList.remove('hidden');
         document.getElementById('label-foto').innerText = "Mudar Foto (Opcional):";
-        
         window.scrollTo(0,0);
     }
 
@@ -281,7 +301,7 @@
         document.getElementById('p-nome').value = "";
         document.getElementById('p-preco').value = "";
         document.getElementById('p-desc').value = "";
-        document.getElementById('p-foto').value = ""; // Limpa o ficheiro selecionado
+        document.getElementById('p-foto').value = "";
         document.getElementById('btn-cancel').classList.add('hidden');
         document.getElementById('label-foto').innerText = "Tirar Foto / Carregar (WebP automático):";
         document.getElementById('form-title').innerText = "📸 Publicar Novo Produto";
