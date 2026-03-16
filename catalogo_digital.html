@@ -6,42 +6,51 @@
     <title>Catálogo | Portugal Vision</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #1d3557; --s: #457b9d; --ok: #25d366; --err: #e63946; --gray: #f8f9fa; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gray); margin: 0; padding: 0; padding-bottom: 80px; }
+        :root { --p: #1d3557; --s: #457b9d; --ok: #25d366; --err: #e63946; --gray: #f4f4f9; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding: 0; padding-bottom: 100px; color: #333; }
         
-        /* Header Refinado */
-        .header { background: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .logo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px; background: #fff; }
-        h2 { margin: 10px 0 5px; color: var(--p); font-size: 1.4em; }
+        /* Header Estilo Website */
+        .header { background: white; padding: 40px 20px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.08); border-bottom: 3px solid var(--p); }
+        .logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--p); padding: 3px; background: white; margin-bottom: 15px; }
+        .header h2 { margin: 5px 0; color: var(--p); font-size: 1.6em; text-transform: uppercase; letter-spacing: 1px; }
+        .morada { color: #666; font-size: 0.9em; display: block; max-width: 300px; margin: 5px auto; line-height: 1.4; }
 
-        /* Grid de Produtos */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 15px; max-width: 1000px; margin: auto; }
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s; }
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #eee; }
-        .info { padding: 12px; text-align: center; }
-        .info strong { display: block; color: #333; font-size: 0.95em; margin-bottom: 5px; height: 2.4em; overflow: hidden; }
-        .price { color: var(--p); font-weight: 800; font-size: 1.1em; display: block; margin-bottom: 10px; }
+        /* Grid e Cartões Profissionais */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 20px; padding: 25px; max-width: 1100px; margin: auto; }
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; display: flex; flex-direction: column; }
+        .img-container { position: relative; width: 100%; aspect-ratio: 1/1; background: #eee; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Badge de Status (Novidade/Promo) */
+        .badge { position: absolute; top: 10px; right: 10px; background: var(--p); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7em; font-weight: bold; }
 
-        /* Botão WhatsApp Fixo */
+        .info { padding: 15px; text-align: center; flex-grow: 1; }
+        .info strong { display: block; color: #222; font-size: 1em; margin-bottom: 8px; min-height: 2.5em; }
+        .price { color: var(--p); font-weight: 800; font-size: 1.2em; display: block; }
+
+        /* Botão WhatsApp */
         .btn-wpp { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--ok); color: white; padding: 15px 30px; border-radius: 50px;
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: var(--ok); color: white; padding: 18px 35px; border-radius: 50px;
             text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3); z-index: 100; width: 80%; max-width: 300px; justify-content: center;
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4); z-index: 1000; width: 85%; max-width: 320px; justify-content: center;
+            transition: 0.3s;
         }
+        .btn-wpp:active { transform: translateX(-50%) scale(0.95); }
     </style>
 </head>
 <body>
 
 <div id="loja-header" class="header">
-    <img id="v-logo" class="logo" src="https://via.placeholder.com/100" style="display:none;">
-    <h2 id="v-nome">A carregar catálogo...</h2>
+    <img id="v-logo" class="logo" src="" style="display:none;">
+    <h2 id="v-nome">A carregar...</h2>
+    <span id="v-morada" class="morada"></span>
 </div>
 
 <div id="lista-produtos" class="grid"></div>
 
 <a id="btn-whatsapp" href="#" class="btn-wpp" style="display: none;" onclick="registarClique()">
-    <span>Falar no WhatsApp</span>
+    <span>Encomendar via WhatsApp</span>
 </a>
 
 <script>
@@ -54,42 +63,39 @@
         const slug = urlParams.get('loja');
         
         if (!slug) {
-            document.getElementById('v-nome').innerText = "Loja não encontrada";
+            document.getElementById('v-nome').innerText = "Catálogo Indisponível";
             return;
         }
 
-        // 1. Procurar a Loja
-        const { data: loja, error } = await _sb.from('lojas').select('*').eq('slug', slug).single();
+        const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
         
         if (loja) {
             lojaAtual = loja;
             document.getElementById('v-nome').innerText = loja.nome_loja;
-            document.title = loja.nome_loja + " | Portugal Vision";
+            document.getElementById('v-morada').innerText = loja.morada || ""; // Adiciona a morada do banco de dados
+            document.title = `${loja.nome_loja} | Catálogo Online`;
             
-            // Mostrar logo se existir
             if (loja.url_logo) {
                 const logoImg = document.getElementById('v-logo');
                 logoImg.src = loja.url_logo;
                 logoImg.style.display = 'inline-block';
             }
 
-            // Configurar Botão WhatsApp
             const btnWpp = document.getElementById('btn-whatsapp');
-            btnWpp.href = `https://wa.me/${loja.whatsapp}?text=Olá! Vi o vosso catálogo no Portugal Vision e gostaria de mais informações.`;
+            btnWpp.href = `https://wa.me/${loja.whatsapp}?text=Olá! Gostaria de fazer um pedido do catálogo Portugal Vision.`;
             btnWpp.style.display = 'flex';
 
-            // 2. Registar Visita (Métrica)
-            await _sb.from('metricas_cliques').insert([
-                { loja_id: loja.id, tipo: 'view_loja' }
-            ]);
-
-            // 3. Carregar Produtos
             const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id).order('created_at', { ascending: false });
             
             if (produtos && produtos.length > 0) {
                 document.getElementById('lista-produtos').innerHTML = produtos.map(p => `
                     <div class="card">
-                        <img src="${p.url_foto || 'https://via.placeholder.com/300'}" alt="${p.nome_artigo}">
+                        ${p.etiquetas ? `<div class="badge">${p.etiquetas}</div>` : ''}
+                        <div class="img-container">
+                            <img src="${p.url_foto || ''}" 
+                                 onerror="this.src='https://via.placeholder.com/300?text=Produto+Sem+Foto'" 
+                                 alt="${p.nome_artigo}">
+                        </div>
                         <div class="info">
                             <strong>${p.nome_artigo}</strong>
                             <span class="price">${p.preco}€</span>
@@ -97,19 +103,14 @@
                     </div>
                 `).join('');
             } else {
-                document.getElementById('lista-produtos').innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Ainda não existem produtos disponíveis.</p>";
+                document.getElementById('lista-produtos').innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Brevemente novidades!</p>";
             }
-        } else {
-            document.getElementById('v-nome').innerText = "Loja não encontrada.";
         }
     }
 
-    // Função para registar o clique no WhatsApp antes de abrir a app
     async function registarClique() {
         if (lojaAtual) {
-            await _sb.from('metricas_cliques').insert([
-                { loja_id: lojaAtual.id, tipo: 'click_whatsapp' }
-            ]);
+            await _sb.from('metricas_cliques').insert([{ loja_id: lojaAtual.id, tipo: 'click_whatsapp' }]);
         }
     }
 
