@@ -6,22 +6,22 @@
     <title>Catálogo | Portugal Vision</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #1d3557; --s: #457b9d; --ok: #25d366; --err: #e63946; --gray: #f4f4f9; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding: 0; padding-bottom: 100px; color: #333; }
+        :root { --p: #1d3557; --s: #457b9d; --ok: #25d366; --gray: #f4f4f9; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding-bottom: 100px; }
         
         .header { background: white; padding: 30px 20px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.08); border-bottom: 3px solid var(--p); }
-        .logo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--p); padding: 2px; background: white; margin-bottom: 10px; }
+        .logo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--p); margin-bottom: 10px; background: white; }
         .header h2 { margin: 5px 0; color: var(--p); font-size: 1.5em; text-transform: uppercase; }
-        .morada { color: #666; font-size: 0.85em; display: block; max-width: 80%; margin: 0 auto; line-height: 1.4; }
+        .morada { color: #666; font-size: 0.85em; display: block; margin-top: 5px; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 20px; max-width: 1000px; margin: auto; }
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .img-container { width: 100%; aspect-ratio: 1/1; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; }
+        .img-container { width: 100%; aspect-ratio: 1/1; background: #eee; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         
         .info { padding: 12px; text-align: center; }
         .info strong { display: block; color: #222; font-size: 0.95em; margin-bottom: 5px; min-height: 2.2em; }
-        .price { color: var(--p); font-weight: 800; font-size: 1.1em; display: block; }
+        .price { color: var(--p); font-weight: 800; font-size: 1.1em; }
 
         .btn-wpp { 
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -33,7 +33,7 @@
 </head>
 <body>
 
-<div id="loja-header" class="header">
+<div class="header">
     <img id="v-logo" class="logo" src="" style="display:none;">
     <h2 id="v-nome">A carregar...</h2>
     <span id="v-morada" class="morada"></span>
@@ -41,7 +41,7 @@
 
 <div id="lista-produtos" class="grid"></div>
 
-<a id="btn-whatsapp" href="#" class="btn-wpp" style="display: none;" onclick="registarClique()">
+<a id="btn-whatsapp" href="#" class="btn-wpp" style="display: none;">
     <span>Encomendar via WhatsApp</span>
 </a>
 
@@ -52,54 +52,44 @@
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
         
-        if (!slug) {
-            document.getElementById('v-nome').innerText = "Loja não encontrada";
-            return;
-        }
+        if (!slug) return;
 
-        // Buscar dados da loja
-        const { data: loja, error: erroLoja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
+        // Tenta buscar a loja pelo slug
+        const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
         
-        if (erroLoja || !loja) {
-            console.error("Erro ao carregar loja:", erroLoja);
-            document.getElementById('v-nome').innerText = "Loja não encontrada";
-            return;
-        }
+        if (loja) {
+            // Mapeamento flexível de nomes (caso a coluna seja 'nome' ou 'nome_loja')
+            document.getElementById('v-nome').innerText = loja.nome_loja || loja.nome || "Portugal Vision";
+            document.getElementById('v-morada').innerText = loja.morada || loja.endereco || "";
+            
+            if (loja.url_logo) {
+                const logoImg = document.getElementById('v-logo');
+                logoImg.src = loja.url_logo;
+                logoImg.style.display = 'inline-block';
+            }
 
-        // Preencher cabeçalho com segurança (sem undefined)
-        document.getElementById('v-nome').innerText = loja.nome_loja || "Portugal Vision";
-        document.getElementById('v-morada').innerText = loja.morada || "";
-        
-        if (loja.url_logo) {
-            const logoImg = document.getElementById('v-logo');
-            logoImg.src = loja.url_logo;
-            logoImg.style.display = 'inline-block';
-        }
+            const btnWpp = document.getElementById('btn-whatsapp');
+            btnWpp.href = `https://wa.me/${loja.whatsapp}?text=Olá! Vi o vosso catálogo.`;
+            btnWpp.style.display = 'flex';
 
-        const btnWpp = document.getElementById('btn-whatsapp');
-        btnWpp.href = `https://wa.me/${loja.whatsapp}?text=Olá! Vi o catálogo e gostaria de informações.`;
-        btnWpp.style.display = 'flex';
-
-        // Buscar produtos
-        const { data: produtos, error: erroProdutos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id);
-        
-        const lista = document.getElementById('lista-produtos');
-        if (produtos && produtos.length > 0) {
-            lista.innerHTML = produtos.map(p => `
-                <div class="card">
-                    <div class="img-container">
-                        <img src="${p.url_foto || ''}" 
-                             onerror="this.src='https://via.placeholder.com/300?text=Sem+Foto'" 
-                             alt="${p.nome_artigo || 'Produto'}">
+            // Carregar produtos daquela loja
+            const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id);
+            
+            if (produtos && produtos.length > 0) {
+                document.getElementById('lista-produtos').innerHTML = produtos.map(p => `
+                    <div class="card">
+                        <div class="img-container">
+                            <img src="${p.url_foto || p.imagem || ''}" 
+                                 onerror="this.src='https://via.placeholder.com/300?text=Sem+Foto'" 
+                                 alt="${p.nome_artigo || p.nome || 'Produto'}">
+                        </div>
+                        <div class="info">
+                            <strong>${p.nome_artigo || p.nome || 'Sem nome'}</strong>
+                            <span class="price">${p.preco || '0.00'}€</span>
+                        </div>
                     </div>
-                    <div class="info">
-                        <strong>${p.nome_artigo || 'Sem nome'}</strong>
-                        <span class="price">${p.preco ? p.preco + '€' : 'Sob consulta'}</span>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            lista.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Sem produtos disponíveis de momento.</p>";
+                `).join('');
+            }
         }
     }
 
