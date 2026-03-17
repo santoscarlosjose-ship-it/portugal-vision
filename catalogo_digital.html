@@ -6,7 +6,7 @@
     <title>Catálogo | Portugal Vision</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #1d3557; --s: #457b9d; --ok: #25d366; --gray: #f4f4f9; }
+        :root { --p: #1d3557; --s: #457b9d; --ok: #25d366; --err: #e63946; --gray: #f4f4f9; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding-bottom: 100px; }
         
         .header { background: white; padding: 30px 20px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.08); border-bottom: 3px solid var(--p); }
@@ -15,12 +15,23 @@
         .morada { color: #666; font-size: 0.85em; display: block; margin-top: 5px; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 20px; max-width: 1000px; margin: auto; }
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; }
-        .img-container { width: 100%; aspect-ratio: 1/1; background: #eee; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; }
+        .img-container { width: 100%; aspect-ratio: 1/1; background: #eee; position: relative; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         
+        /* Estilos das Etiquetas */
+        .badge-tag { position: absolute; top: 8px; left: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: white; z-index: 5; text-transform: uppercase; }
+        .tag-promo { background: var(--err); }
+        .tag-novo { background: #f39c12; }
+        .tag-destaque { background: var(--p); }
+        .tag-hoje { background: #9b59b6; }
+        .tag-normal { display: none; }
+
         .info { padding: 12px; text-align: center; }
         .info strong { display: block; color: #222; font-size: 0.95em; margin-bottom: 5px; min-height: 2.2em; }
+        
+        .price-area { display: flex; flex-direction: column; align-items: center; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 0.85em; }
         .price { color: var(--p); font-weight: 800; font-size: 1.1em; }
 
         .btn-wpp { 
@@ -48,47 +59,74 @@
 <script>
     const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
 
+    const tagNomes = {
+        'promo': 'Promoção',
+        'novo': 'Novidade',
+        'destaque': 'Destaque',
+        'hoje': 'Produto do Dia',
+        'normal': ''
+    };
+
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
-        
         if (!slug) return;
 
-        // Tenta buscar a loja pelo slug
         const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
         
         if (loja) {
-            // Mapeamento flexível de nomes (caso a coluna seja 'nome' ou 'nome_loja')
-            document.getElementById('v-nome').innerText = loja.nome_loja || loja.nome || "Portugal Vision";
-            document.getElementById('v-morada').innerText = loja.morada || loja.endereco || "";
+            document.getElementById('v-nome').innerText = loja.nome;
+            document.getElementById('v-morada').innerText = loja.morada || "";
             
-            if (loja.url_logo) {
+            if (loja.logo_url) {
                 const logoImg = document.getElementById('v-logo');
-                logoImg.src = loja.url_logo;
+                logoImg.src = loja.logo_url;
                 logoImg.style.display = 'inline-block';
             }
 
             const btnWpp = document.getElementById('btn-whatsapp');
-            btnWpp.href = `https://wa.me/${loja.whatsapp}?text=Olá! Vi o vosso catálogo.`;
+            // Remove espaços e caracteres do telefone para o link
+            const telLimpo = (loja.telefone || "").replace(/\s/g, "");
+            btnWpp.href = `https://wa.me/${telLimpo}?text=Olá! Vi o vosso catálogo digital e gostaria de obter mais informações.`;
             btnWpp.style.display = 'flex';
 
-            // Carregar produtos daquela loja
-            const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id);
+            // Carregar apenas produtos não ocultos
+            const { data: produtos } = await _sb.from('produtos')
+                .select('*')
+                .eq('loja_id', loja.id)
+                .eq('oculto', false)
+                .order('created_at', {ascending: false});
             
             if (produtos && produtos.length > 0) {
-                document.getElementById('lista-produtos').innerHTML = produtos.map(p => `
-                    <div class="card">
-                        <div class="img-container">
-                            <img src="${p.url_foto || p.imagem || ''}" 
-                                 onerror="this.src='https://via.placeholder.com/300?text=Sem+Foto'" 
-                                 alt="${p.nome_artigo || p.nome || 'Produto'}">
+                document.getElementById('lista-produtos').innerHTML = produtos.map(p => {
+                    const precoBase = parseFloat(p.preco) || 0;
+                    const desc = parseInt(p.desconto_percent) || 0;
+                    const precoFinal = desc > 0 ? (precoBase * (1 - desc / 100)).toFixed(2) : precoBase.toFixed(2);
+                    
+                    // Tratamento da etiqueta
+                    const tagKey = Array.isArray(p.tipo_tag) ? p.tipo_tag[0] : p.tipo_tag;
+                    const tagLabel = tagNomes[tagKey] || "";
+
+                    return `
+                        <div class="card">
+                            ${tagLabel ? `<div class="badge-tag tag-${tagKey}">${tagLabel}</div>` : ''}
+                            <div class="img-container">
+                                <img src="${p.imagem_url || ''}" 
+                                     onerror="this.src='https://via.placeholder.com/300?text=Sem+Foto'" 
+                                     alt="${p.nome}">
+                            </div>
+                            <div class="info">
+                                <strong>${p.nome || 'Sem nome'}</strong>
+                                <div class="price-area">
+                                    ${desc > 0 ? `<span class="old-price">${precoBase.toFixed(2)}€</span>` : ''}
+                                    <span class="price">${precoFinal}€</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="info">
-                            <strong>${p.nome_artigo || p.nome || 'Sem nome'}</strong>
-                            <span class="price">${p.preco || '0.00'}€</span>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('lista-produtos').innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:#999;'>Nenhum produto disponível de momento.</p>";
             }
         }
     }
