@@ -75,14 +75,18 @@
         </div>
 
         <div id="f-reset" class="hidden">
-            <p style="font-size: 12px; color: #666; text-align: center;">Valide os dados para recuperar a sua password.</p>
+            <p style="font-size: 12px; color: #666; text-align: center;">Introduza o seu e-mail para receber um link de recuperação seguro.</p>
             <input type="email" id="reset-email" placeholder="E-mail da Conta">
-            <input type="text" id="reset-nif" placeholder="NIF Registado">
-            <button style="background:var(--s)" onclick="recuperarAcesso()">VERIFICAR DADOS</button>
+            <button style="background:var(--s)" onclick="solicitarRecuperacao()">ENVIAR E-MAIL DE RECUPERAÇÃO</button>
             <div id="result-recuperacao" class="hidden" style="margin-top:15px; padding:10px; background:#f0f7ff; border-radius:10px; font-size:13px; border:1px solid var(--s); text-align: center;">
-                <strong>A sua password é:</strong> <br>
-                <span id="txt-pass-recuperada" style="font-size:18px; color:var(--p); font-weight:bold;">---</span>
+                <span id="txt-status-envio" style="color:var(--p); font-weight:bold;">Verifique a sua caixa de entrada.</span>
             </div>
+        </div>
+
+        <div id="f-new-pass" class="hidden">
+            <p style="font-size: 12px; color: #666; text-align: center;">Defina a sua nova password.</p>
+            <input type="password" id="new-pass" placeholder="Nova Password">
+            <button style="background:var(--ok)" onclick="atualizarPasswordFinal()">GUARDAR NOVA PASSWORD</button>
         </div>
     </div>
 
@@ -195,6 +199,7 @@
         document.getElementById('f-login').classList.toggle('hidden', m !== 'login');
         document.getElementById('f-reg').classList.toggle('hidden', m !== 'reg');
         document.getElementById('f-reset').classList.toggle('hidden', m !== 'reset');
+        document.getElementById('f-new-pass').classList.add('hidden');
         
         document.getElementById('t-login').classList.toggle('active', m === 'login');
         document.getElementById('t-reg').classList.toggle('active', m === 'reg');
@@ -202,19 +207,44 @@
         document.getElementById('result-recuperacao').classList.add('hidden');
     }
 
-    async function recuperarAcesso() {
+    // NOVA LÓGICA DE RECUPERAÇÃO VIA E-MAIL
+    async function solicitarRecuperacao() {
         const email = document.getElementById('reset-email').value;
-        const nif = document.getElementById('reset-nif').value;
-        if (!email || !nif) return alert("Preencha e-mail e NIF.");
+        if (!email) return alert("Por favor, introduza o seu e-mail.");
 
-        const { data, error } = await _sb.from('lojas').select('password').eq('email', email).eq('nif', nif).maybeSingle();
-        if (data) {
-            document.getElementById('result-recuperacao').classList.remove('hidden');
-            document.getElementById('txt-pass-recuperada').innerText = data.password;
+        const { error } = await _sb.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.href, 
+        });
+
+        if (error) {
+            alert("Erro: " + error.message);
         } else {
-            alert("Dados não encontrados.");
+            document.getElementById('result-recuperacao').classList.remove('hidden');
+            document.getElementById('txt-status-envio').innerText = "E-mail enviado! Verifique a sua caixa de entrada.";
         }
     }
+
+    // Função para atualizar a password final após clicar no link do e-mail
+    async function atualizarPasswordFinal() {
+        const newPass = document.getElementById('new-pass').value;
+        if (newPass.length < 6) return alert("A password deve ter pelo menos 6 caracteres.");
+
+        const { error } = await _sb.auth.updateUser({ password: newPass });
+        if (error) {
+            alert("Erro ao atualizar: " + error.message);
+        } else {
+            alert("Password atualizada com sucesso! Já pode entrar.");
+            location.reload();
+        }
+    }
+
+    // Verificar se o utilizador veio de um link de recuperação (hash na URL)
+    window.onload = () => {
+        if (window.location.hash.includes("type=recovery")) {
+            selTab('none');
+            document.getElementById('f-new-pass').classList.remove('hidden');
+        }
+    };
 
     async function registar() {
         const nome = document.getElementById('r-nome').value;
@@ -224,6 +254,8 @@
         const nif = document.getElementById('r-nif').value;
         const slug = nome.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
+        // Para Portugal Vision, usamos a tabela 'lojas' para guardar dados extra, 
+        // mas o ideal no futuro é usar o _sb.auth.signUp para segurança máxima.
         const { data, error } = await _sb.from('lojas').insert([{ nome, email, password: pass, telefone: zap, nif, slug }]).select().single();
         if(!error) { alert("Conta criada!"); selTab('login'); }
         else { alert("Erro ao registar."); }
