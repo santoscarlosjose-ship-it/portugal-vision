@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <title>Montra Digital | Portugal Vision</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; cursor: pointer; }
         
         #slider { width: 100%; height: 100%; position: relative; }
 
@@ -30,7 +34,7 @@
         .overlay { 
             position: absolute; bottom: 0; left: 0; right: 0; 
             background: linear-gradient(transparent, rgba(0,0,0,0.9) 80%); 
-            color: white; padding: 100px 50px 120px; /* Padding extra para não chocar com o rodapé */
+            color: white; padding: 100px 50px 120px;
             z-index: 20;
             transform: translateY(20px);
             transition: transform 1.5s ease-out;
@@ -53,7 +57,6 @@
             animation: pulse 2s infinite;
         }
 
-        /* Rodapé Legal Português */
         .legal-footer {
             position: absolute; bottom: 0; left: 0; right: 0;
             background: rgba(0, 0, 0, 0.6);
@@ -72,7 +75,6 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-
     </style>
 </head>
 <body>
@@ -87,6 +89,15 @@
     <script>
         const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
         let currentIndex = 0;
+
+        // Função para ativar Ecrã Inteiro ao clicar
+        document.body.addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Erro ao ativar Fullscreen: ${err.message}`);
+                });
+            }
+        });
 
         async function initDigitalBox() {
             const urlParams = new URLSearchParams(window.location.search);
