@@ -89,62 +89,76 @@
     <script>
         const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
         let currentIndex = 0;
+        let lastDataHash = ""; // Armazena o estado anterior dos dados
 
-        // Função para ativar Ecrã Inteiro ao clicar
-        document.body.addEventListener('click', function() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Erro ao ativar Fullscreen: ${err.message}`);
-                });
-            }
+        // Ativar Fullscreen ao clicar
+        document.body.addEventListener('click', () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
         });
 
-        async function initDigitalBox() {
+        async function updateDigitalBox() {
             const urlParams = new URLSearchParams(window.location.search);
             const slug = urlParams.get('loja');
             if (!slug) return;
 
+            // Busca os dados da loja e produtos
             const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
-            
             if (loja) {
                 const { data: produtos } = await _sb.from('produtos')
                     .select('*')
                     .eq('loja_id', loja.id)
                     .eq('oculto', false);
 
-                if (!produtos || produtos.length === 0) return;
+                if (!produtos) return;
 
-                const slider = document.getElementById('slider');
-                slider.innerHTML = produtos.map((p, i) => {
-                    const preco = parseFloat(p.preco) || 0;
-                    const desc = parseInt(p.desconto_percent) || 0;
-                    const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
-
-                    return `
-                        <div class="slide ${i === 0 ? 'active' : ''}">
-                            <img src="${p.imagem_url || ''}" onerror="this.src='https://via.placeholder.com/1920x1080?text=Portugal+Vision'">
-                            ${desc > 0 ? `<div class="promo-badge">-${desc}%</div>` : ''}
-                            <div class="overlay">
-                                <p>${loja.nome}</p>
-                                <h1>${p.nome}</h1>
-                                <h2>${final}€ ${desc > 0 ? `<span style="font-size:0.4em; text-decoration:line-through; opacity:0.5; margin-left:15px;">${preco.toFixed(2)}€</span>` : ''}</h2>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                const slidesElements = document.querySelectorAll('.slide');
-                if (slidesElements.length > 1) {
-                    setInterval(() => {
-                        slidesElements[currentIndex].classList.remove('active');
-                        currentIndex = (currentIndex + 1) % slidesElements.length;
-                        slidesElements[currentIndex].classList.add('active');
-                    }, 8000);
+                // Verifica se os dados mudaram (compara como string JSON)
+                const currentDataHash = JSON.stringify(produtos);
+                if (currentDataHash !== lastDataHash) {
+                    lastDataHash = currentDataHash;
+                    renderSlides(produtos, loja.nome);
                 }
             }
         }
 
-        initDigitalBox();
+        function renderSlides(produtos, nomeLoja) {
+            const slider = document.getElementById('slider');
+            const totalProdutos = produtos.length;
+            
+            // Ajusta o currentIndex se o número de produtos diminuir
+            if (currentIndex >= totalProdutos) currentIndex = 0;
+
+            slider.innerHTML = produtos.map((p, i) => {
+                const preco = parseFloat(p.preco) || 0;
+                const desc = parseInt(p.desconto_percent) || 0;
+                const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
+
+                return `
+                    <div class="slide ${i === currentIndex ? 'active' : ''}">
+                        <img src="${p.imagem_url || ''}" onerror="this.src='https://via.placeholder.com/1920x1080?text=Portugal+Vision'">
+                        ${desc > 0 ? `<div class="promo-badge">-${desc}%</div>` : ''}
+                        <div class="overlay">
+                            <p>${nomeLoja}</p>
+                            <h1>${p.nome}</h1>
+                            <h2>${final}€ ${desc > 0 ? `<span style="font-size:0.4em; text-decoration:line-through; opacity:0.5; margin-left:15px;">${preco.toFixed(2)}€</span>` : ''}</h2>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length > 1) {
+                slides[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % slides.length;
+                slides[currentIndex].classList.add('active');
+            }
+        }
+
+        // Configuração dos intervalos
+        updateDigitalBox(); // Carga inicial
+        setInterval(nextSlide, 8000); // Muda o slide a cada 8 segundos
+        setInterval(updateDigitalBox, 30000); // Verifica novos produtos a cada 30 segundos
     </script>
 </body>
 </html>
