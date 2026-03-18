@@ -58,9 +58,9 @@
         .legal-links a { color: #95a5a6; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; }
         .legal-links a:hover { color: var(--p); }
         
-        /* Ajuste do Livro de Reclamações */
-        .complaints-book { margin: 20px 0; display: block; }
-        .complaints-book img { height: 45px; width: auto; transition: 0.3s; display: inline-block; }
+        .complaints-book { margin: 25px 0; }
+        .complaints-book img { height: 50px; width: auto; transition: 0.3s; filter: grayscale(0.2); }
+        .complaints-book img:hover { filter: grayscale(0); transform: scale(1.05); }
 
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
         .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 700px; max-height: 80vh; overflow-y: auto; position: relative; text-align: left; line-height: 1.6; }
@@ -111,8 +111,10 @@
         </ul>
         
         <div class="complaints-book">
-            <a href="https://www.livroreclamacoes.pt" target="_blank">
-                <img src="https://www.livroreclamacoes.pt/assets/img/logo-livro-reclamacoes.png" alt="Livro de Reclamações" onerror="this.src='https://raw.githubusercontent.com/pjandrade/livro-reclamacoes/master/logo-livro-reclamacoes.png'">
+            <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">
+                <img src="https://www.livroreclamacoes.pt/assets/img/logo-livro-reclamacoes.png" 
+                     alt="Livro de Reclamações" 
+                     onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_6uY6f0h7_P7X-I2YmB2l-tE5Z37T9Y7f-A&s'">
             </a>
         </div>
         
@@ -132,20 +134,17 @@
     const legalTexts = {
         termos: `
             <h3>Termos e Condições</h3>
-            <p><strong>1. Natureza do Serviço:</strong> A Portugal Vision atua exclusivamente como Prestador de Serviço Intermediário, nos termos do <strong>Artigo 12.º do Decreto-Lei n.º 7/2004</strong>.</p>
-            <p><strong>2. Exclusão de Responsabilidade:</strong> A Portugal Vision não é proprietária nem vende os produtos listados. A responsabilidade por transações e garantias é <strong>exclusiva do lojista</strong>.</p>
-            <p><strong>3. Reservas:</strong> O catálogo apenas facilita o contacto via WhatsApp. Não processamos pagamentos nem garantimos stock.</p>
-            <p><strong>4. Litígios:</strong> O consumidor pode recorrer a entidades RAL para resolução de conflitos diretamente com o lojista vendedor.</p>
+            <p><strong>1. Natureza do Serviço:</strong> A Portugal Vision atua exclusivamente como Prestador de Serviço Intermediário, nos termos do <strong>Artigo 12.º do Decreto-Lei n.º 7/2004</strong>. Este catálogo é uma plataforma de exposição para lojistas.</p>
+            <p><strong>2. Responsabilidade:</strong> A Portugal Vision não é responsável pelo cumprimento das obrigações contratuais, stock, entrega ou qualidade dos produtos. Essa responsabilidade recai inteiramente sobre o lojista.</p>
+            <p><strong>3. Reservas:</strong> A reserva via WhatsApp é um contacto direto com o lojista e só é validada após confirmação do mesmo.</p>
         `,
         privacidade: `
             <h3>Política de Privacidade</h3>
-            <p><strong>Responsável:</strong> Portugal Vision.</p>
-            <p><strong>Dados:</strong> Em conformidade com o <strong>RGPD</strong>, não armazenamos dados pessoais identificáveis. Métricas de clique são anónimas.</p>
-            <p><strong>WhatsApp:</strong> Ao contactar o lojista, a privacidade da conversa é gerida pela plataforma WhatsApp e pelo lojista, sem intervenção da Portugal Vision.</p>
+            <p>Não recolhemos dados sensíveis. Os contactos via WhatsApp são privados entre o cliente e o lojista. Utilizamos métricas anónimas para melhorar a plataforma.</p>
         `,
         cookies: `
             <h3>Política de Cookies</h3>
-            <p>Utilizamos cookies técnicos essenciais e analíticos anónimos para melhorar a experiência do catálogo. Não utilizamos cookies de rastreio publicitário.</p>
+            <p>Usamos apenas cookies técnicos essenciais para o funcionamento e cookies analíticos anónimos via Supabase.</p>
         `
     };
 
@@ -166,7 +165,7 @@
         if (!idDaLoja) return;
         try {
             await _sb.from('metricas_cliques').insert([{ loja_id: idDaLoja, tipo: tipo }]);
-        } catch (e) { console.error("Erro ao registar métrica", e); }
+        } catch (e) { console.error("Erro métrica", e); }
     }
 
     async function init() {
@@ -213,16 +212,15 @@
             const desc = parseInt(p.desconto_percent) || 0;
             const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
             
-            // CORREÇÃO WHATSAPP: Texto limpo e link no final para gerar pré-visualização
-            const imgUrl = p.imagem_url || '';
-            const textoWpp = `Olá, vi o seu produto ${p.nome}, gostaria de reservar? \n\n${imgUrl}`;
+            // WHATSAPP: Apenas texto, sem link de imagem
+            const textoWpp = `Olá, gostaria de reservar o produto: ${p.nome}`;
             const msg = encodeURIComponent(textoWpp);
             const wppUrl = `https://wa.me/${whatsappLoja}?text=${msg}`;
 
             return `
                 <div class="card">
                     <div class="img-container">
-                        <img src="${imgUrl}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Portugal+Vision'">
+                        <img src="${p.imagem_url || ''}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Portugal+Vision'">
                     </div>
                     <div class="info">
                         <strong>${p.nome}</strong>
