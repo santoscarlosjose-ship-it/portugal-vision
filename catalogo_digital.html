@@ -53,26 +53,25 @@
         .google-maps { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
         .waze { background: #33ccff; color: white; }
 
-        /* Estilos Legais e Modais */
         .legal-footer { border-top: 1px solid #f0f0f0; padding-top: 25px; margin-top: 20px; }
         .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; list-style: none; padding: 0; margin-bottom: 20px; }
         .legal-links a { color: #95a5a6; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; }
         .legal-links a:hover { color: var(--p); }
         
-        .complaints-book img { height: 45px; transition: 0.3s; filter: grayscale(0.2); }
-        .complaints-book img:hover { filter: grayscale(0); transform: scale(1.05); }
+        .complaints-book img { height: 45px; transition: 0.3s; }
 
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
         .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 700px; max-height: 80vh; overflow-y: auto; position: relative; text-align: left; line-height: 1.6; }
         .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #999; }
-        .modal-content h3 { font-family: 'Playfair Display'; color: var(--p); margin-top: 0; }
+        .modal-content h3 { font-family: 'Playfair Display'; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        .modal-content p { font-size: 0.9em; color: #444; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div id="legalModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <span class="close-modal" onclick="closeModal()">×</span>
         <div id="modalText"></div>
     </div>
 </div>
@@ -110,8 +109,8 @@
         </ul>
         
         <div class="complaints-book">
-            <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">
-                <img src="https://www.livroreclamacoes.pt/assets/img/logo-livro-reclamacoes.png" alt="Livro de Reclamações Eletrónico" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Livro_de_Reclama%C3%A7%C3%B5es.png/320px-Livro_de_Reclama%C3%A7%C3%B5es.png'">
+            <a href="https://www.livroreclamacoes.pt" target="_blank">
+                <img src="https://www.livroreclamacoes.pt/assets/img/logo-livro-reclamacoes.png" alt="Livro de Reclamações" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Livro_de_Reclama%C3%A7%C3%B5es.png/320px-Livro_de_Reclama%C3%A7%C3%B5es.png'">
             </a>
         </div>
         
@@ -128,24 +127,23 @@
     let whatsappLoja = "";
     let idDaLoja = null;
 
-    // TEXTOS LEGAIS RECOMENDADOS
     const legalTexts = {
         termos: `
             <h3>Termos e Condições</h3>
-            <p>1. <strong>Âmbito:</strong> Este catálogo digital é uma plataforma de exposição de produtos da Portugal Vision.</p>
-            <p>2. <strong>Reservas:</strong> O clique em "Reservar" redireciona para o WhatsApp. A reserva só é confirmada após resposta direta da loja.</p>
-            <p>3. <strong>Preços:</strong> Todos os preços incluem IVA à taxa legal em vigor. Erros tipográficos podem ocorrer.</p>
-            <p>4. <strong>Litígios:</strong> Em caso de litígio, o consumidor pode recorrer a uma Entidade de Resolução Alternativa de Litígios de Consumo (RAL).</p>
+            <p><strong>1. Natureza do Serviço:</strong> A Portugal Vision atua exclusivamente como Prestador de Serviço Intermediário (Rede de Transmissão), nos termos do <strong>Artigo 12.º do Decreto-Lei n.º 7/2004</strong>. Este catálogo digital é uma plataforma de mera exposição e promoção de produtos de terceiros (lojistas).</p>
+            <p><strong>2. Exclusão de Responsabilidade:</strong> A Portugal Vision não é proprietária, não vende, não possui o stock e não entrega os produtos aqui listados. A responsabilidade por qualquer transação, garantia, defeito ou incumprimento contratual é <strong>exclusiva do lojista</strong> e do cliente final.</p>
+            <p><strong>3. Processo de Reserva:</strong> A funcionalidade "Reservar" redireciona o utilizador para o WhatsApp direto do lojista. A Portugal Vision não intervém na negociação, pagamento ou conclusão da venda.</p>
+            <p><strong>4. Informação de Preços:</strong> Os preços são indicativos e da inteira responsabilidade do lojista, incluindo o IVA aplicável. Nos termos do <strong>DL n.º 24/2014</strong>, o direito de livre resolução deve ser exercido diretamente junto do lojista vendedor.</p>
         `,
         privacidade: `
             <h3>Política de Privacidade</h3>
-            <p><strong>Responsável:</strong> Portugal Vision.</p>
-            <p><strong>Dados:</strong> Não recolhemos dados pessoais sensíveis neste catálogo, exceto métricas anónimas de visualização. Ao contactar via WhatsApp, os seus dados serão tratados apenas para a finalidade da reserva.</p>
-            <p><strong>Direitos:</strong> Tem o direito de acesso, retificação ou eliminação dos seus dados contactando-nos diretamente.</p>
+            <p><strong>Responsável pelo Tratamento:</strong> Portugal Vision.</p>
+            <p><strong>Recolha de Dados:</strong> Em conformidade com o <strong>RGPD</strong>, informamos que este catálogo não armazena dados pessoais dos visitantes, exceto métricas analíticas anónimas (IP e comportamento de clique) para fins estatísticos da plataforma.</p>
+            <p><strong>Interações via WhatsApp:</strong> Ao iniciar um contacto com o lojista, o utilizador partilha os seus dados voluntariamente com esse terceiro. A Portugal Vision não tem acesso nem armazena as conversas privadas entre cliente e lojista.</p>
         `,
         cookies: `
             <h3>Política de Cookies</h3>
-            <p>Este site utiliza apenas cookies técnicos essenciais para o funcionamento da plataforma e cookies analíticos anónimos (via Supabase) para medir o tráfego e popularidade dos produtos. Não utilizamos cookies para fins publicitários de terceiros.</p>
+            <p>Utilizamos apenas cookies estritamente necessários para a navegação e cookies de desempenho (via Supabase) que recolhem dados estatísticos agregados sem identificar o utilizador. Ao continuar a navegar, concorda com a nossa política de gestão mínima de dados.</p>
         `
     };
 
@@ -158,7 +156,6 @@
         document.getElementById('legalModal').style.display = 'none';
     }
 
-    // Fechar ao clicar fora do modal
     window.onclick = function(event) {
         if (event.target == document.getElementById('legalModal')) closeModal();
     }
