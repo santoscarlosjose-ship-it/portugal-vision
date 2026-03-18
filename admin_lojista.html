@@ -45,7 +45,6 @@
         .badge-desc { position: absolute; top: 8px; left: 8px; background: var(--err); color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 5px; z-index: 9; }
         .price-tag { font-size: 13px; font-weight: bold; color: var(--p); }
         .old-price { text-decoration: line-through; color: #999; font-size: 11px; margin-right: 4px; }
-        /* Estilo para o link de recuperação */
         .link-esqueceu { display: block; text-align: right; font-size: 12px; color: var(--s); text-decoration: none; margin-bottom: 10px; cursor: pointer; }
         .link-esqueceu:hover { text-decoration: underline; }
     </style>
@@ -181,7 +180,7 @@
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-    // Toda a lógica original de renderização e funções permanece abaixo
+    // Renderizar lista de horários
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
@@ -453,6 +452,35 @@
         const { error } = await _sb.from('lojas').insert([{ nome, email, password: pass, telefone: zap, nif, slug }]);
         if(!error) { alert("Conta criada com sucesso!"); selTab('login'); }
         else alert("Erro ao registar conta.");
+    }
+
+    async function solicitarRecuperacao() {
+        const email = document.getElementById('reset-email').value;
+        if(!email) return alert("Insira o seu email.");
+        const { data, error } = await _sb.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.href,
+        });
+        document.getElementById('result-recuperacao').classList.remove('hidden');
+        if(error) document.getElementById('txt-status-envio').innerText = "Erro: " + error.message;
+    }
+
+    // Lógica para detectar retorno do email de reset
+    window.addEventListener('hashchange', () => {
+        if(window.location.hash.includes('type=recovery')) {
+            selTab('new-pass');
+            document.getElementById('f-new-pass').classList.remove('hidden');
+        }
+    });
+
+    async function atualizarPasswordFinal() {
+        const newPass = document.getElementById('new-pass').value;
+        const { error } = await _sb.auth.updateUser({ password: newPass });
+        if(!error) {
+            alert("Password atualizada!");
+            location.reload();
+        } else {
+            alert("Erro ao atualizar: " + error.message);
+        }
     }
 </script>
 </body>
