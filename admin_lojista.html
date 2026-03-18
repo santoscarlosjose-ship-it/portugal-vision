@@ -40,7 +40,7 @@
         .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .hidden { display: none !important; }
         .badge-desc { position: absolute; top: 8px; left: 8px; background: var(--err); color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 5px; z-index: 9; }
         .price-tag { font-size: 13px; font-weight: bold; color: var(--p); }
@@ -112,17 +112,6 @@
                 <div class="stat-card">Visitas <b id="s-views">0</b></div>
                 <div class="stat-card">WhatsApp <b id="s-waps">0</b></div>
             </div>
-
-            <div class="qr-section">
-                <small>Link do seu Catálogo Digital:</small>
-                <div class="link-box">
-                    <input type="text" id="link-catalogo" readonly style="font-size: 11px; height: 35px;">
-                    <button onclick="copiarLink()" style="width:80px; height:35px; font-size:11px; background:var(--s)">Copiar</button>
-                </div>
-                <img id="img-qrcode" src="" alt="QR Code">
-                <br>
-                <a id="download-qr" href="#" download="meu-qr-catalogo.png" style="font-size:11px; color:var(--s); text-decoration:none;">💾 Descarregar QR Code</a>
-            </div>
         </div>
 
         <div class="card">
@@ -153,6 +142,17 @@
 
         <div class="section-title"><h3>📦 Minha Montra</h3></div>
         <div id="grid-prods" class="grid"></div>
+
+        <div class="card qr-section">
+            <small>Link do seu Catálogo Digital:</small>
+            <div class="link-box">
+                <input type="text" id="link-catalogo" readonly style="font-size: 11px; height: 35px;">
+                <button onclick="copiarLink()" style="width:80px; height:35px; font-size:11px; background:var(--s)">Copiar</button>
+            </div>
+            <img id="img-qrcode" src="" alt="QR Code">
+            <br>
+            <a id="download-qr" href="#" download="meu-qr-catalogo.png" style="font-size:11px; color:var(--s); text-decoration:none;">💾 Descarregar QR Code</a>
+        </div>
 
         <div class="card" style="margin-top:30px">
             <h3>⚙️ Horário de Funcionamento</h3>
@@ -204,37 +204,6 @@
         document.getElementById('t-reset').classList.toggle('active', m === 'reset');
     }
 
-    async function solicitarRecuperacao() {
-        const email = document.getElementById('reset-email').value;
-        if (!email) return alert("Por favor, introduza o seu e-mail.");
-        const linkRedir = "https://portugal-vision.github.io/portugal-vision/admin_lojista.html";
-        const { error } = await _sb.auth.resetPasswordForEmail(email, { redirectTo: linkRedir });
-        if (error) alert("Erro: " + error.message);
-        else {
-            document.getElementById('result-recuperacao').classList.remove('hidden');
-            document.getElementById('txt-status-envio').innerText = "Link enviado! Verifique o seu e-mail e SPAM.";
-        }
-    }
-
-    async function atualizarPasswordFinal() {
-        const newPass = document.getElementById('new-pass').value;
-        if (newPass.length < 6) return alert("A password deve ter pelo menos 6 caracteres.");
-        const { data: { user }, error: authError } = await _sb.auth.updateUser({ password: newPass });
-        if (authError) alert("Erro: " + authError.message);
-        else {
-            await _sb.from('lojas').update({ password: newPass }).eq('email', user.email);
-            alert("Password atualizada com sucesso!");
-            location.href = "https://portugal-vision.github.io/portugal-vision/admin_lojista.html";
-        }
-    }
-
-    window.onload = () => {
-        if (window.location.hash.includes("type=recovery") || window.location.hash.includes("access_token=")) {
-            selTab('none');
-            document.getElementById('f-new-pass').classList.remove('hidden');
-        }
-    };
-
     async function login() {
         const email = document.getElementById('l-email').value;
         const pass = document.getElementById('l-pass').value;
@@ -278,6 +247,18 @@
         carregarDados();
     }
 
+    // --- FUNÇÕES DE STATUS VISUAL ---
+    function marcarAltConfig() { 
+        const btn = document.getElementById('btn-save-config');
+        btn.innerText = "PENDENTE DE GRAVAÇÃO *"; 
+        btn.style.background = "var(--err)";
+    }
+    function marcarAlteracao() { 
+        const btn = document.getElementById('btn-save-profile');
+        btn.innerText = "Guardar Alterações *"; 
+        btn.style.background = "var(--err)";
+    }
+
     async function atualizarPerfil() {
         const btn = document.getElementById('btn-save-profile');
         const { error } = await _sb.from('lojas').update({
@@ -286,9 +267,12 @@
             telefone: document.getElementById('v-tel-edit').value
         }).eq('id', lojaAtiva.id);
         if(!error) {
-            btn.style.background = "var(--s)";
+            btn.style.background = "var(--ok)";
             btn.innerText = "Perfil Atualizado!";
-            setTimeout(() => { btn.innerText = "Guardar Alterações do Perfil"; }, 3000);
+            setTimeout(() => { 
+                btn.innerText = "Guardar Alterações do Perfil"; 
+                btn.style.background = "var(--s)";
+            }, 3000);
         }
     }
 
@@ -308,40 +292,13 @@
         }).eq('id', lojaAtiva.id);
         
         if(!error) {
-            btn.style.background = "var(--s)";
+            btn.style.background = "var(--ok)";
             btn.innerText = "GRAVADO COM SUCESSO";
-            setTimeout(() => { btn.innerText = "ATUALIZAR FUNCIONAMENTO"; }, 2000);
+            setTimeout(() => { 
+                btn.innerText = "ATUALIZAR FUNCIONAMENTO"; 
+                btn.style.background = "var(--s)";
+            }, 2000);
         }
-    }
-
-    function marcarAltConfig() { document.getElementById('btn-save-config').innerText = "PENDENTE DE GRAVAÇÃO"; }
-    function marcarAlteracao() { document.getElementById('btn-save-profile').innerText = "Guardar Alterações *"; }
-
-    function copiarLink() {
-        const input = document.getElementById('link-catalogo');
-        input.select();
-        document.execCommand("copy");
-        alert("Link copiado!");
-    }
-
-    function atualizarEstiloDia(i) {
-        const status = document.getElementById(`h-${i}-status`).value;
-        const card = document.getElementById(`card-${i}`);
-        const inputs = document.getElementById(`inputs-${i}`);
-        if(status === 'fechado') { card.classList.remove('aberto'); inputs.style.opacity = '0.3'; inputs.style.pointerEvents = 'none'; }
-        else { card.classList.add('aberto'); inputs.style.opacity = '1'; inputs.style.pointerEvents = 'auto'; }
-    }
-
-    function replicarSegunda() {
-        const m1 = document.getElementById('h-0-m1').value, m2 = document.getElementById('h-0-m2').value;
-        const t1 = document.getElementById('h-0-t1').value, t2 = document.getElementById('h-0-t2').value;
-        const status = document.getElementById('h-0-status').value;
-        for(let i=1; i<7; i++) {
-            document.getElementById(`h-${i}-m1`).value = m1; document.getElementById(`h-${i}-m2`).value = m2;
-            document.getElementById(`h-${i}-t1`).value = t1; document.getElementById(`h-${i}-t2`).value = t2;
-            document.getElementById(`h-${i}-status`).value = status; atualizarEstiloDia(i);
-        }
-        marcarAltConfig();
     }
 
     async function carregarDados() {
@@ -377,11 +334,6 @@
         }).join('');
     }
 
-    async function alternarVisibilidade(id, statusAtual) {
-        const { error } = await _sb.from('produtos').update({ oculto: !statusAtual }).eq('id', id);
-        if(!error) carregarDados();
-    }
-
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-foto').files[0];
@@ -389,9 +341,9 @@
 
         const dados = {
             nome: document.getElementById('p-nome').value,
-            preco: parseFloat(document.getElementById('p-preco').value),
+            preco: parseFloat(document.getElementById('p-preco').value) || 0,
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
-            tipo_tag: tagsMarcadas.length > 0 ? tagsMarcadas[0] : 'normal',
+            tipo_tag: tagsMarcadas.length > 0 ? tagsMarcadas : ['normal'],
             loja_id: lojaAtiva.id
         };
 
@@ -404,10 +356,16 @@
             }
         }
 
-        if(id) await _sb.from('produtos').update(dados).eq('id', id);
-        else await _sb.from('produtos').insert([dados]);
+        let res;
+        if(id) res = await _sb.from('produtos').update(dados).eq('id', id);
+        else res = await _sb.from('produtos').insert([dados]);
         
-        cancelarEdicao(); carregarDados();
+        if(!res.error) {
+            cancelarEdicao(); 
+            carregarDados();
+        } else {
+            alert("Erro ao guardar produto.");
+        }
     }
 
     function cancelarEdicao() { 
@@ -415,6 +373,7 @@
         document.getElementById('p-nome').value = ""; 
         document.getElementById('p-preco').value = ""; 
         document.getElementById('p-desc').value = "";
+        document.getElementById('p-foto').value = "";
         document.querySelectorAll('#p-tags-container input').forEach(el => el.checked = false);
         document.getElementById('btn-cancel').classList.add('hidden'); 
         document.getElementById('form-title').innerText = "📸 Publicar Novo Produto";
@@ -425,12 +384,47 @@
         document.getElementById('p-nome').value = p.nome; 
         document.getElementById('p-preco').value = p.preco; 
         document.getElementById('p-desc').value = p.desconto_percent || 0;
+        
+        const tagsP = Array.isArray(p.tipo_tag) ? p.tipo_tag : [p.tipo_tag];
         document.querySelectorAll('#p-tags-container input').forEach(el => {
-            el.checked = Array.isArray(p.tipo_tag) ? p.tipo_tag.includes(el.value) : (p.tipo_tag === el.value);
+            el.checked = tagsP.includes(el.value);
         });
+        
         document.getElementById('btn-cancel').classList.remove('hidden'); 
         document.getElementById('form-title').innerText = "✏️ Editar Produto";
         window.scrollTo(0,0); 
+    }
+
+    function copiarLink() {
+        const input = document.getElementById('link-catalogo');
+        input.select();
+        document.execCommand("copy");
+        alert("Link copiado!");
+    }
+
+    function atualizarEstiloDia(i) {
+        const status = document.getElementById(`h-${i}-status`).value;
+        const card = document.getElementById(`card-${i}`);
+        const inputs = document.getElementById(`inputs-${i}`);
+        if(status === 'fechado') { card.classList.remove('aberto'); inputs.style.opacity = '0.3'; inputs.style.pointerEvents = 'none'; }
+        else { card.classList.add('aberto'); inputs.style.opacity = '1'; inputs.style.pointerEvents = 'auto'; }
+    }
+
+    function replicarSegunda() {
+        const m1 = document.getElementById('h-0-m1').value, m2 = document.getElementById('h-0-m2').value;
+        const t1 = document.getElementById('h-0-t1').value, t2 = document.getElementById('h-0-t2').value;
+        const status = document.getElementById('h-0-status').value;
+        for(let i=1; i<7; i++) {
+            document.getElementById(`h-${i}-m1`).value = m1; document.getElementById(`h-${i}-m2`).value = m2;
+            document.getElementById(`h-${i}-t1`).value = t1; document.getElementById(`h-${i}-t2`).value = t2;
+            document.getElementById(`h-${i}-status`).value = status; atualizarEstiloDia(i);
+        }
+        marcarAltConfig();
+    }
+
+    async function alternarVisibilidade(id, statusAtual) {
+        const { error } = await _sb.from('produtos').update({ oculto: !statusAtual }).eq('id', id);
+        if(!error) carregarDados();
     }
 
     async function apagarProd(id) { if(confirm("Apagar este produto?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
