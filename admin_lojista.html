@@ -391,7 +391,6 @@
             nome: document.getElementById('p-nome').value,
             preco: parseFloat(document.getElementById('p-preco').value),
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
-            // Mantém a primeira tag selecionada ou 'normal' como padrão para o catálogo ler bem
             tipo_tag: tagsMarcadas.length > 0 ? tagsMarcadas[0] : 'normal',
             loja_id: lojaAtiva.id
         };
