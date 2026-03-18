@@ -44,7 +44,7 @@
         .old-price { color: #b2bec3; text-decoration: line-through; font-size: 1em; }
         .discount-label { color: var(--accent); font-weight: 600; font-size: 0.9em; background: #fff5f5; padding: 2px 8px; border-radius: 6px; }
 
-        .btn-item-wpp { background: var(--ok); color: white; text-decoration: none; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .btn-item-wpp { background: var(--ok); color: white; text-decoration: none; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; cursor: pointer; border: none; width: 100%; }
         .btn-item-wpp:hover { opacity: 0.9; }
 
         .footer { background: white; padding: 60px 20px; text-align: center; border-top: 1px solid #eee; margin-top: 50px; }
@@ -59,7 +59,7 @@
 <div class="header">
     <img id="v-logo" class="logo" src="" style="display:none;">
     <h2 id="v-nome">A carregar...</h2>
-    </div>
+</div>
 
 <div class="categories-container" id="cat-list"></div>
 
@@ -87,6 +87,15 @@
     let todosProdutos = [];
     let categoriaSelecionada = 'todos';
     let whatsappLoja = "";
+    let idDaLoja = null;
+
+    // FUNÇÃO PARA REGISTAR MÉTRICAS
+    async function registarClique(tipo) {
+        if (!idDaLoja) return;
+        try {
+            await _sb.from('metricas_cliques').insert([{ loja_id: idDaLoja, tipo: tipo }]);
+        } catch (e) { console.error("Erro ao registar métrica", e); }
+    }
 
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -95,10 +104,13 @@
 
         const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
         if (loja) {
+            idDaLoja = loja.id;
             whatsappLoja = (loja.telefone || "").replace(/\s/g, "");
             document.getElementById('v-nome').innerText = loja.nome;
             
-            // A morada é guardada para o rodapé
+            // Registar visualização da loja
+            registarClique('view_loja');
+
             const morada = loja.morada || "Rua Dom Dinis, 2560-433 Silveira Torres Vedras";
             document.getElementById('footer-morada').innerText = morada;
 
@@ -130,6 +142,12 @@
             const preco = parseFloat(p.preco) || 0;
             const desc = parseInt(p.desconto_percent) || 0;
             const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
+            
+            // NOVA MENSAGEM WHATSAPP SOLICITADA
+            const textoWpp = `Olá, vi o seu produto ${p.nome} ${p.imagem_url || ''}, gostaria de reservar?`;
+            const msg = encodeURIComponent(textoWpp);
+            const wppUrl = `https://wa.me/${whatsappLoja}?text=${msg}`;
+
             return `
                 <div class="card">
                     <div class="img-container">
@@ -141,8 +159,8 @@
                             <span class="price">${final}€</span>
                             ${desc > 0 ? `<span class="old-price">${preco.toFixed(2)}€</span><span class="discount-label">-${desc}%</span>` : ''}
                         </div>
-                        <a href="https://wa.me/${whatsappLoja}?text=Olá! Quero pedir: ${p.nome}" target="_blank" class="btn-item-wpp">
-                            <i class="fab fa-whatsapp"></i> Pedir agora
+                        <a onclick="registarClique('click_whatsapp'); window.open('${wppUrl}', '_blank')" class="btn-item-wpp">
+                            <i class="fab fa-whatsapp"></i> Reservar agora
                         </a>
                     </div>
                 </div>
