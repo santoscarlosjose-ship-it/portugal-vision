@@ -14,7 +14,7 @@
         }
         
         body { 
-            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--p); margin: 0; padding-bottom: 50px;
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--p); margin: 0; padding-bottom: 20px;
             background-image: radial-gradient(#e5e5f7 0.5px, transparent 0.5px); background-size: 20px 20px;
         }
 
@@ -30,21 +30,25 @@
         #search-input { width: 100%; padding: 16px 25px; border-radius: 50px; border: 1px solid #eee; background: white; font-size: 16px; outline: none; box-shadow: var(--card-shadow); }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; padding: 20px; max-width: 1200px; margin: auto; }
-        .card { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.03); transition: 0.4s; display: flex; flex-direction: column; }
+        
+        /* CARD COM ALTURA FIXA E BORDAS CORRIGIDAS */
+        .card { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.06); transition: 0.4s; display: flex; flex-direction: column; height: 100%; }
         .card:hover { transform: translateY(-8px); }
 
-        .img-container { width: 100%; aspect-ratio: 4/3; overflow: hidden; position: relative; background: #eee; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
-        .card:hover img { transform: scale(1.1); }
+        /* MOLDURA E IMAGEM */
+        .img-container { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #fff; padding: 12px; box-sizing: border-box; }
+        .card img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; transition: 0.8s; border: 1px solid rgba(0,0,0,0.03); }
 
-        .info { padding: 25px; text-align: left; display: flex; flex-direction: column; flex-grow: 1; }
-        .info strong { font-size: 1.3em; color: #1a1a1a; display: block; margin-bottom: 8px; }
-        .price-box { display: flex; align-items: baseline; gap: 12px; margin: 15px 0; }
-        .price { font-size: 1.6em; font-weight: 800; color: var(--p); }
+        .info { padding: 20px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; }
+        .info strong { font-size: 1.25em; color: #1a1a1a; display: block; margin-bottom: 8px; min-height: 1.2em; }
+        
+        .price-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .price { font-size: 1.5em; font-weight: 800; color: var(--p); }
         .old-price { color: #b2bec3; text-decoration: line-through; font-size: 1em; }
-        .discount-label { color: var(--accent); font-weight: 600; font-size: 0.9em; background: #fff5f5; padding: 2px 8px; border-radius: 6px; }
+        .discount-label { color: var(--accent); font-weight: 600; font-size: 0.85em; background: #fff5f5; padding: 2px 8px; border-radius: 6px; }
 
-        .btn-item-wpp { background: var(--ok); color: white; text-decoration: none; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; cursor: pointer; border: none; width: 100%; margin-top: auto; box-sizing: border-box; }
+        /* BOTÃO ENQUADRADO */
+        .btn-item-wpp { background: var(--ok); color: white; text-decoration: none; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; cursor: pointer; border: none; width: 100%; box-sizing: border-box; margin-top: auto; }
         .btn-item-wpp:hover { opacity: 0.9; }
 
         .footer { background: white; padding: 60px 20px; text-align: center; border-top: 1px solid #eee; margin-top: 50px; }
@@ -53,20 +57,20 @@
         .google-maps { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
         .waze { background: #33ccff; color: white; }
 
+        /* RODAPÉ LEGAL CORRIGIDO COM TEXTO VISÍVEL */
         .legal-footer { border-top: 1px solid #f0f0f0; padding: 40px 20px; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .legal-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 30px; }
-        .legal-links { display: flex; gap: 15px; list-style: none; padding: 0; margin: 0; }
+        .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; list-style: none; padding: 0; margin-bottom: 10px; }
         .legal-links a { color: #95a5a6; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; font-weight: 600; }
         .legal-links a:hover { color: var(--p); }
         
-        .complaints-book { margin: 0; }
-        .complaints-book img { height: 40px; width: auto; transition: 0.3s; }
+        .complaints-book { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        .complaints-book a { display: flex; align-items: center; gap: 8px; color: #95a5a6; text-decoration: none; font-size: 0.85em; font-weight: 600; }
+        .complaints-book img { height: 35px; width: auto; transition: 0.3s; }
 
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
         .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 700px; max-height: 80vh; overflow-y: auto; position: relative; text-align: left; line-height: 1.6; }
         .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #999; }
         .modal-content h3 { font-family: 'Playfair Display'; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-        .modal-content p { font-size: 0.9em; color: #444; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -104,23 +108,20 @@
     </div>
 
     <div class="legal-footer">
-        <div class="legal-row">
-            <ul class="legal-links">
-                <li><a onclick="showLegal('termos')">Termos e Condições</a></li>
-                <li><a onclick="showLegal('privacidade')">Privacidade</a></li>
-                <li><a onclick="showLegal('cookies')">Cookies</a></li>
-            </ul>
-            
-            <div class="complaints-book">
-                <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">
-                    <img src="https://www.livroreclamacoes.pt/assets/img/logo-livro-reclamacoes.png" 
-                         alt="Livro de Reclamações" 
-                         onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_6uY6f0h7_P7X-I2YmB2l-tE5Z37T9Y7f-A&s'">
-                </a>
-            </div>
+        <ul class="legal-links">
+            <li><a onclick="showLegal('termos')">Termos e Condições</a></li>
+            <li><a onclick="showLegal('privacidade')">Privacidade</a></li>
+            <li><a onclick="showLegal('cookies')">Cookies</a></li>
+        </ul>
+        
+        <div class="complaints-book">
+            <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">
+                <img src="https://www.livroreclamacoes.pt/assets/img/logo-livro-reclamacoes.png" alt="Livro Reclamações">
+                <span>Livro de Reclamações</span>
+            </a>
         </div>
         
-        <p style="font-size: 0.75em; color: #bdc3c7; margin-top: 10px;">
+        <p style="font-size: 0.75em; color: #bdc3c7; margin-top: 20px;">
             © 2026 Portugal Vision. Todos os direitos reservados.
         </p>
     </div>
@@ -134,20 +135,9 @@
     let idDaLoja = null;
 
     const legalTexts = {
-        termos: `
-            <h3>Termos e Condições</h3>
-            <p><strong>1. Natureza do Serviço:</strong> A Portugal Vision atua exclusivamente como Prestador de Serviço Intermediário, nos termos do <strong>Artigo 12.º do Decreto-Lei n.º 7/2004</strong>. Este catálogo é uma plataforma de exposição para lojistas.</p>
-            <p><strong>2. Responsabilidade:</strong> A Portugal Vision não é responsável pelo cumprimento das obrigações contratuais, stock, entrega ou qualidade dos produtos. Essa responsabilidade recai inteiramente sobre o lojista.</p>
-            <p><strong>3. Reservas:</strong> A reserva via WhatsApp é um contacto direto com o lojista e só é validada após confirmação do mesmo.</p>
-        `,
-        privacidade: `
-            <h3>Política de Privacidade</h3>
-            <p>Não recolhemos dados sensíveis. Os contactos via WhatsApp são privados entre o cliente e o lojista. Utilizamos métricas anónimas para melhorar a plataforma.</p>
-        `,
-        cookies: `
-            <h3>Política de Cookies</h3>
-            <p>Usamos apenas cookies técnicos essenciais para o funcionamento e cookies analíticos anónimos via Supabase.</p>
-        `
+        termos: `<h3>Termos e Condições</h3><p>Este catálogo é uma plataforma de exposição da Portugal Vision...</p>`,
+        privacidade: `<h3>Política de Privacidade</h3><p>Não recolhemos dados sensíveis...</p>`,
+        cookies: `<h3>Política de Cookies</h3><p>Utilizamos apenas cookies essenciais...</p>`
     };
 
     function showLegal(type) {
@@ -155,19 +145,11 @@
         document.getElementById('legalModal').style.display = 'block';
     }
 
-    function closeModal() {
-        document.getElementById('legalModal').style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('legalModal')) closeModal();
-    }
+    function closeModal() { document.getElementById('legalModal').style.display = 'none'; }
 
     async function registarClique(tipo) {
         if (!idDaLoja) return;
-        try {
-            await _sb.from('metricas_cliques').insert([{ loja_id: idDaLoja, tipo: tipo }]);
-        } catch (e) { console.error("Erro métrica", e); }
+        try { await _sb.from('metricas_cliques').insert([{ loja_id: idDaLoja, tipo: tipo }]); } catch (e) {}
     }
 
     async function init() {
@@ -180,27 +162,23 @@
             idDaLoja = loja.id;
             whatsappLoja = (loja.telefone || "").replace(/\s/g, "");
             document.getElementById('v-nome').innerText = loja.nome;
+            document.getElementById('footer-morada').innerText = loja.morada || "";
             registarClique('view_loja');
 
-            const morada = loja.morada || "";
-            document.getElementById('footer-morada').innerText = morada;
-
-            const mEnc = encodeURIComponent(morada);
+            const mEnc = encodeURIComponent(loja.morada || "");
             document.getElementById('link-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${mEnc}`;
             document.getElementById('link-waze').href = `https://waze.com/ul?q=${mEnc}&navigate=yes`;
 
             if (loja.logo_url) {
                 const logo = document.getElementById('v-logo');
-                logo.src = loja.logo_url;
-                logo.style.display = 'inline-block';
+                logo.src = loja.logo_url; logo.style.display = 'inline-block';
             }
 
             const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id).eq('oculto', false);
             todosProdutos = produtos || [];
-
+            
             const cats = [...new Set(todosProdutos.map(p => p.categoria))].filter(Boolean);
-            const catContainer = document.getElementById('cat-list');
-            catContainer.innerHTML = `<button class="cat-btn active" onclick="setCategoria('todos', this)">Todos</button>` +
+            document.getElementById('cat-list').innerHTML = `<button class="cat-btn active" onclick="setCategoria('todos', this)">Todos</button>` +
                 cats.map(c => `<button class="cat-btn" onclick="setCategoria('${c}', this)">${c}</button>`).join('');
 
             renderizar(todosProdutos);
@@ -213,10 +191,7 @@
             const preco = parseFloat(p.preco) || 0;
             const desc = parseInt(p.desconto_percent) || 0;
             const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
-            
-            const textoWpp = `Olá, gostaria de reservar o produto: ${p.nome}`;
-            const msg = encodeURIComponent(textoWpp);
-            const wppUrl = `https://wa.me/${whatsappLoja}?text=${msg}`;
+            const wppUrl = `https://wa.me/${whatsappLoja}?text=${encodeURIComponent('Olá, gostaria de reservar: ' + p.nome)}`;
 
             return `
                 <div class="card">
@@ -233,8 +208,7 @@
                             <i class="fab fa-whatsapp"></i> Reservar agora
                         </a>
                     </div>
-                </div>
-            `;
+                </div>`;
         }).join('');
     }
 
@@ -249,13 +223,7 @@
 
     function aplicarFiltros() {
         const termo = document.getElementById('search-input').value.toLowerCase();
-        let filtrados = todosProdutos;
-        if (categoriaSelecionada !== 'todos') {
-            filtrados = filtrados.filter(p => p.categoria === categoriaSelecionada);
-        }
-        if (termo) {
-            filtrados = filtrados.filter(p => p.nome.toLowerCase().includes(termo));
-        }
+        let filtrados = todosProdutos.filter(p => (categoriaSelecionada === 'todos' || p.categoria === categoriaSelecionada) && p.nome.toLowerCase().includes(termo));
         renderizar(filtrados);
     }
 
