@@ -142,7 +142,7 @@
 
     async function toggleFeature(id, campo, valor) {
         const { error } = await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
-        if (error) alert("Erro Supabase: " + error.message); else carregarDados();
+        if (error) alert("Erro: " + error.message); else carregarDados();
     }
 
     async function alterarStatusLoja(id, novoStatus) {
@@ -153,7 +153,7 @@
     async function apagarLoja(id) {
         if(confirm("Eliminar loja permanentemente?")) {
             const { error } = await _sb.from('lojas').delete().eq('id', id);
-            if (error) alert("Erro ao apagar: " + error.message); else carregarDados();
+            if (error) alert("Erro: " + error.message); else carregarDados();
         }
     }
 
@@ -170,10 +170,26 @@
 
     async function salvarEdicao() {
         const id = document.getElementById('edit-id').value;
-        const up = { nome: document.getElementById('edit-nome').value, slug: document.getElementById('edit-slug').value, email: document.getElementById('edit-email').value };
+        const up = { 
+            nome: document.getElementById('edit-nome').value, 
+            slug: document.getElementById('edit-slug').value.toLowerCase().trim().replace(/\s+/g, '-'), 
+            email: document.getElementById('edit-email').value 
+        };
+        
         if(document.getElementById('edit-pass').value) up.password = document.getElementById('edit-pass').value;
+
         const { error } = await _sb.from('lojas').update(up).eq('id', id);
-        if(error) alert(error.message); else { fecharModal(); carregarDados(); }
+        
+        if(error) {
+            if(error.code === '23505') {
+                alert("Erro: Este Slug já está em uso por outra loja.");
+            } else {
+                alert("Erro ao salvar: " + error.message);
+            }
+        } else {
+            fecharModal();
+            carregarDados();
+        }
     }
 
     function filtrarLojas() {
