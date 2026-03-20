@@ -10,39 +10,27 @@
         :root {
             --bg: #f1f5f9; --primary: #0f172a; --accent: #2563eb; 
             --text: #1e293b; --muted: #64748b; --border: #e2e8f0; 
-            --success: #22c55e; --danger: #ef4444; --warning: #f59e0b;
+            --success: #22c55e; --danger: #ef4444;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-        
-        /* Auth */
         #login-screen { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .login-box { background: white; padding: 2.5rem; border-radius: 20px; width: 350px; text-align: center; }
-        
-        /* Nav & Container */
         #main-panel { display: none; }
-        .top-nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
-
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card { background: white; padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
         .icon-box { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        
-        /* Table */
         .card-panel { background: white; padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--bg); }
         td { padding: 14px 12px; border-bottom: 1px solid var(--bg); font-size: 0.85rem; }
-        
-        /* Buttons */
         .badge { padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
         .btn-on { background: #dcfce7; color: #15803d; }
         .btn-off { background: #fee2e2; color: #b91c1c; }
         .btn-susp { background: #fef3c7; color: #92400e; }
-        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: #f8fafc; cursor: pointer; }
+        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: #f8fafc; cursor: pointer; color: var(--text); }
         .action-btn:hover { background: var(--accent); color: white; }
-
-        /* Modal */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: white; padding: 2rem; border-radius: 20px; width: 400px; }
         input, select { width: 100%; padding: 10px; margin: 8px 0 16px; border: 1px solid var(--border); border-radius: 8px; }
@@ -63,7 +51,7 @@
     <nav class="top-nav">
         <div style="display:flex; align-items:center; gap:15px;">
             <strong>PV MASTER CONTROL</strong>
-            <button onclick="carregar()" class="action-btn" style="background:transparent; color:white; border:1px solid rgba(255,255,255,0.2)">
+            <button onclick="carregar()" class="action-btn" title="Atualizar Dados" style="background:rgba(255,255,255,0.1); color:white;">
                 <i class="fas fa-sync"></i>
             </button>
         </div>
@@ -74,15 +62,15 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="icon-box" style="background:#eff6ff; color:#3b82f6;"><i class="fas fa-store"></i></div>
-                <div><small>Lojas</small><h3 id="st-lojas" style="margin:0">0</h3></div>
+                <div><small>Total Lojas</small><h3 id="st-lojas" style="margin:0">0</h3></div>
             </div>
             <div class="stat-card">
                 <div class="icon-box" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-eye"></i></div>
-                <div><small>Views Catálogo</small><h3 id="st-views" style="margin:0">0</h3></div>
+                <div><small>Total Views</small><h3 id="st-views" style="margin:0">0</h3></div>
             </div>
             <div class="stat-card">
                 <div class="icon-box" style="background:#fff7ed; color:#f59e0b;"><i class="fab fa-whatsapp"></i></div>
-                <div><small>Cliques WhatsApp</small><h3 id="st-wpp" style="margin:0">0</h3></div>
+                <div><small>Total WhatsApp</small><h3 id="st-wpp" style="margin:0">0</h3></div>
             </div>
         </div>
 
@@ -91,13 +79,12 @@
                 <input type="text" id="search" placeholder="Procurar loja..." onkeyup="filtrar()" style="max-width:250px; margin:0">
                 <button onclick="abrirModal()" class="badge btn-on">+ NOVA LOJA</button>
             </div>
-            
             <table>
                 <thead>
                     <tr>
                         <th>Loja / Slug</th>
-                        <th>Módulos</th>
-                        <th>Estatísticas</th>
+                        <th>Módulos Ativos</th>
+                        <th>Views / Wpp</th>
                         <th>Estado</th>
                         <th style="text-align:right">Gestão</th>
                     </tr>
@@ -112,8 +99,8 @@
     <div class="modal-content">
         <h3 id="modal-title">Loja</h3>
         <input type="hidden" id="edit-id">
-        <label>Nome</label><input type="text" id="field-nome">
-        <label>Slug</label><input type="text" id="field-slug">
+        <label>Nome Comercial</label><input type="text" id="field-nome">
+        <label>Slug (URL)</label><input type="text" id="field-slug">
         <label>Estado</label>
         <select id="field-status">
             <option value="ativa">Ativa</option>
@@ -135,7 +122,7 @@
             email: document.getElementById('log-email').value, 
             password: document.getElementById('log-pass').value 
         });
-        if (error) alert("Erro: " + error.message); else entrar();
+        if (error) alert("Acesso negado: " + error.message); else entrar();
     }
 
     async function entrar() {
@@ -156,7 +143,6 @@
         document.getElementById('lista-lojas').innerHTML = lista.map(l => {
             tV += (Number(l.views) || 0); 
             tW += (Number(l.cliques_whatsapp) || 0);
-            
             return `
                 <tr>
                     <td><strong>${l.nome}</strong><br><small>/${l.slug}</small></td>
@@ -164,9 +150,7 @@
                         <button class="badge ${l.status_catalogo ? 'btn-on' : 'btn-off'}" onclick="up(${l.id},'status_catalogo',${l.status_catalogo})">CATÁLOGO</button>
                         <button class="badge ${l.status_digital_box ? 'btn-on' : 'btn-off'}" onclick="up(${l.id},'status_digital_box',${l.status_digital_box})">DIGITALBOX</button>
                     </td>
-                    <td style="color:var(--muted)">
-                        <i class="fas fa-eye"></i> ${l.views || 0} | <i class="fab fa-whatsapp"></i> ${l.cliques_whatsapp || 0}
-                    </td>
+                    <td><i class="fas fa-eye"></i> ${l.views || 0} | <i class="fab fa-whatsapp"></i> ${l.cliques_whatsapp || 0}</td>
                     <td>
                         <button class="badge ${l.status === 'ativa' ? 'btn-on' : 'btn-susp'}" onclick="toggleStatus(${l.id}, '${l.status}')">
                             ● ${l.status.toUpperCase()}
@@ -178,31 +162,25 @@
                     </td>
                 </tr>`;
         }).join('');
-        
         document.getElementById('st-lojas').innerText = lista.length;
         document.getElementById('st-views').innerText = tV;
         document.getElementById('st-wpp').innerText = tW;
     }
 
-    async function up(id, campo, valorAtual) {
-        // Força a inversão booleana correta
-        const novoValor = !valorAtual;
-        const { error } = await _sb.from('lojas').update({ [campo]: novoValor }).eq('id', id);
-        if (error) alert("Erro ao atualizar módulo: " + error.message);
-        carregar();
+    async function up(id, campo, valor) {
+        const { error } = await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
+        if (error) alert("Erro permissão: " + error.message); carregar();
     }
 
     async function toggleStatus(id, atual) {
         const novo = atual === 'ativa' ? 'suspensa' : 'ativa';
-        const { error } = await _sb.from('lojas').update({ status: novo }).eq('id', id);
-        if (error) alert("Erro ao mudar estado: " + error.message);
+        await _sb.from('lojas').update({ status: novo }).eq('id', id);
         carregar();
     }
 
     async function apagar(id, nome) {
-        if(confirm(`Eliminar definitivamente a loja ${nome}?`)) {
-            const { error } = await _sb.from('lojas').delete().eq('id', id);
-            if (error) alert("Erro ao eliminar: " + error.message);
+        if(confirm(`Eliminar ${nome}?`)) {
+            await _sb.from('lojas').delete().eq('id', id);
             carregar();
         }
     }
@@ -219,15 +197,10 @@
 
     async function salvarLoja() {
         const id = document.getElementById('edit-id').value;
-        const obj = { 
-            nome: document.getElementById('field-nome').value, 
-            slug: document.getElementById('field-slug').value, 
-            status: document.getElementById('field-status').value 
-        };
+        const obj = { nome: document.getElementById('field-nome').value, slug: document.getElementById('field-slug').value, status: document.getElementById('field-status').value };
         if (id) await _sb.from('lojas').update(obj).eq('id', id);
         else await _sb.from('lojas').insert([obj]);
-        fecharModal(); 
-        carregar();
+        fecharModal(); carregar();
     }
 
     function filtrar() {
