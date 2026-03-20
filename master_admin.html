@@ -13,74 +13,100 @@
             --accent: #3b82f6; --text-main: #1e293b; --text-muted: #64748b;
             --border: #e2e8f0; --success: #10b981; --danger: #ef4444;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; display: none; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; }
+        
+        /* Login Screen */
+        #login-screen { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 2.5rem; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center; }
+        .login-box input { width: 100%; padding: 0.9rem; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; }
+        
+        /* Main Panel */
+        #main-panel { display: none; }
         .top-nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1440px; margin: 2rem auto; padding: 0 2rem; }
+        
+        /* Layout Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card { background: var(--panel-bg); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-        .stat-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .blue { background: #eff6ff; color: #3b82f6; } .green { background: #ecfdf5; color: #10b981; } .red { background: #fef2f2; color: #ef4444; } .orange { background: #fff7ed; color: #f59e0b; }
-        .main-layout { display: grid; grid-template-columns: 2.5fr 1fr; gap: 1.5rem; }
+        
+        .main-layout { display: grid; grid-template-columns: 2.8fr 1.2fr; gap: 1.5rem; }
         .card-panel { background: var(--panel-bg); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); }
-        .search-container { position: relative; margin-bottom: 1.5rem; }
-        .search-bar { width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; }
-        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        
+        /* Table Styles */
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 1.2rem 1rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 1.2rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        .badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+        th { text-align: left; padding: 1rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        
+        .badge { padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
         .badge-active { background: #dcfce7; color: #166534; } .badge-off { background: #f1f5f9; color: #475569; }
-        .btn-action { border: none; background: #f1f5f9; cursor: pointer; width: 36px; height: 36px; border-radius: 8px; transition: 0.2s; }
+        
+        .btn-action { border: none; background: #f1f5f9; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; transition: 0.2s; }
         .btn-action:hover { background: var(--accent); color: white; }
         .btn-del:hover { background: var(--danger); color: white; }
-        .storage-container { width: 120px; } .bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; } .bar-fill { height: 100%; background: var(--accent); }
+
+        /* Progress Bar */
+        .bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; width: 80px; margin-top: 4px; }
+        .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+        /* Modal */
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 2rem; border-radius: 20px; width: 450px; }
-        .form-group { margin-bottom: 1rem; } .form-input { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; }
-        .loading i { animation: spin 1s linear infinite; } @keyframes spin { from { rotate: 0deg; } to { rotate: 360deg; } }
+        .modal-content { background: white; padding: 2rem; border-radius: 20px; width: 400px; }
         
-        /* Estilos Novos para os Logs */
-        .log-list { list-style: none; padding: 0; margin-top: 1rem; max-height: 250px; overflow-y: auto; }
-        .log-item { padding: 8px; border-bottom: 1px solid var(--border); font-size: 0.8rem; display: flex; gap: 8px; }
-        .log-time { color: var(--text-muted); font-weight: 600; min-width: 60px; }
+        .log-list { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; font-size: 0.75rem; }
+        .log-item { padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
-<nav class="top-nav">
-    <div style="font-weight: 800; font-size: 1.3rem;">PORTUGAL VISION <span style="font-weight: 300; opacity: 0.6;">| MASTER</span></div>
-    <button id="btn-refresh" class="btn-action" style="width:auto; color:white; background:rgba(255,255,255,0.1); padding:0 15px;" onclick="carregarDados()">
-        <i class="fas fa-sync-alt"></i> <span id="text-refresh">Atualizar</span>
-    </button>
-</nav>
-
-<div class="container">
-    <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-store"></i></div><div class="stat-info"><h3>Lojas</h3><p id="stat-total">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-eye"></i></div><div class="stat-info"><h3>Views</h3><p id="stat-views">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon red"><i class="fab fa-whatsapp"></i></div><div class="stat-info"><h3>Waps</h3><p id="stat-waps">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-hdd"></i></div><div class="stat-info"><h3>Dados</h3><p id="stat-storage">0 MB</p></div></div>
+<div id="login-screen">
+    <div class="login-box">
+        <div style="font-size: 2.5rem; margin-bottom: 1rem;">🛡️</div>
+        <h2>Portugal Vision</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Painel de Administração</p>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-pass" placeholder="Senha">
+        <button onclick="handleLogin()" style="width:100%; padding:1rem; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Entrar</button>
+        <p id="login-err" style="color:var(--danger); font-size:0.8rem; margin-top:10px; display:none;"></p>
     </div>
+</div>
 
-    <div class="main-layout">
-        <div class="card-panel">
-            <div class="search-container"><i class="fas fa-search search-icon"></i><input type="text" id="search" class="search-bar" placeholder="Filtrar lojas..." onkeyup="filtrarLojas()"></div>
-            <table>
-                <thead><tr><th>Loja / Slug</th><th>Módulos</th><th>Estado</th><th>Storage</th><th>Performance</th><th style="text-align:right">Ações</th></tr></thead>
-                <tbody id="lista-lojas"></tbody>
-            </table>
+<div id="main-panel">
+    <nav class="top-nav">
+        <div style="font-weight: 800;">PORTUGAL VISION | MASTER</div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="handleLogout()" style="background:none; color:white; border:1px solid rgba(255,255,255,0.2); padding:5px 15px; border-radius:8px; cursor:pointer;">Sair</button>
+            <button onclick="carregarDados()" style="background:var(--accent); color:white; border:none; padding:5px 15px; border-radius:8px; cursor:pointer;"><i class="fas fa-sync"></i> Atualizar</button>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    </nav>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-store"></i></div><div><h3>Lojas</h3><p id="stat-total">0</p></div></div>
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-eye"></i></div><div><h3>Views</h3><p id="stat-views">0</p></div></div>
+            <div class="stat-card"><div class="stat-icon red"><i class="fab fa-whatsapp"></i></div><div><h3>Waps</h3><p id="stat-waps">0</p></div></div>
+            <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-hdd"></i></div><div><h3>Storage</h3><p id="stat-storage">0 MB</p></div></div>
+        </div>
+
+        <div class="main-layout">
             <div class="card-panel">
-                <h3 style="font-size: 0.9rem;"><i class="fas fa-chart-line"></i> Crescimento</h3>
-                <div style="height: 200px;"><canvas id="growthChart"></canvas></div>
+                <input type="text" id="search" placeholder="Filtrar por nome ou slug..." onkeyup="filtrarLojas()" style="width:100%; padding:12px; margin-bottom:1.5rem; border-radius:10px; border:1px solid var(--border); box-sizing:border-box;">
+                <table>
+                    <thead><tr><th>Loja / Slug</th><th>Módulos</th><th>Estado</th><th>Storage</th><th>Views</th><th style="text-align:right">Ações</th></tr></thead>
+                    <tbody id="lista-lojas"></tbody>
+                </table>
             </div>
             
-            <div class="card-panel">
-                <h3 style="font-size: 0.9rem;"><i class="fas fa-history"></i> Logs de Atividade</h3>
-                <ul id="log-container" class="log-list">
-                    <li class="log-item" style="color:var(--text-muted)">Nenhuma atividade recente.</li>
-                </ul>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="card-panel">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem;"><i class="fas fa-chart-line"></i> Crescimento</h3>
+                    <div style="height: 180px;"><canvas id="growthChart"></canvas></div>
+                </div>
+                <div class="card-panel">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem;"><i class="fas fa-history"></i> Logs de Sistema</h3>
+                    <ul id="log-container" class="log-list"></ul>
+                </div>
             </div>
         </div>
     </div>
@@ -90,11 +116,9 @@
     <div class="modal-content">
         <h3>Editar Loja</h3>
         <input type="hidden" id="edit-id">
-        <div class="form-group"><label>Nome</label><input type="text" id="edit-nome" class="form-input"></div>
-        <div class="form-group"><label>Slug</label><input type="text" id="edit-slug" class="form-input"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="edit-email" class="form-input"></div>
-        <div class="form-group"><label>Nova Senha (deixe vazio para manter)</label><input type="password" id="edit-pass" class="form-input"></div>
-        <button onclick="salvarEdicao()" style="width:100%; padding:1rem; background:var(--primary); color:white; border:none; border-radius:10px; cursor:pointer;">Salvar Alterações</button>
+        <div style="margin-bottom:1rem;"><label>Nome</label><input type="text" id="edit-nome" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:5px;"></div>
+        <div style="margin-bottom:1rem;"><label>Slug</label><input type="text" id="edit-slug" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:5px;"></div>
+        <button onclick="salvarEdicao()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">Salvar</button>
         <button onclick="fecharModal()" style="width:100%; margin-top:10px; background:none; border:none; cursor:pointer;">Cancelar</button>
     </div>
 </div>
@@ -107,33 +131,36 @@
     let todasAsLojas = [];
     let myChart = null;
 
-    const acesso = prompt("Senha Master:");
-    if (acesso === "1234") { document.body.style.display = "block"; carregarDados(); }
-    else { window.location.href = "about:blank"; }
-
-    function addLog(msg) {
-        const container = document.getElementById('log-container');
-        if(container.innerHTML.includes("Nenhuma atividade")) container.innerHTML = "";
-        const now = new Date();
-        const time = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        const item = document.createElement('li');
-        item.className = 'log-item';
-        item.innerHTML = `<span class="log-time">${time}</span> <span>${msg}</span>`;
-        container.prepend(item);
+    async function checkSession() {
+        const { data: { session } } = await _sb.auth.getSession();
+        if (session) { exibirPainel(); }
     }
 
+    async function handleLogin() {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
+        if (error) { 
+            document.getElementById('login-err').innerText = error.message;
+            document.getElementById('login-err').style.display = 'block';
+        } else { exibirPainel(); }
+    }
+
+    function exibirPainel() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-panel').style.display = 'block';
+        carregarDados();
+    }
+
+    async function handleLogout() { await _sb.auth.signOut(); window.location.reload(); }
+
     async function carregarDados() {
-        const btn = document.getElementById('btn-refresh');
-        btn.classList.add('loading');
-        try {
-            const { data, error } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
-            if (error) throw error;
-            todasAsLojas = data || [];
-            renderizar(todasAsLojas);
-            atualizarStats(todasAsLojas);
-            gerarGrafico(todasAsLojas);
-        } catch (err) { alert("Erro de conexão: " + err.message); }
-        finally { btn.classList.remove('loading'); }
+        const { data, error } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
+        if (error) { alert(error.message); return; }
+        todasAsLojas = data;
+        renderizar(data);
+        atualizarStats(data);
+        gerarGrafico(data);
     }
 
     function renderizar(lista) {
@@ -142,21 +169,19 @@
             const perc = Math.min((sizeMB / 500) * 100, 100);
             return `
             <tr>
-                <td><div style="font-weight:700">${l.nome}</div><div style="font-size:0.7rem; color:var(--text-muted)">@${l.slug}</div></td>
+                <td><b>${l.nome}</b><div style="font-size:0.7rem; color:var(--text-muted)">@${l.slug}</div></td>
                 <td>
-                    <button class="badge ${l.status_catalogo ? 'badge-active' : 'badge-off'}" onclick="toggleFeature(${l.id}, 'status_catalogo', ${l.status_catalogo}, '${l.nome}')"><i class="fas fa-book"></i> Catálogo</button>
-                    <button class="badge ${l.status_digital_box ? 'badge-active' : 'badge-off'}" onclick="toggleFeature(${l.id}, 'status_digital_box', ${l.status_digital_box}, '${l.nome}')"><i class="fas fa-box"></i> Box</button>
+                    <button class="badge ${l.status_catalogo ? 'badge-active' : 'badge-off'}" onclick="toggle(${l.id},'status_catalogo',${l.status_catalogo})">Catálogo</button>
+                    <button class="badge ${l.status_digital_box ? 'badge-active' : 'badge-off'}" onclick="toggle(${l.id},'status_digital_box',${l.status_digital_box})">Box</button>
                 </td>
                 <td>
-                    <select onchange="alterarStatusLoja(${l.id}, this.value, '${l.nome}')" style="padding:4px; border-radius:5px; border:1px solid var(--border)">
-                        <option value="ativa" ${l.status === 'ativa' ? 'selected' : ''}>Ativa</option>
-                        <option value="suspensa" ${l.status === 'suspensa' ? 'selected' : ''}>Suspensa</option>
+                    <select onchange="updateStatus(${l.id}, this.value)" style="font-size:0.8rem; border-radius:4px; border:1px solid var(--border)">
+                        <option value="ativa" ${l.status==='ativa'?'selected':''}>Ativa</option>
+                        <option value="suspensa" ${l.status==='suspensa'?'selected':''}>Suspensa</option>
                     </select>
                 </td>
-                <td>
-                    <div class="storage-container"><span style="font-size:0.6rem">${sizeMB} MB</span><div class="bar-bg"><div class="bar-fill" style="width:${perc}%"></div></div></div>
-                </td>
-                <td><i class="fas fa-eye" style="color:var(--accent)"></i> ${l.views || 0} <br> <i class="fab fa-whatsapp" style="color:var(--success)"></i> ${l.waps || 0}</td>
+                <td><div style="font-size:0.6rem">${sizeMB}MB</div><div class="bar-bg"><div class="bar-fill" style="width:${perc}%"></div></div></td>
+                <td><i class="fas fa-eye" style="color:var(--accent)"></i> ${l.views || 0}</td>
                 <td style="text-align:right">
                     <button class="btn-action" onclick='abrirModal(${JSON.stringify(l)})'><i class="fas fa-edit"></i></button>
                     <button class="btn-action btn-del" onclick="apagarLoja(${l.id}, '${l.nome}')"><i class="fas fa-trash"></i></button>
@@ -165,83 +190,53 @@
         }).join('');
     }
 
-    async function toggleFeature(id, campo, valor, nome) {
-        const { error } = await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
-        if (error) alert("Erro: " + error.message); 
-        else {
-            addLog(`Módulo ${campo.replace('status_', '')} alterado em <b>${nome}</b>`);
-            carregarDados();
-        }
+    async function toggle(id, campo, valor) {
+        await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
+        registrarLog(`Módulo ${campo} atualizado.`);
+        carregarDados();
     }
 
-    async function alterarStatusLoja(id, novoStatus, nome) {
-        const { error } = await _sb.from('lojas').update({ status: novoStatus }).eq('id', id);
-        if (error) alert("Erro: " + error.message); 
-        else {
-            addLog(`Status de <b>${nome}</b> definido como ${novoStatus}`);
-            carregarDados();
-        }
+    async function updateStatus(id, status) {
+        await _sb.from('lojas').update({ status }).eq('id', id);
+        registrarLog(`Status alterado para ${status}.`);
+        carregarDados();
     }
 
     async function apagarLoja(id, nome) {
-        if(confirm("Eliminar loja permanentemente?")) {
-            const { error } = await _sb.from('lojas').delete().eq('id', id);
-            if (error) alert("Erro: " + error.message); 
-            else {
-                addLog(`Loja <b>${nome}</b> eliminada`);
-                carregarDados();
-            }
+        if(confirm(`Eliminar ${nome}?`)) {
+            await _sb.from('lojas').delete().eq('id', id);
+            registrarLog(`Loja ${nome} eliminada.`);
+            carregarDados();
         }
+    }
+
+    function registrarLog(msg) {
+        const time = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'});
+        const li = `<li class="log-item"><b style="color:var(--text-muted)">${time}</b> <span>${msg}</span></li>`;
+        document.getElementById('log-container').insertAdjacentHTML('afterbegin', li);
     }
 
     function abrirModal(l) {
         document.getElementById('edit-id').value = l.id;
         document.getElementById('edit-nome').value = l.nome;
         document.getElementById('edit-slug').value = l.slug;
-        document.getElementById('edit-email').value = l.email || '';
-        document.getElementById('edit-pass').value = '';
         document.getElementById('modal').style.display = 'flex';
     }
-
     function fecharModal() { document.getElementById('modal').style.display = 'none'; }
 
     async function salvarEdicao() {
         const id = document.getElementById('edit-id').value;
-        const nomeLoja = document.getElementById('edit-nome').value;
-        const up = { 
-            nome: nomeLoja, 
-            slug: document.getElementById('edit-slug').value.toLowerCase().trim().replace(/\s+/g, '-'), 
-            email: document.getElementById('edit-email').value 
-        };
-        
-        if(document.getElementById('edit-pass').value) up.password = document.getElementById('edit-pass').value;
-
-        const { error } = await _sb.from('lojas').update(up).eq('id', id);
-        
-        if(error) {
-            alert(error.code === '23505' ? "Erro: Slug em uso." : "Erro: " + error.message);
-        } else {
-            addLog(`Dados da loja <b>${nomeLoja}</b> atualizados`);
-            fecharModal();
-            carregarDados();
-        }
-    }
-
-    function filtrarLojas() {
-        const term = document.getElementById('search').value.toLowerCase();
-        const filtradas = todasAsLojas.filter(l => 
-            l.nome.toLowerCase().includes(term) || 
-            l.slug.toLowerCase().includes(term) ||
-            (l.email && l.email.toLowerCase().includes(term))
-        );
-        renderizar(filtradas);
+        const up = { nome: document.getElementById('edit-nome').value, slug: document.getElementById('edit-slug').value };
+        await _sb.from('lojas').update(up).eq('id', id);
+        fecharModal();
+        carregarDados();
     }
 
     function atualizarStats(lista) {
         document.getElementById('stat-total').innerText = lista.length;
-        document.getElementById('stat-views').innerText = lista.reduce((a, b) => a + (Number(b.views) || 0), 0).toLocaleString();
-        document.getElementById('stat-waps').innerText = lista.reduce((a, b) => a + (Number(b.waps) || 0), 0).toLocaleString();
-        const totalKB = lista.reduce((a, b) => a + (Number(b.tamanho_kb) || 0), 0);
+        document.getElementById('stat-views').innerText = lista.reduce((a, b) => a + (b.views || 0), 0);
+        document.getElementById('stat-waps').innerText = lista.reduce((a, b) => a + (b.waps || 0), 0);
+        const totalKB = lista.reduce((a, b) => a + (b.tamanho_kb || 0), 0);
         document.getElementById('stat-storage').innerText = (totalKB / 1024).toFixed(1) + " MB";
     }
 
@@ -255,10 +250,17 @@
         if (myChart) myChart.destroy();
         myChart = new Chart(ctx, {
             type: 'line',
-            data: { labels: Object.keys(counts), datasets: [{ label: 'Lojas', data: Object.values(counts), borderColor: '#3b82f6', tension: 0.3, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }] },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), borderColor: '#3b82f6', tension: 0.3, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
     }
+
+    function filtrarLojas() {
+        const term = document.getElementById('search').value.toLowerCase();
+        renderizar(todasAsLojas.filter(l => l.nome.toLowerCase().includes(term) || l.slug.toLowerCase().includes(term)));
+    }
+
+    checkSession();
 </script>
 </body>
 </html>
