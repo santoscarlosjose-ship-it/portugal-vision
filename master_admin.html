@@ -447,6 +447,59 @@
             l.slug.toLowerCase().includes(term) || 
             (l.email && l.email.toLowerCase().includes(term))
         ));
+   // --- FUNÇÕES DE INTERAÇÃO ATUALIZADAS ---
+
+    async function toggleFeature(id, campo, valor) {
+        try {
+            const { error } = await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
+            if (error) {
+                console.error("Erro Supabase:", error);
+                alert(`Erro ao atualizar ${campo}: ${error.message}`);
+            } else {
+                await carregarDados(); // Recarrega a lista para mostrar o novo estado
+            }
+        } catch (err) {
+            alert("Erro de rede ou permissão: " + err.message);
+        }
+    }
+
+    async function alterarStatusLoja(id, novoStatus) {
+        const { error } = await _sb.from('lojas').update({ status: novoStatus }).eq('id', id);
+        if (error) alert("Erro ao mudar status: " + error.message);
+        else carregarDados();
+    }
+
+    async function apagarLoja(id) {
+        if(confirm("ATENÇÃO: Deseja apagar esta loja definitivamente? Todos os produtos e acessos serão perdidos.")) {
+            const { error } = await _sb.from('lojas').delete().eq('id', id);
+            
+            if (error) {
+                console.error("Erro ao apagar:", error);
+                alert("Não foi possível apagar: " + error.message);
+            } else {
+                alert("Loja eliminada com sucesso!");
+                carregarDados();
+            }
+        }
+    }
+
+    async function salvarEdicao() {
+        const id = document.getElementById('edit-id').value;
+        const up = {
+            nome: document.getElementById('edit-nome').value,
+            slug: document.getElementById('edit-slug').value,
+            email: document.getElementById('edit-email').value
+        };
+        const p = document.getElementById('edit-pass').value;
+        if(p) up.password = p;
+
+        const { error } = await _sb.from('lojas').update(up).eq('id', id);
+        if(error) {
+            alert("Erro na edição: " + error.message);
+        } else { 
+            fecharModal(); 
+            carregarDados(); 
+        }
     }
 </script>
 </body>
