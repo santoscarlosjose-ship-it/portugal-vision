@@ -13,19 +13,12 @@
             --accent: #3b82f6; --text-main: #1e293b; --text-muted: #64748b;
             --border: #e2e8f0; --success: #10b981; --danger: #ef4444;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; }
+        /* Escondemos o body até a senha ser validada */
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; display: none; }
         
-        /* Login Screen */
-        #login-screen { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .login-box { background: white; padding: 2.5rem; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center; }
-        .login-box input { width: 100%; padding: 0.9rem; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; }
-        
-        /* Main Panel */
-        #main-panel { display: none; }
         .top-nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1440px; margin: 2rem auto; padding: 0 2rem; }
         
-        /* Layout Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card { background: var(--panel-bg); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
         .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -34,7 +27,6 @@
         .main-layout { display: grid; grid-template-columns: 2.8fr 1.2fr; gap: 1.5rem; }
         .card-panel { background: var(--panel-bg); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); }
         
-        /* Table Styles */
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 1rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
         td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
@@ -46,11 +38,9 @@
         .btn-action:hover { background: var(--accent); color: white; }
         .btn-del:hover { background: var(--danger); color: white; }
 
-        /* Progress Bar */
         .bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; width: 80px; margin-top: 4px; }
         .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
 
-        /* Modal */
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; padding: 2rem; border-radius: 20px; width: 400px; }
         
@@ -60,25 +50,9 @@
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <div style="font-size: 2.5rem; margin-bottom: 1rem;">🛡️</div>
-        <h2>Portugal Vision</h2>
-        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Painel de Administração</p>
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-pass" placeholder="Senha">
-        <button onclick="handleLogin()" style="width:100%; padding:1rem; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Entrar</button>
-        <p id="login-err" style="color:var(--danger); font-size:0.8rem; margin-top:10px; display:none;"></p>
-    </div>
-</div>
-
-<div id="main-panel">
     <nav class="top-nav">
         <div style="font-weight: 800;">PORTUGAL VISION | MASTER</div>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="handleLogout()" style="background:none; color:white; border:1px solid rgba(255,255,255,0.2); padding:5px 15px; border-radius:8px; cursor:pointer;">Sair</button>
-            <button onclick="carregarDados()" style="background:var(--accent); color:white; border:none; padding:5px 15px; border-radius:8px; cursor:pointer;"><i class="fas fa-sync"></i> Atualizar</button>
-        </div>
+        <button onclick="carregarDados()" style="background:var(--accent); color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;"><i class="fas fa-sync"></i> Atualizar Dados</button>
     </nav>
 
     <div class="container">
@@ -91,7 +65,7 @@
 
         <div class="main-layout">
             <div class="card-panel">
-                <input type="text" id="search" placeholder="Filtrar por nome ou slug..." onkeyup="filtrarLojas()" style="width:100%; padding:12px; margin-bottom:1.5rem; border-radius:10px; border:1px solid var(--border); box-sizing:border-box;">
+                <input type="text" id="search" placeholder="Filtrar lojas..." onkeyup="filtrarLojas()" style="width:100%; padding:12px; margin-bottom:1.5rem; border-radius:10px; border:1px solid var(--border); box-sizing:border-box;">
                 <table>
                     <thead><tr><th>Loja / Slug</th><th>Módulos</th><th>Estado</th><th>Storage</th><th>Views</th><th style="text-align:right">Ações</th></tr></thead>
                     <tbody id="lista-lojas"></tbody>
@@ -104,24 +78,23 @@
                     <div style="height: 180px;"><canvas id="growthChart"></canvas></div>
                 </div>
                 <div class="card-panel">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem;"><i class="fas fa-history"></i> Logs de Sistema</h3>
+                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem;"><i class="fas fa-history"></i> Logs</h3>
                     <ul id="log-container" class="log-list"></ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div id="modal">
-    <div class="modal-content">
-        <h3>Editar Loja</h3>
-        <input type="hidden" id="edit-id">
-        <div style="margin-bottom:1rem;"><label>Nome</label><input type="text" id="edit-nome" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:5px;"></div>
-        <div style="margin-bottom:1rem;"><label>Slug</label><input type="text" id="edit-slug" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:5px;"></div>
-        <button onclick="salvarEdicao()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">Salvar</button>
-        <button onclick="fecharModal()" style="width:100%; margin-top:10px; background:none; border:none; cursor:pointer;">Cancelar</button>
+    <div id="modal">
+        <div class="modal-content">
+            <h3>Editar Loja</h3>
+            <input type="hidden" id="edit-id">
+            <div style="margin-bottom:1rem;"><label>Nome</label><input type="text" id="edit-nome" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:5px;"></div>
+            <div style="margin-bottom:1rem;"><label>Slug</label><input type="text" id="edit-slug" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:5px;"></div>
+            <button onclick="salvarEdicao()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">Salvar</button>
+            <button onclick="fecharModal()" style="width:100%; margin-top:10px; background:none; border:none; cursor:pointer;">Cancelar</button>
+        </div>
     </div>
-</div>
 
 <script>
     const SB_URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
@@ -130,33 +103,22 @@
 
     let todasAsLojas = [];
     let myChart = null;
+    const SENHA_MESTRA = "1234"; // Altera para a senha que quiseres
 
-    async function checkSession() {
-        const { data: { session } } = await _sb.auth.getSession();
-        if (session) { exibirPainel(); }
+    function validarAcesso() {
+        const pass = prompt("Introduza a senha de administrador:");
+        if (pass === SENHA_MESTRA) {
+            document.body.style.display = "block";
+            carregarDados();
+        } else {
+            alert("Senha incorreta.");
+            window.location.reload();
+        }
     }
-
-    async function handleLogin() {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-pass').value;
-        const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
-        if (error) { 
-            document.getElementById('login-err').innerText = error.message;
-            document.getElementById('login-err').style.display = 'block';
-        } else { exibirPainel(); }
-    }
-
-    function exibirPainel() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-panel').style.display = 'block';
-        carregarDados();
-    }
-
-    async function handleLogout() { await _sb.auth.signOut(); window.location.reload(); }
 
     async function carregarDados() {
         const { data, error } = await _sb.from('lojas').select('*').order('created_at', {ascending: false});
-        if (error) { alert(error.message); return; }
+        if (error) return;
         todasAsLojas = data;
         renderizar(data);
         atualizarStats(data);
@@ -192,7 +154,7 @@
 
     async function toggle(id, campo, valor) {
         await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
-        registrarLog(`Módulo ${campo} atualizado.`);
+        registrarLog(`Módulo ${campo} alterado.`);
         carregarDados();
     }
 
@@ -210,12 +172,6 @@
         }
     }
 
-    function registrarLog(msg) {
-        const time = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'});
-        const li = `<li class="log-item"><b style="color:var(--text-muted)">${time}</b> <span>${msg}</span></li>`;
-        document.getElementById('log-container').insertAdjacentHTML('afterbegin', li);
-    }
-
     function abrirModal(l) {
         document.getElementById('edit-id').value = l.id;
         document.getElementById('edit-nome').value = l.nome;
@@ -229,6 +185,7 @@
         const up = { nome: document.getElementById('edit-nome').value, slug: document.getElementById('edit-slug').value };
         await _sb.from('lojas').update(up).eq('id', id);
         fecharModal();
+        registrarLog(`Loja ${up.nome} editada.`);
         carregarDados();
     }
 
@@ -238,6 +195,12 @@
         document.getElementById('stat-waps').innerText = lista.reduce((a, b) => a + (b.waps || 0), 0);
         const totalKB = lista.reduce((a, b) => a + (b.tamanho_kb || 0), 0);
         document.getElementById('stat-storage').innerText = (totalKB / 1024).toFixed(1) + " MB";
+    }
+
+    function registrarLog(msg) {
+        const time = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'});
+        const li = `<li class="log-item"><b style="color:var(--text-muted)">${time}</b> <span>${msg}</span></li>`;
+        document.getElementById('log-container').insertAdjacentHTML('afterbegin', li);
     }
 
     function gerarGrafico(lista) {
@@ -260,7 +223,8 @@
         renderizar(todasAsLojas.filter(l => l.nome.toLowerCase().includes(term) || l.slug.toLowerCase().includes(term)));
     }
 
-    checkSession();
+    // Início automático
+    validarAcesso();
 </script>
 </body>
 </html>
