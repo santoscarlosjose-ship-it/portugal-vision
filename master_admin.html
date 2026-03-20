@@ -158,9 +158,13 @@
     // Desenhar a Tabela e Totais
     function render(lista) {
         let tV = 0, tW = 0;
-        document.getElementById('lista-lojas').innerHTML = lista.map(l => {
-            tV += (Number(l.views) || 0); 
-            tW += (Number(l.cliques_whatsapp) || 0);
+        const listaHtml = lista.map(l => {
+            // CORREÇÃO MÉTRICAS: Verifica vários nomes possíveis de colunas
+            const v = Number(l.views || l.visitas || 0);
+            const w = Number(l.cliques_whatsapp || l.whatsapp || 0);
+            tV += v; 
+            tW += w;
+            
             return `
                 <tr>
                     <td><strong>${l.nome}</strong><br><small>/${l.slug}</small></td>
@@ -168,10 +172,10 @@
                         <button class="badge ${l.status_catalogo ? 'btn-on' : 'btn-off'}" onclick="up('${l.id}','status_catalogo',${l.status_catalogo})">CATÁLOGO</button>
                         <button class="badge ${l.status_digital_box ? 'btn-on' : 'btn-off'}" onclick="up('${l.id}','status_digital_box',${l.status_digital_box})">DIGITALBOX</button>
                     </td>
-                    <td><i class="fas fa-eye"></i> ${l.views || 0} | <i class="fab fa-whatsapp"></i> ${l.cliques_whatsapp || 0}</td>
+                    <td><i class="fas fa-eye"></i> ${v} | <i class="fab fa-whatsapp"></i> ${w}</td>
                     <td>
                         <button class="badge ${l.status === 'ativa' ? 'btn-on' : 'btn-susp'}" onclick="toggleStatus('${l.id}', '${l.status}')">
-                            ● ${l.status.toUpperCase()}
+                            ● ${(l.status || 'ativa').toUpperCase()}
                         </button>
                     </td>
                     <td style="text-align:right">
@@ -180,6 +184,9 @@
                     </td>
                 </tr>`;
         }).join('');
+
+        // CORREÇÃO ATUALIZAR: Limpa e insere para garantir refresh visual
+        document.getElementById('lista-lojas').innerHTML = listaHtml;
         document.getElementById('st-lojas').innerText = lista.length;
         document.getElementById('st-views').innerText = tV;
         document.getElementById('st-wpp').innerText = tW;
@@ -214,7 +221,7 @@
         document.getElementById('edit-id').value = d ? d.id : "";
         document.getElementById('field-nome').value = d ? d.nome : "";
         document.getElementById('field-slug').value = d ? d.slug : "";
-        document.getElementById('field-status').value = d ? d.status : "ativa";
+        document.getElementById('field-status').value = d ? (d.status || "ativa") : "ativa";
     }
 
     function fecharModal() { document.getElementById('modalLoja').style.display = 'none'; }
