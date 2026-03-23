@@ -360,7 +360,11 @@
 </div>
 
 <script>
-    const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "SUA_KEY_ANON");
+// CREDENCIAIS PORTUGAL VISION
+    const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
+    const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
+    const _sb = supabase.createClient(_URL, _KEY);
+
     let currentStore = null;
     let allProducts = [];
     let cart = [];
