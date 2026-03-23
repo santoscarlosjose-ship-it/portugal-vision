@@ -14,47 +14,40 @@
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
         
-        /* Auth Screen */
         #login-screen { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .login-box { background: white; padding: 2.5rem; border-radius: 20px; width: 350px; text-align: center; }
         
-        /* Layout */
         #main-panel { display: none; }
         .top-nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
 
-        /* Stats Section */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card { background: white; padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
         .icon-box { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         
-        /* Table Style */
         .card-panel { background: white; padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--bg); }
         td { padding: 14px 12px; border-bottom: 1px solid var(--bg); font-size: 0.85rem; }
         
-        /* Status Badges */
         .badge { padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
         .btn-on { background: #dcfce7; color: #15803d; }
         .btn-off { background: #fee2e2; color: #b91c1c; }
         .btn-susp { background: #fef3c7; color: #92400e; }
         
-        /* Buttons */
-        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: #f8fafc; cursor: pointer; color: var(--text); }
+        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: #f8fafc; cursor: pointer; color: var(--text); display: inline-flex; align-items: center; justify-content: center; }
         .action-btn:hover { background: var(--accent); color: white; }
 
-        /* Modal */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: white; padding: 2rem; border-radius: 20px; width: 400px; }
-        input, select { width: 100%; padding: 10px; margin: 8px 0 16px; border: 1px solid var(--border); border-radius: 8px; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0 16px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>Portugal Vision</h2>
+        <h2 style="color: var(--primary)">Portugal Vision</h2>
         <input type="email" id="log-email" placeholder="Email">
         <input type="password" id="log-pass" placeholder="Senha">
         <button onclick="handleLogin()" class="badge btn-on" style="width:100%; padding:14px; margin-top:10px;">ENTRAR</button>
@@ -64,9 +57,9 @@
 <div id="main-panel">
     <nav class="top-nav">
         <div style="display:flex; align-items:center; gap:15px;">
-            <strong>PV MASTER CONTROL</strong>
-            <button onclick="carregar()" class="action-btn" title="Atualizar Dados" style="background:rgba(255,255,255,0.1); color:white;">
-                <i class="fas fa-sync"></i>
+            <strong id="nav-title">PORTUGAL VISION MASTER CONTROL</strong>
+            <button onclick="carregar()" class="action-btn" title="Atualizar Dados" style="background:rgba(255,255,255,0.2); color:white;">
+                <i class="fas fa-sync-alt"></i>
             </button>
         </div>
         <button onclick="logout()" class="badge btn-off">SAIR</button>
@@ -89,9 +82,9 @@
         </div>
 
         <div class="card-panel">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                 <input type="text" id="search" placeholder="Procurar loja..." onkeyup="filtrar()" style="max-width:250px; margin:0">
-                <button onclick="abrirModal()" class="badge btn-on">+ NOVA LOJA</button>
+                <button onclick="abrirModal()" class="badge btn-on" style="height: fit-content;">+ NOVA LOJA</button>
             </div>
             <table>
                 <thead>
@@ -121,23 +114,21 @@
             <option value="suspensa">Suspensa</option>
         </select>
         <button onclick="salvarLoja()" class="badge btn-on" style="width:100%; padding:12px;">GUARDAR</button>
-        <button onclick="fecharModal()" class="badge" style="width:100%; margin-top:5px;">CANCELAR</button>
+        <button onclick="fecharModal()" class="badge btn-off" style="width:100%; margin-top:5px; background: #eee; color: #333;">CANCELAR</button>
     </div>
 </div>
 
 <script>
     // Configurações Supabase
     const SB_URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
-    const SB_KEY = "SUA_KEY_AQUI"; // Substituir pela sua chave real
+    const SB_KEY = "SUA_KEY_AQUI"; // Certifique-se de que esta KEY é a correta
     const _sb = supabase.createClient(SB_URL, SB_KEY);
     let dadosLocais = [];
 
-    // Funções de Autenticação
     async function handleLogin() {
-        const { error } = await _sb.auth.signInWithPassword({ 
-            email: document.getElementById('log-email').value, 
-            password: document.getElementById('log-pass').value 
-        });
+        const email = document.getElementById('log-email').value;
+        const password = document.getElementById('log-pass').value;
+        const { error } = await _sb.auth.signInWithPassword({ email, password });
         if (error) alert("Erro: " + error.message); else entrar();
     }
 
@@ -147,30 +138,34 @@
         carregar();
     }
 
-    // Carregar Dados da Tabela 'lojas'
+    // CORREÇÃO SINCRONIZAÇÃO: Carregar força a busca de dados novos
     async function carregar() {
         const { data, error } = await _sb.from('lojas').select('*').order('nome');
-        if (error) return console.error(error);
+        if (error) {
+            console.error("Erro ao carregar:", error);
+            return;
+        }
         dadosLocais = data;
         render(data);
     }
 
-    // Desenhar a Tabela e Totais
     function render(lista) {
         let tV = 0, tW = 0;
         const listaHtml = lista.map(l => {
-            // CORREÇÃO MÉTRICAS: Vinculado ao novo sistema automático (views_total)
             const v = Number(l.views_total || 0);
             const w = Number(l.whatsapp_total || 0);
-            tV += v; 
-            tW += w;
+            tV += v; tW += w;
             
+            // Garantir que os valores booleanos sejam interpretados corretamente para as classes de CSS
+            const catClass = l.status_catalogo ? 'btn-on' : 'btn-off';
+            const digClass = l.status_digital_box ? 'btn-on' : 'btn-off';
+
             return `
                 <tr>
-                    <td><strong>${l.nome}</strong><br><small>/${l.slug}</small></td>
+                    <td><strong>${l.nome}</strong><br><small style="color:var(--muted)">/${l.slug}</small></td>
                     <td>
-                        <button class="badge ${l.status_catalogo ? 'btn-on' : 'btn-off'}" onclick="up('${l.id}','status_catalogo',${l.status_catalogo})">CATÁLOGO</button>
-                        <button class="badge ${l.status_digital_box ? 'btn-on' : 'btn-off'}" onclick="up('${l.id}','status_digital_box',${l.status_digital_box})">DIGITALBOX</button>
+                        <button class="badge ${catClass}" onclick="up('${l.id}','status_catalogo',${l.status_catalogo})">CATÁLOGO</button>
+                        <button class="badge ${digClass}" onclick="up('${l.id}','status_digital_box',${l.status_digital_box})">DIGITALBOX</button>
                     </td>
                     <td><i class="fas fa-eye"></i> ${v} | <i class="fab fa-whatsapp"></i> ${w}</td>
                     <td>
@@ -179,49 +174,57 @@
                         </button>
                     </td>
                     <td style="text-align:right">
-                        <button class="action-btn" onclick="abrirModal(${JSON.stringify(l).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn" onclick='abrirEditar(${JSON.stringify(l)})'><i class="fas fa-edit"></i></button>
                         <button class="action-btn" onclick="apagar('${l.id}', '${l.nome}')"><i class="fas fa-trash" style="color:var(--danger)"></i></button>
                     </td>
                 </tr>`;
         }).join('');
 
-        // Atualizar interface
         document.getElementById('lista-lojas').innerHTML = listaHtml;
         document.getElementById('st-lojas').innerText = lista.length;
         document.getElementById('st-views').innerText = tV;
         document.getElementById('st-wpp').innerText = tW;
     }
 
-    // Ativar/Desativar Módulos
+    // CORREÇÃO SINCRONIZAÇÃO: Função 'up' atualiza e recarrega imediatamente
     async function up(id, campo, valor) {
-        const { error } = await _sb.from('lojas').update({ [campo]: !valor }).eq('id', id);
-        if (error) alert("Erro ao atualizar base de dados: " + error.message); 
-        carregar();
+        const novoValor = !valor;
+        const { error } = await _sb.from('lojas').update({ [campo]: novoValor }).eq('id', id);
+        if (error) alert("Erro ao atualizar: " + error.message); 
+        else carregar(); 
     }
 
-    // Alterar Estado (Ativa/Suspensa)
     async function toggleStatus(id, atual) {
         const novo = atual === 'ativa' ? 'suspensa' : 'ativa';
-        await _sb.from('lojas').update({ status: novo }).eq('id', id);
-        carregar();
+        const { error } = await _sb.from('lojas').update({ status: novo }).eq('id', id);
+        if (error) alert("Erro: " + error.message);
+        else carregar();
     }
 
-    // Eliminar Loja
     async function apagar(id, nome) {
         if(confirm(`Deseja apagar definitivamente a loja ${nome}?`)) {
             const { error } = await _sb.from('lojas').delete().eq('id', id);
             if (error) alert("Erro ao eliminar: " + error.message);
-            carregar();
+            else carregar();
         }
     }
 
-    // Modal de Gestão
-    function abrirModal(d = null) {
+    function abrirModal() {
+        document.getElementById('modal-title').innerText = "Nova Loja";
+        document.getElementById('edit-id').value = "";
+        document.getElementById('field-nome').value = "";
+        document.getElementById('field-slug').value = "";
+        document.getElementById('field-status').value = "ativa";
         document.getElementById('modalLoja').style.display = 'flex';
-        document.getElementById('edit-id').value = d ? d.id : "";
-        document.getElementById('field-nome').value = d ? d.nome : "";
-        document.getElementById('field-slug').value = d ? d.slug : "";
-        document.getElementById('field-status').value = d ? (d.status || "ativa") : "ativa";
+    }
+
+    function abrirEditar(loja) {
+        document.getElementById('modal-title').innerText = "Editar Loja";
+        document.getElementById('edit-id').value = loja.id;
+        document.getElementById('field-nome').value = loja.nome;
+        document.getElementById('field-slug').value = loja.slug;
+        document.getElementById('field-status').value = loja.status || "ativa";
+        document.getElementById('modalLoja').style.display = 'flex';
     }
 
     function fecharModal() { document.getElementById('modalLoja').style.display = 'none'; }
@@ -233,20 +236,28 @@
             slug: document.getElementById('field-slug').value, 
             status: document.getElementById('field-status').value 
         };
-        if (id) await _sb.from('lojas').update(obj).eq('id', id);
-        else await _sb.from('lojas').insert([obj]);
-        fecharModal(); carregar();
+        
+        let res;
+        if (id) res = await _sb.from('lojas').update(obj).eq('id', id);
+        else res = await _sb.from('lojas').insert([obj]);
+
+        if (res.error) alert("Erro ao guardar: " + res.error.message);
+        else {
+            fecharModal(); 
+            carregar();
+        }
     }
 
-    // Filtro de Pesquisa
     function filtrar() {
         const t = document.getElementById('search').value.toLowerCase();
-        render(dadosLocais.filter(l => l.nome.toLowerCase().includes(t)));
+        render(dadosLocais.filter(l => l.nome.toLowerCase().includes(t) || l.slug.toLowerCase().includes(t)));
     }
 
-    // Logout
     function logout() { _sb.auth.signOut().then(() => location.reload()); }
-    _sb.auth.getSession().then(({data}) => { if (data.session) entrar(); });
+    
+    _sb.auth.getSession().then(({data}) => { 
+        if (data.session) entrar(); 
+    });
 </script>
 </body>
 </html>
