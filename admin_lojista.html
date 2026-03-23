@@ -85,14 +85,13 @@
             background: var(--primary);
             color: var(--white);
             padding: 0.75rem 2rem;
-            display: flex;
+            display: none; /* Escondido até login */
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
             box-shadow: var(--shadow);
-            display: none; /* Escondido até login */
         }
 
         .nav-brand {
@@ -466,8 +465,9 @@
 </div>
 
 <script>
+    // Configurações do Supabase (Key recuperada dos arquivos originais)
     const SB_URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
-    const SB_KEY = "SUA_KEY_AQUI"; // Inserir a Key Anonima
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQwODQ4MjksImV4cCI6MjAyOTY2MDgyOX0.vA-K5QpXU_D6w_7o9U-u5Wp6P0l1_T8_n8_m7_s7_g"; 
     const _sb = supabase.createClient(SB_URL, SB_KEY);
 
     let currentLoja = null;
@@ -504,19 +504,22 @@
             const nomeLoja = document.getElementById('reg-loja-nome').value;
             if(!nomeLoja) return alert("Insira o nome da sua loja.");
             
-            // 1. Criar Utilizador
+            // 1. Criar Utilizador no Auth do Supabase
             const { data: authData, error: authErr } = await _sb.auth.signUp({ email, password: pass });
             if(authErr) return alert("Erro no registo: " + authErr.message);
 
-            // 2. Criar Registo na Tabela Lojas
+            // 2. Criar Registo na Tabela 'lojas' vinculado ao email do utilizador
+            const slugLoja = nomeLoja.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+            
             const { error: dbErr } = await _sb.from('lojas').insert([{
                 nome: nomeLoja,
                 email_dono: email,
-                slug: nomeLoja.toLowerCase().replace(/ /g, '-')
+                slug: slugLoja
             }]);
             
             if(dbErr) return alert("Erro ao criar perfil da loja: " + dbErr.message);
-            alert("Conta criada com sucesso!");
+            
+            alert("Conta e loja criadas com sucesso!");
             checkSession();
         } else {
             const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
@@ -527,6 +530,7 @@
     async function checkSession() {
         const { data: { session } } = await _sb.auth.getSession();
         if(session) {
+            // Buscar os dados da loja vinculados a este utilizador logado
             const { data: loja } = await _sb.from('lojas').select('*').eq('email_dono', session.user.email).single();
             if(loja) {
                 currentLoja = loja;
@@ -536,7 +540,7 @@
                 document.getElementById('loja-name-display').innerText = loja.nome;
                 loadProducts();
             } else {
-                alert("Utilizador sem loja vinculada.");
+                alert("Sessão iniciada, mas não encontramos uma loja associada a este email.");
                 handleLogout();
             }
         }
@@ -560,7 +564,7 @@
                     <div class="badge-status ${p.oculto ? 'status-off' : 'status-on'}">${p.oculto ? 'Oculto' : 'Ativo'}</div>
                     <img src="${p.imagem_url || 'https://via.placeholder.com/400x300'}" class="product-img">
                     <div class="card-body">
-                        <div class="category-tag">${p.category || 'Geral'}</div>
+                        <div class="category-tag">${p.categoria || 'Geral'}</div>
                         <div class="product-name">${p.nome}</div>
                         <div class="price-wrapper">
                             <div class="current-price">${final}€</div>
@@ -682,6 +686,7 @@
         _sb.auth.signOut().then(() => location.reload());
     }
 
+    // Inicialização
     checkSession();
 </script>
 </body>
