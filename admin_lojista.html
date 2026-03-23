@@ -423,20 +423,23 @@
                 <div class="form-group full-width"><label>Nome</label><input type="text" id="p-nome" required></div>
                 <div class="form-group"><label>Preço (€)</label><input type="number" id="p-preco" step="0.01" required></div>
                 <div class="form-group"><label>Desconto (%)</label><input type="number" id="p-desc" value="0"></div>
-                <div class="form-group"><label>Categoria</label><select id="p-cat"><option>Geral</option><option>Novidades</option></select></div>
+                <div class="form-group"><label>Categoria</label><select id="p-cat"><option>Geral</option><option>Novidades</option><option>Promoções</option></select></div>
                 <div class="form-group"><label>Visibilidade</label><select id="p-oculto"><option value="false">Visível</option><option value="true">Oculto</option></select></div>
                 <div class="form-group full-width"><label>Descrição</label><textarea id="p-desc-text" rows="2"></textarea></div>
             </div>
             <div style="display:flex; gap:12px; margin-top:1.5rem;">
                 <button type="button" class="btn btn-secondary" style="flex:1" onclick="closeProductModal()">CANCELAR</button>
-                <button type="submit" class="btn btn-primary" style="flex:2" id="btn-save"><span id="save-text">GUARDAR</span></button>
+                <button type="submit" class="btn btn-primary" style="flex:2" id="btn-save">
+                    <span id="save-text">GUARDAR</span>
+                    <div class="loader-spin" id="save-loader"></div>
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// Configurações Oficiais - Portugal Vision
+// CONFIGURAÇÕES SUPABASE ATUALIZADAS
 const SB_URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk"; 
 
@@ -446,6 +449,7 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
     let productsData = [];
     let isRegisterMode = false;
 
+    // --- LÓGICA DE AUTENTICAÇÃO ---
     function toggleAuthMode(toRegister) {
         isRegisterMode = toRegister;
         const title = document.getElementById('auth-title');
@@ -476,10 +480,10 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
             const tel = document.getElementById('reg-loja-tel').value;
             const morada = document.getElementById('reg-loja-morada').value;
 
-            if(!nomeLoja || !nif || !email || !pass) return alert("Por favor, preencha os campos obrigatórios.");
+            if(!nomeLoja || !email || !pass) return alert("Preencha os campos obrigatórios.");
 
             const { data: authData, error: authErr } = await _sb.auth.signUp({ email, password: pass });
-            if(authErr) return alert("Erro no registo: " + authErr.message);
+            if(authErr) return alert("Erro: " + authErr.message);
 
             const slugLoja = nomeLoja.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^\w-]/g, '');
             
@@ -492,12 +496,12 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
                 slug: slugLoja
             }]);
             
-            if(dbErr) return alert("Conta criada, mas erro ao guardar dados da loja: " + dbErr.message);
-            alert("Conta e loja criadas com sucesso!");
+            if(dbErr) return alert("Erro ao criar perfil da loja: " + dbErr.message);
+            alert("Sucesso!");
             checkSession();
         } else {
             const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
-            if(error) alert("Credenciais inválidas: " + error.message); else checkSession();
+            if(error) alert("Credenciais inválidas."); else checkSession();
         }
     }
 
@@ -516,7 +520,7 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
         }
     }
 
-    // --- REUTILIZAÇÃO DAS FUNÇÕES DE PRODUTOS DO CÓDIGO ORIGINAL ---
+    // --- GESTÃO DE PRODUTOS COMPLETA ---
     async function loadProducts() {
         const { data, error } = await _sb.from('produtos').select('*').eq('loja_id', currentLoja.id).order('created_at', {ascending: false});
         if(!error) { productsData = data; renderProducts(); }
@@ -531,7 +535,9 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
                 <div class="card-body">
                     <div class="category-tag">${p.categoria || 'Geral'}</div>
                     <div class="product-name">${p.nome}</div>
-                    <div class="current-price">${p.preco.toFixed(2)}€</div>
+                    <div class="price-wrapper">
+                        <span class="current-price">${p.preco.toFixed(2)}€</span>
+                    </div>
                     <div class="card-actions">
                         <button class="btn btn-secondary" onclick="editProduct('${p.id}')">EDITAR</button>
                         <button class="btn btn-danger" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
@@ -540,6 +546,17 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
             </div>
         `).join('');
     }
+
+    // --- FUNÇÕES DE FORMULÁRIO E MODAL ---
+    function openProductModal() {
+        document.getElementById('modal-title').innerText = "Novo Produto";
+        document.getElementById('productForm').reset();
+        document.getElementById('edit-id').value = "";
+        document.getElementById('preview-img-box').style.display = 'none';
+        document.getElementById('productModal').style.display = 'flex';
+    }
+
+    function closeProductModal() { document.getElementById('productModal').style.display = 'none'; }
 
     function previewFile(input) {
         if (input.files && input.files[0]) {
@@ -553,13 +570,81 @@ const _sb = supabase.createClient(SB_URL, SB_KEY);
         }
     }
 
-    function openProductModal() { 
-        document.getElementById('productForm').reset(); 
-        document.getElementById('productModal').style.display = 'flex'; 
+    async function deleteProduct(id) {
+        if(confirm("Tem a certeza que deseja eliminar este produto?")) {
+            const { error } = await _sb.from('produtos').delete().eq('id', id);
+            if(!error) loadProducts();
+        }
     }
-    function closeProductModal() { document.getElementById('productModal').style.display = 'none'; }
+
+    function editProduct(id) {
+        const p = productsData.find(x => x.id === id);
+        if(!p) return;
+        
+        document.getElementById('modal-title').innerText = "Editar Produto";
+        document.getElementById('edit-id').value = p.id;
+        document.getElementById('p-nome').value = p.nome;
+        document.getElementById('p-preco').value = p.preco;
+        document.getElementById('p-desc').value = p.desconto_percent || 0;
+        document.getElementById('p-cat').value = p.categoria;
+        document.getElementById('p-oculto').value = p.oculto.toString();
+        document.getElementById('p-desc-text').value = p.descricao || "";
+        
+        if(p.imagem_url) {
+            const box = document.getElementById('preview-img-box');
+            box.style.display = 'block';
+            box.style.backgroundImage = `url(${p.imagem_url})`;
+        }
+        document.getElementById('productModal').style.display = 'flex';
+    }
+
+    document.getElementById('productForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const saveText = document.getElementById('save-text');
+        const loader = document.getElementById('save-loader');
+        
+        saveText.style.display = 'none';
+        loader.style.display = 'block';
+
+        const id = document.getElementById('edit-id').value;
+        const file = document.getElementById('file-input').files[0];
+        let imgUrl = document.getElementById('preview-img-box').style.backgroundImage.slice(5, -2);
+
+        // Upload se houver novo ficheiro
+        if(file) {
+            const fileName = `${Date.now()}-${file.name}`;
+            const { data: uploadData } = await _sb.storage.from('produtos-imgs').upload(fileName, file);
+            if(uploadData) {
+                const { data: publicData } = _sb.storage.from('produtos-imgs').getPublicUrl(fileName);
+                imgUrl = publicData.publicUrl;
+            }
+        }
+
+        const payload = {
+            nome: document.getElementById('p-nome').value,
+            preco: parseFloat(document.getElementById('p-preco').value),
+            desconto_percent: parseInt(document.getElementById('p-desc').value),
+            categoria: document.getElementById('p-cat').value,
+            oculto: document.getElementById('p-oculto').value === "true",
+            descricao: document.getElementById('p-desc-text').value,
+            imagem_url: imgUrl,
+            loja_id: currentLoja.id
+        };
+
+        if(id) {
+            await _sb.from('produtos').update(payload).eq('id', id);
+        } else {
+            await _sb.from('produtos').insert([payload]);
+        }
+
+        saveText.style.display = 'block';
+        loader.style.display = 'none';
+        closeProductModal();
+        loadProducts();
+    };
+
     function handleLogout() { _sb.auth.signOut().then(() => location.reload()); }
-    
+
     checkSession();
 </script>
 </body>
