@@ -17,7 +17,6 @@
         .tab.active { color: var(--p); border-bottom: 3px solid var(--p); }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
-        /* Cabeçalho do Perfil */
         .header-loja { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; position: relative; }
         .logo-box { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--p); overflow: hidden; position: relative; background: #eee; flex-shrink: 0; }
         .logo-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -29,15 +28,14 @@
         .stat-card { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .stat-card b { display: block; font-size: 1.5rem; }
 
-        /* Horários e Tags */
         .dia-config { background: #f9f9f9; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #ccc; }
         .dia-config.aberto { border-left-color: var(--ok); }
         .dia-header { display: flex; justify-content: space-between; align-items: center; }
         .inputs-tempo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        
         .tags-group { display: flex; flex-wrap: wrap; gap: 8px; background: #fdfdfd; border: 1px solid #ddd; padding: 10px; border-radius: 8px; }
         .tag-item { font-size: 12px; display: flex; align-items: center; gap: 4px; }
 
-        /* Montra */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
         .prod-card.oculto { opacity: 0.4; filter: grayscale(1); }
@@ -61,28 +59,18 @@
             <div id="t-login" class="tab active" onclick="selTab('login')">ENTRAR</div>
             <div id="t-reg" class="tab" onclick="selTab('reg')">REGISTAR</div>
         </div>
-        
         <div id="f-login">
             <input type="email" id="l-email" placeholder="E-mail">
             <input type="password" id="l-pass" placeholder="Password">
-            <a onclick="selTab('reset')" style="cursor:pointer; font-size:12px; display:block; text-align:right; margin-bottom:10px">Esqueceu-se da password?</a>
             <button onclick="login()">ENTRAR</button>
         </div>
-
         <div id="f-reg" class="hidden">
             <input type="text" id="r-nome" placeholder="Nome da Loja">
-            <input type="text" id="r-gerente" placeholder="Nome do Gerente">
+            <input type="text" id="r-gerente" placeholder="Gerente">
             <input type="email" id="r-email" placeholder="E-mail">
-            <input type="text" id="r-nif" placeholder="NIF (Obrigatório)">
-            <input type="text" id="r-tel" placeholder="Telefone">
-            <input type="text" id="r-morada" placeholder="Morada/Localidade">
+            <input type="text" id="r-nif" placeholder="NIF">
             <input type="password" id="r-pass" placeholder="Password">
             <button style="background:var(--ok)" onclick="registar()">CRIAR CONTA</button>
-        </div>
-
-        <div id="f-reset" class="hidden">
-            <input type="email" id="reset-email" placeholder="E-mail da Conta">
-            <button onclick="alert('Link de recuperação enviado!')">ENVIAR LINK</button>
         </div>
     </div>
 
@@ -94,15 +82,15 @@
                     <input type="file" accept="image/*" onchange="subirLogo(this)">
                 </div>
                 <div class="info-perfil">
-                    <input type="text" id="v-nome-edit" oninput="marcarAltPerfil()" style="font-weight:bold; font-size:1.2rem;" placeholder="Loja">
+                    <input type="text" id="v-nome-edit" oninput="marcarAltPerfil()" style="font-weight:bold; font-size:1.2rem;">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px">
-                        <input type="text" id="v-gerente-edit" oninput="marcarAltPerfil()" style="font-size:12px" placeholder="Gerente">
-                        <input type="text" id="v-nif-edit" oninput="marcarAltPerfil()" style="font-size:12px" placeholder="NIF">
-                        <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" style="font-size:12px" placeholder="Telefone">
-                        <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" style="font-size:12px" placeholder="Morada">
+                        <input type="text" id="v-gerente-edit" oninput="marcarAltPerfil()" placeholder="Gerente">
+                        <input type="text" id="v-nif-edit" oninput="marcarAltPerfil()" placeholder="NIF">
+                        <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" placeholder="Telefone">
+                        <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" placeholder="Morada">
                     </div>
                 </div>
-                <button onclick="location.reload()" style="width:auto; background:var(--err); padding: 5px 10px; font-size:11px; position:absolute; top:0; right:0">Sair</button>
+                <button onclick="location.reload()" style="width:auto; background:var(--err); padding: 5px; position:absolute; top:0; right:0">Sair</button>
             </div>
             <button id="btn-save-profile" class="btn-save-main" onclick="atualizarPerfil()">Guardar Alterações do Perfil</button>
             
@@ -119,16 +107,20 @@
                 <input type="text" id="p-nome" placeholder="Nome" style="grid-column: span 2">
                 <input type="number" id="p-preco" placeholder="Preço (€)">
                 <input type="number" id="p-desc" placeholder="Desc. %" style="grid-column: span 3">
+                
                 <div style="grid-column: span 3">
                     <div class="tags-group" id="p-tags-container">
                         <label class="tag-item"><input type="checkbox" value="normal"> Padrão</label>
                         <label class="tag-item"><input type="checkbox" value="promo"> Promoção</label>
                         <label class="tag-item"><input type="checkbox" value="novo"> Novidade</label>
                         <label class="tag-item"><input type="checkbox" value="destaque"> Destaque</label>
+                        <label class="tag-item"><input type="checkbox" value="menu"> Menu</label>
+                        <label class="tag-item"><input type="checkbox" value="prato"> Prato do Dia</label>
+                        <label class="tag-item"><input type="checkbox" value="lastcall"> Promo Última Hora</label>
                     </div>
                 </div>
             </div>
-            <input type="file" id="p-media" accept="image/*,video/*" capture="environment">
+            <input type="file" id="p-media" accept="image/*,video/*">
             <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok); margin-top:10px">GUARDAR ARTIGO</button>
             <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR</button>
         </div>
@@ -136,18 +128,15 @@
         <div id="grid-prods" class="grid"></div>
 
         <div class="card">
-            <h3>⚙️ Horário de Funcionamento</h3>
-            <button onclick="replicarSegunda()" style="background:#eee; color:#333; font-size:10px; margin-bottom:10px; border:1px solid #ddd">📋 Copiar Segunda para todos os dias</button>
+            <h3>⚙️ Horários</h3>
+            <button onclick="replicarSegunda()" style="font-size:10px; margin-bottom:10px">📋 Copiar Segunda para todos</button>
             <div id="horarios-lista"></div>
             <button id="btn-save-config" class="btn-save-main" onclick="salvarHorarios()">ATUALIZAR HORÁRIOS</button>
         </div>
 
         <div class="card" style="text-align:center">
-            <div style="display:flex; gap:5px; margin-bottom:10px">
-                <input type="text" id="link-catalogo" readonly style="font-size:10px">
-                <button onclick="navigator.clipboard.writeText(document.getElementById('link-catalogo').value); alert('Copiado!')" style="width:70px; background:var(--s)">Copiar</button>
-            </div>
-            <img id="img-qrcode" style="width:140px">
+            <input type="text" id="link-catalogo" readonly style="font-size:10px">
+            <img id="img-qrcode" style="width:140px; margin-top:10px">
         </div>
     </div>
 </div>
@@ -160,11 +149,11 @@
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
+    // Iniciar Horários
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
-            <div class="dia-header">
-                <b>${dia}</b>
-                <select id="h-${i}-status" onchange="atualizarEstiloDia(${i}); marcarAltHoras()" style="width:100px; margin:0">
+            <div class="dia-header"><b>${dia}</b>
+                <select id="h-${i}-status" onchange="atualizarEstiloDia(${i}); marcarAltHoras()" style="width:100px">
                     <option value="aberto">Aberto</option>
                     <option value="fechado">Fechado</option>
                 </select>
@@ -178,44 +167,29 @@
         </div>`).join('');
 
     function selTab(m) {
-        ['f-login', 'f-reg', 'f-reset'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        ['f-login', 'f-reg'].forEach(id => document.getElementById(id).classList.add('hidden'));
         document.getElementById('f-' + m).classList.remove('hidden');
-    }
-
-    async function registar() {
-        const dados = {
-            nome: document.getElementById('r-nome').value,
-            gerente: document.getElementById('r-gerente').value,
-            email: document.getElementById('r-email').value,
-            nif: document.getElementById('r-nif').value,
-            telefone: document.getElementById('r-tel').value,
-            morada: document.getElementById('r-morada').value,
-            password: document.getElementById('r-pass').value,
-            slug: document.getElementById('r-nome').value.toLowerCase().trim().replace(/\s+/g, '-')
-        };
-        const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
-        if (error) alert("Erro: " + error.message); else { lojaAtiva = data; abrirPainel(); }
     }
 
     async function login() {
         const { data } = await _sb.from('lojas').select('*').eq('email', document.getElementById('l-email').value).eq('password', document.getElementById('l-pass').value).maybeSingle();
-        if (data) { lojaAtiva = data; abrirPainel(); } else alert("Credenciais erradas.");
+        if (data) { lojaAtiva = data; abrirPainel(); } else alert("Erro no login.");
     }
 
     function abrirPainel() {
         document.getElementById('auth-area').classList.add('hidden');
         document.getElementById('dash-area').classList.remove('hidden');
+        
+        // Preencher Perfil
         document.getElementById('v-nome-edit').value = lojaAtiva.nome || "";
         document.getElementById('v-gerente-edit').value = lojaAtiva.gerente || "";
         document.getElementById('v-nif-edit').value = lojaAtiva.nif || "";
         document.getElementById('v-tel-edit').value = lojaAtiva.telefone || "";
         document.getElementById('v-morada-edit').value = lojaAtiva.morada || "";
         
-        // CORREÇÃO: Forçar exibição do logo
-        const logoImg = document.getElementById('v-logo');
-        if(lojaAtiva.logo_url) logoImg.src = lojaAtiva.logo_url;
-        else logoImg.src = "https://via.placeholder.com/80";
-
+        if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
+        
+        // Carregar Horários Gravados
         if(lojaAtiva.horarios) {
             lojaAtiva.horarios.forEach((h, i) => {
                 if(!h) return;
@@ -227,150 +201,132 @@
                 atualizarEstiloDia(i);
             });
         }
-        const link = window.location.origin + "/catalogo_digital.html?loja=" + lojaAtiva.slug;
+
+        // QR Code
+        const link = "https://portugalvision.com/loja/" + (lojaAtiva.slug || lojaAtiva.id);
         document.getElementById('link-catalogo').value = link;
         QRCode.toDataURL(link, { width: 150 }, (err, url) => { document.getElementById('img-qrcode').src = url; });
+
         carregarDados();
     }
 
-    // CORREÇÃO: Função de logo melhorada
     async function subirLogo(input) {
         const file = input.files[0];
         if (!file) return;
         try {
-            const options = { maxSizeMB: 0.1, maxWidthOrHeight: 400, useWebWorker: true };
-            const compressed = await imageCompression(file, options);
+            const comp = await imageCompression(file, { maxSizeMB: 0.1, maxWidthOrHeight: 400 });
             const path = `logos/${lojaAtiva.id}_${Date.now()}.webp`;
-            
-            await _sb.storage.from('produtos').upload(path, compressed);
+            await _sb.storage.from('produtos').upload(path, comp);
             const { data } = _sb.storage.from('produtos').getPublicUrl(path);
-            
             await _sb.from('lojas').update({ logo_url: data.publicUrl }).eq('id', lojaAtiva.id);
             document.getElementById('v-logo').src = data.publicUrl;
             lojaAtiva.logo_url = data.publicUrl;
-            alert("Logótipo atualizado!");
-        } catch (e) { alert("Erro ao subir logótipo."); }
+            alert("Logótipo guardado!");
+        } catch (e) { alert("Erro."); }
     }
 
-    function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
-    function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
-
-    function replicarSegunda() {
-        const m1 = document.getElementById('h-0-m1').value;
-        const m2 = document.getElementById('h-0-m2').value;
-        const t1 = document.getElementById('h-0-t1').value;
-        const t2 = document.getElementById('h-0-t2').value;
-        const st = document.getElementById('h-0-status').value;
-        for(let i=1; i<7; i++) {
-            document.getElementById(`h-${i}-m1`).value = m1; document.getElementById(`h-${i}-m2`).value = m2;
-            document.getElementById(`h-${i}-t1`).value = t1; document.getElementById(`h-${i}-t2`).value = t2;
-            document.getElementById(`h-${i}-status`).value = st; atualizarEstiloDia(i);
-        }
-        marcarAltHoras();
-    }
-
-    async function atualizarPerfil() {
-        const d = { nome: document.getElementById('v-nome-edit').value, gerente: document.getElementById('v-gerente-edit').value, nif: document.getElementById('v-nif-edit').value, telefone: document.getElementById('v-tel-edit').value, morada: document.getElementById('v-morada-edit').value };
-        await _sb.from('lojas').update(d).eq('id', lojaAtiva.id);
-        document.getElementById('btn-save-profile').classList.remove('pendente');
-        alert("Perfil Atualizado!");
-    }
-
-    async function salvarHorarios() {
-        const hores = diasSemana.map((_, i) => ({ m1: document.getElementById(`h-${i}-m1`).value, m2: document.getElementById(`h-${i}-m2`).value, t1: document.getElementById(`h-${i}-t1`).value, t2: document.getElementById(`h-${i}-t2`).value, status: document.getElementById(`h-${i}-status`).value }));
-        await _sb.from('lojas').update({ horarios: hores }).eq('id', lojaAtiva.id);
-        document.getElementById('btn-save-config').classList.remove('pendente');
-        alert("Horários Gravados!");
-    }
-
-    // CORREÇÃO: Função salvar produto com reset do botão
     async function salvarProduto() {
+        const btn = document.getElementById('btn-save-prod');
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-media').files[0];
         const tags = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(el => el.value);
-        const btn = document.getElementById('btn-save-prod');
         
-        const originalText = id ? "GUARDAR ALTERAÇÕES" : "GUARDAR ARTIGO";
-        btn.innerText = "A ENVIAR...";
         btn.disabled = true;
+        btn.innerText = "A ENVIAR...";
 
-        const dados = { nome: document.getElementById('p-nome').value, preco: parseFloat(document.getElementById('p-preco').value), desconto_percent: parseInt(document.getElementById('p-desc').value) || 0, tipo_tag: tags, loja_id: lojaAtiva.id };
+        const dados = { 
+            nome: document.getElementById('p-nome').value, 
+            preco: parseFloat(document.getElementById('p-preco').value), 
+            desconto_percent: parseInt(document.getElementById('p-desc').value) || 0, 
+            tipo_tag: tags, 
+            loja_id: lojaAtiva.id 
+        };
 
         try {
             if (file) {
-                let fileToUpload = file;
-                let fileName = `m_${Date.now()}`;
-                if (file.type.startsWith('image/')) {
-                    fileToUpload = await imageCompression(file, { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true, fileType: 'image/webp' });
-                    fileName += ".webp";
-                } else { fileName += file.name.substring(file.name.lastIndexOf('.')); }
-                await _sb.storage.from('produtos').upload(fileName, fileToUpload);
+                const fileName = `p_${Date.now()}.webp`;
+                const comp = await imageCompression(file, { maxSizeMB: 0.2 });
+                await _sb.storage.from('produtos').upload(fileName, comp);
                 const { data } = _sb.storage.from('produtos').getPublicUrl(fileName);
                 dados.imagem_url = data.publicUrl;
             }
-
             if(id) await _sb.from('produtos').update(dados).eq('id', id);
             else await _sb.from('produtos').insert([dados]);
-            
-            cancelarEdicao(); 
-            carregarDados();
-        } catch (err) {
-            alert("Erro ao guardar.");
-        } finally {
-            btn.innerText = originalText;
+            cancelarEdicao(); carregarDados();
+        } catch (err) { alert("Erro."); }
+        finally {
             btn.disabled = false;
+            btn.innerText = id ? "GUARDAR ALTERAÇÕES" : "GUARDAR ARTIGO";
         }
     }
 
     async function carregarDados() {
         const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
         const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
+        
         document.getElementById('s-views').innerText = m?.filter(i => i.tipo === 'view_loja').length || 0;
         document.getElementById('s-waps').innerText = m?.filter(i => i.tipo === 'click_whatsapp').length || 0;
 
-        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
-            const isVid = p.imagem_url?.endsWith('.mp4') || p.imagem_url?.endsWith('.webm');
-            return `
+        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => `
             <div class="prod-card ${p.oculto ? 'oculto' : ''}">
                 <div class="prod-actions">
-                    <button class="btn-circle" style="background:var(--s)" onclick="toggleOcultar(${p.id}, ${p.oculto})">${p.oculto ? '👁️' : '🕶️'}</button>
                     <button class="btn-circle" style="background:orange" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
-                ${isVid ? `<video src="${p.imagem_url}" class="prod-video" autoplay muted loop playsinline></video>` : `<img src="${p.imagem_url}" class="prod-img">`}
+                <img src="${p.imagem_url}" class="prod-img">
                 <div style="padding:8px"><small>${p.nome}</small><br><b>${p.preco}€</b></div>
-            </div>`;
-        }).join('');
+            </div>`).join('');
     }
 
-    async function toggleOcultar(id, est) { await _sb.from('produtos').update({ oculto: !est }).eq('id', id); carregarDados(); }
-    
     function prepararEdicao(p) {
         document.getElementById('edit-id').value = p.id;
         document.getElementById('p-nome').value = p.nome;
         document.getElementById('p-preco').value = p.preco;
         document.getElementById('p-desc').value = p.desconto_percent || 0;
+        document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = p.tipo_tag?.includes(cb.value));
         document.getElementById('form-title').innerText = "✏️ Editar Artigo";
         document.getElementById('btn-cancel').classList.remove('hidden');
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function cancelarEdicao() {
-        document.getElementById('edit-id').value = ""; 
+        document.getElementById('edit-id').value = "";
         document.getElementById('p-nome').value = "";
-        document.getElementById('p-preco').value = ""; 
+        document.getElementById('p-preco').value = "";
         document.getElementById('p-desc').value = "";
-        document.getElementById('p-media').value = ""; 
+        document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = false);
         document.getElementById('btn-cancel').classList.add('hidden');
         document.getElementById('form-title').innerText = "📸 Publicar Artigo";
-        document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = false);
+    }
+
+    async function salvarHorarios() {
+        const hores = diasSemana.map((_, i) => ({ 
+            m1: document.getElementById(`h-${i}-m1`).value, 
+            m2: document.getElementById(`h-${i}-m2`).value, 
+            t1: document.getElementById(`h-${i}-t1`).value, 
+            t2: document.getElementById(`h-${i}-t2`).value, 
+            status: document.getElementById(`h-${i}-status`).value 
+        }));
+        await _sb.from('lojas').update({ horarios: hores }).eq('id', lojaAtiva.id);
+        document.getElementById('btn-save-config').classList.remove('pendente');
+        alert("Horários Gravados!");
     }
 
     function atualizarEstiloDia(i) {
         const s = document.getElementById(`h-${i}-status`).value;
         document.getElementById(`card-${i}`).classList.toggle('aberto', s === 'aberto');
     }
-
+    
+    function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
+    function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
+    
+    async function atualizarPerfil() {
+        const d = { nome: document.getElementById('v-nome-edit').value, gerente: document.getElementById('v-gerente-edit').value, nif: document.getElementById('v-nif-edit').value, telefone: document.getElementById('v-tel-edit').value, morada: document.getElementById('v-morada-edit').value };
+        await _sb.from('lojas').update(d).eq('id', lojaAtiva.id);
+        document.getElementById('btn-save-profile').classList.remove('pendente');
+        alert("Perfil Atualizado!");
+    }
+    
     async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
 </script>
 </body>
