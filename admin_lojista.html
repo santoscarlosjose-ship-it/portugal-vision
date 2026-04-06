@@ -6,6 +6,7 @@
     <title>Painel Lojista | Portugal Vision</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <style>
         :root { --p: #1d3557; --s: #457b9d; --ok: #27ae60; --err: #e63946; --gray: #f4f4f9; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding: 10px; color: #333; }
@@ -152,7 +153,6 @@
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-    // Gerar lista de horários na interface
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
@@ -235,7 +235,6 @@
             </div>`).join('');
     }
 
-    // CORREÇÃO 1: OCULTAR/MOSTRAR IMAGEM
     async function toggleOcultar(id, estadoAtual) {
         const novoEstado = !estadoAtual;
         const { error } = await _sb.from('produtos').update({ oculto: novoEstado }).eq('id', id);
@@ -243,7 +242,6 @@
         else alert("Erro ao atualizar visibilidade");
     }
 
-    // CORREÇÃO 2: REPLICAR HORÁRIO DE SEGUNDA
     function replicarSegunda() {
         const m1 = document.getElementById('h-0-m1').value;
         const m2 = document.getElementById('h-0-m2').value;
@@ -262,10 +260,12 @@
         marcarAltConfig();
     }
 
+    // FUNÇÃO SALVAR ATUALIZADA COM COMPRESSÃO
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-foto').files[0];
         const tags = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(el => el.value);
+        const btn = document.getElementById('btn-save-prod');
 
         const dados = {
             nome: document.getElementById('p-nome').value,
@@ -276,14 +276,34 @@
         };
 
         if (file) {
-            const path = `p_${Date.now()}.webp`;
-            await _sb.storage.from('produtos').upload(path, file);
-            const { data } = _sb.storage.from('produtos').getPublicUrl(path);
-            dados.imagem_url = data.publicUrl;
+            try {
+                btn.innerText = "⌛ A COMPRIMIR...";
+                btn.disabled = true;
+
+                // Opções de compressão: Máximo 200KB, Max 1200px, WebP
+                const options = { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true, fileType: 'image/webp' };
+                const compressedFile = await imageCompression(file, options);
+                
+                const path = `p_${Date.now()}.webp`;
+                await _sb.storage.from('produtos').upload(path, compressedFile);
+                const { data } = _sb.storage.from('produtos').getPublicUrl(path);
+                dados.imagem_url = data.publicUrl;
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao processar imagem.");
+                btn.innerText = "GUARDAR PRODUTO";
+                btn.disabled = false;
+                return;
+            }
         }
 
         const res = id ? await _sb.from('produtos').update(dados).eq('id', id) : await _sb.from('produtos').insert([dados]);
-        if(!res.error) { cancelarEdicao(); carregarDados(); }
+        if(!res.error) { 
+            cancelarEdicao(); 
+            carregarDados(); 
+            btn.innerText = "GUARDAR PRODUTO";
+            btn.disabled = false;
+        }
     }
 
     function prepararEdicao(p) {
@@ -334,7 +354,7 @@
         const el = document.getElementById('link-catalogo');
         el.select();
         document.execCommand("copy");
-        alert("Link copiado para a área de transferência!");
+        alert("Link copiado!");
     }
 </script>
 </body>
