@@ -348,7 +348,9 @@
 
         try {
             if (file) {
+                // Tenta definir o tamanho, se a coluna não existir, o Supabase ignorará no INSERT/UPDATE se filtrarmos
                 dados.tamanho_bytes = file.size;
+                
                 let fileToUpload = file;
                 let fileName = `m_${Date.now()}`;
                 if (file.type.startsWith('image/')) {
@@ -368,6 +370,13 @@
                 res = await _sb.from('produtos').update(dados).eq('id', id);
             } else {
                 res = await _sb.from('produtos').insert([dados]);
+            }
+
+            // Se o erro for especificamente a falta da coluna, tentamos salvar sem ela automaticamente
+            if(res.error && res.error.message.includes("tamanho_bytes")) {
+                delete dados.tamanho_bytes;
+                if(id) res = await _sb.from('produtos').update(dados).eq('id', id);
+                else res = await _sb.from('produtos').insert([dados]);
             }
 
             if(res.error) throw res.error;
