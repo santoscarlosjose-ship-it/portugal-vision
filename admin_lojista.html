@@ -4,47 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Lojista | Portugal Vision</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    
     <style>
+        /* Variáveis de design e cores do Portugal Vision */
         :root { --p: #1d3557; --s: #457b9d; --ok: #27ae60; --err: #e63946; --gray: #f4f4f9; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding: 10px; color: #333; }
         .container { max-width: 900px; margin: 0 auto; }
+        
+        /* Estilos dos Cards (Caixas brancas) */
         .auth-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #999; }
         .tab.active { color: var(--p); border-bottom: 3px solid var(--p); }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
+        /* Header e Logo da Loja */
         .header-loja { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; position: relative; }
         .logo-box { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--p); overflow: hidden; position: relative; background: #eee; flex-shrink: 0; }
         .logo-box img { width: 100%; height: 100%; object-fit: cover; }
         .logo-box input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
-        .info-perfil { flex: 1; }
-        .info-perfil input { border: none; background: transparent; padding: 2px; width: 100%; margin: 0; }
         
+        /* Grelha de Produtos e Status */
         .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .stat-card { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .stat-card b { display: block; font-size: 1.5rem; }
-
         .dia-config { background: #f9f9f9; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #ccc; }
         .dia-config.aberto { border-left-color: var(--ok); }
-        .dia-header { display: flex; justify-content: space-between; align-items: center; }
         .inputs-tempo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-        .tags-group { display: flex; flex-wrap: wrap; gap: 8px; background: #fdfdfd; border: 1px solid #ddd; padding: 10px; border-radius: 8px; }
-        .tag-item { font-size: 12px; display: flex; align-items: center; gap: 4px; }
-
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        
+        /* Cards de Produto Individuais */
         .prod-card { background: white; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #ddd; }
         .prod-card.oculto { opacity: 0.4; filter: grayscale(1); }
         .prod-img, .prod-video { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
         .prod-actions { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; z-index: 5; }
         .btn-circle { width: 28px; height: 28px; border-radius: 50%; border: none; color: white; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
 
+        /* Estilos de Botão e Estado de Pendente */
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-save-main { background: var(--s); transition: 0.3s; }
         .btn-save-main.pendente { background: var(--err) !important; }
         .hidden { display: none !important; }
     </style>
@@ -153,6 +155,7 @@
 </div>
 
 <script>
+    // Configurações do Supabase (Atenção: A chave deve ser a sua)
     const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
     const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
     const _sb = supabase.createClient(_URL, _KEY);
@@ -160,6 +163,7 @@
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
+    // Gera o HTML para cada dia da semana no painel de horários
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
@@ -177,11 +181,13 @@
             </div>
         </div>`).join('');
 
+    // Troca entre abas de login/registo
     function selTab(m) {
         ['f-login', 'f-reg', 'f-reset'].forEach(id => document.getElementById(id).classList.add('hidden'));
         document.getElementById('f-' + m).classList.remove('hidden');
     }
 
+    // Registo de nova conta
     async function registar() {
         const dados = {
             nome: document.getElementById('r-nome').value,
@@ -197,11 +203,13 @@
         if (error) alert("Erro: " + error.message); else { lojaAtiva = data; abrirPainel(); }
     }
 
+    // Login na conta
     async function login() {
         const { data } = await _sb.from('lojas').select('*').eq('email', document.getElementById('l-email').value).eq('password', document.getElementById('l-pass').value).maybeSingle();
         if (data) { lojaAtiva = data; abrirPainel(); } else alert("Credenciais erradas.");
     }
 
+    // Inicializa o Dashboard após login
     function abrirPainel() {
         document.getElementById('auth-area').classList.add('hidden');
         document.getElementById('dash-area').classList.remove('hidden');
@@ -213,6 +221,7 @@
         
         if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
 
+        // Se houver horários guardados, preenche os inputs
         if(lojaAtiva.horarios) {
             lojaAtiva.horarios.forEach((h, i) => {
                 if(!h) return;
@@ -224,12 +233,15 @@
                 atualizarEstiloDia(i);
             });
         }
+        
+        // Gera o link do catálogo digital baseado no slug
         const link = window.location.origin + "/catalogo_digital.html?loja=" + lojaAtiva.slug;
         document.getElementById('link-catalogo').value = link;
         QRCode.toDataURL(link, { width: 150 }, (err, url) => { document.getElementById('img-qrcode').src = url; });
         carregarDados();
     }
 
+    // Upload e compressão do Logótipo
     async function subirLogo(input) {
         const file = input.files[0];
         if (!file) return;
@@ -246,9 +258,11 @@
         } catch (e) { alert("Erro ao subir logótipo."); }
     }
 
+    // Funções visuais para avisar que há mudanças não gravadas (botão vermelho)
     function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
     function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
 
+    // Utilitário para preencher todos os horários iguais à Segunda
     function replicarSegunda() {
         const m1 = document.getElementById('h-0-m1').value;
         const m2 = document.getElementById('h-0-m2').value;
@@ -263,6 +277,7 @@
         marcarAltHoras();
     }
 
+    // Atualiza os dados de texto da loja
     async function atualizarPerfil() {
         const d = { nome: document.getElementById('v-nome-edit').value, gerente: document.getElementById('v-gerente-edit').value, nif: document.getElementById('v-nif-edit').value, telefone: document.getElementById('v-tel-edit').value, morada: document.getElementById('v-morada-edit').value };
         await _sb.from('lojas').update(d).eq('id', lojaAtiva.id);
@@ -270,6 +285,7 @@
         alert("Perfil Atualizado!");
     }
 
+    // Grava o JSON de horários na base de dados
     async function salvarHorarios() {
         const hores = diasSemana.map((_, i) => ({ m1: document.getElementById(`h-${i}-m1`).value, m2: document.getElementById(`h-${i}-m2`).value, t1: document.getElementById(`h-${i}-t1`).value, t2: document.getElementById(`h-${i}-t2`).value, status: document.getElementById(`h-${i}-status`).value }));
         await _sb.from('lojas').update({ horarios: hores }).eq('id', lojaAtiva.id);
@@ -277,6 +293,7 @@
         alert("Horários Gravados!");
     }
 
+    // Salva um novo produto ou edita um existente (incluindo compressão de imagem)
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const file = document.getElementById('p-media').files[0];
@@ -294,6 +311,7 @@
                 let fileToUpload = file;
                 let fileName = `m_${Date.now()}`;
                 if (file.type.startsWith('image/')) {
+                    // Transforma para WebP para economizar espaço
                     fileToUpload = await imageCompression(file, { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true, fileType: 'image/webp' });
                     fileName += ".webp";
                 } else { fileName += file.name.substring(file.name.lastIndexOf('.')); }
@@ -315,9 +333,12 @@
         }
     }
 
+    // Carrega a grelha de produtos e as estatísticas (cliques/views)
     async function carregarDados() {
         const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
         const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
+        
+        // Contador simples baseado nos registos de métricas
         document.getElementById('s-views').innerText = m?.filter(i => i.tipo === 'view_loja').length || 0;
         document.getElementById('s-waps').innerText = m?.filter(i => i.tipo === 'click_whatsapp').length || 0;
 
@@ -336,8 +357,10 @@
         }).join('');
     }
 
+    // Função para esconder/mostrar produto sem apagar
     async function toggleOcultar(id, est) { await _sb.from('produtos').update({ oculto: !est }).eq('id', id); carregarDados(); }
     
+    // Preenche o formulário com dados do produto para editar
     function prepararEdicao(p) {
         document.getElementById('edit-id').value = p.id;
         document.getElementById('p-nome').value = p.nome;
@@ -349,6 +372,7 @@
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
+    // Limpa o formulário de produtos
     function cancelarEdicao() {
         document.getElementById('edit-id').value = ""; 
         document.getElementById('p-nome').value = "";
@@ -360,13 +384,15 @@
         document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = false);
     }
 
+    // Altera a cor do card do horário se estiver aberto ou fechado
     function atualizarEstiloDia(i) {
         const s = document.getElementById(`h-${i}-status`).value;
         document.getElementById(`card-${i}`).classList.toggle('aberto', s === 'aberto');
     }
 
+    // Elimina o produto do banco de dados
     async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
 </script>
 </body>
-</html>                                                                                                        <!DOCTYPE html>
+</html>                                                                                                  <!DOCTYPE html>
 
