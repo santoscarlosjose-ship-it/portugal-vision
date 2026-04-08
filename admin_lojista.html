@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     
     <style>
-        :root { --p: #1d3557; --s: #457b9d; --ok: #27ae60; --err: #e63946; --gray: #f4f4f9; }
+        :root { --p: #1d3557; --s: #457b9d; --ok: #27ae60; --err: #e63946; --gray: #f4f4f9; --warn: #f39c12; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); margin: 0; padding: 10px; color: #333; }
         .container { max-width: 900px; margin: 0 auto; }
         
@@ -20,6 +20,12 @@
         .tab.active { color: var(--p); border-bottom: 3px solid var(--p); }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
+        /* BANNER DE STATUS */
+        .status-banner { padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 14px; display: none; }
+        .status-free { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .status-expired { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
         .header-loja { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; position: relative; }
         .logo-box { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--p); overflow: hidden; position: relative; background: #eee; flex-shrink: 0; }
         .logo-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -42,6 +48,7 @@
 
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #ccc !important; cursor: not-allowed; }
         .btn-save-main.pendente { background: var(--err) !important; }
         .hidden { display: none !important; }
         
@@ -51,6 +58,8 @@
 <body>
 
 <div class="container">
+    <div id="status-banner" class="status-banner"></div>
+
     <div id="auth-area" class="auth-card">
         <h2 style="text-align:center; color: var(--p)">Portugal Vision</h2>
         <div class="tabs">
@@ -198,6 +207,42 @@
         document.getElementById('f-' + m).classList.remove('hidden');
     }
 
+    // NOVA FUNÇÃO: VERIFICAR PLANO E DIAS RESTANTES
+    function verificarPlano() {
+        const banner = document.getElementById('status-banner');
+        if (!lojaAtiva) return;
+
+        // Se for plano Pago (PRO), não mostra nada
+        if (lojaAtiva.plano === 'pro') {
+            banner.style.display = 'none';
+            document.getElementById('btn-save-prod').disabled = false;
+            return;
+        }
+
+        // Lógica para Plano Gratuito
+        const dataCriacao = new Date(lojaAtiva.created_at);
+        const hoje = new Date();
+        const diffTempo = hoje - dataCriacao;
+        const diasPassados = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
+        const diasRestantes = 30 - diasPassados;
+
+        banner.style.display = 'block';
+        banner.className = 'status-banner';
+
+        if (diasRestantes > 10) {
+            banner.classList.add('status-free');
+            banner.innerHTML = `🌟 Modo Gratuito: Restam <b>${diasRestantes} dias</b> de teste.`;
+        } else if (diasRestantes <= 10 && diasRestantes > 0) {
+            banner.classList.add('status-warn');
+            banner.innerHTML = `⚠️ O seu período gratuito termina em <b>${diasRestantes} dias</b>! Atualize para não perder o acesso.`;
+        } else {
+            banner.classList.add('status-expired');
+            banner.innerHTML = `❌ Período de teste expirado. Por favor, atualize para a versão PRO para continuar a publicar.`;
+            document.getElementById('btn-save-prod').disabled = true; // Bloqueia novos produtos
+            document.getElementById('btn-save-prod').title = "Período de teste expirado";
+        }
+    }
+
     async function buscarSugestoes(texto) {
         if (texto.length < 5) return;
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${texto}&countrycodes=pt&limit=5`);
@@ -219,6 +264,7 @@
             telefone: document.getElementById('r-tel').value,
             morada: morada,
             password: document.getElementById('r-pass').value,
+            plano: 'free', // Padrão ao registar
             slug: document.getElementById('r-nome').value.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')
         };
         const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
@@ -262,10 +308,10 @@
             if(!err) document.getElementById('img-qrcode').src = url; 
         });
 
+        verificarPlano(); // Verificar status da conta
         carregarDados();
     }
 
-    // FUNÇÃO AUXILIAR PARA CRIAR NOMES DE FICHEIROS AMIGÁVEIS (SEO)
     function criarSlug(texto) {
         return texto.toLowerCase().trim()
             .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
@@ -280,7 +326,6 @@
             const options = { maxSizeMB: 0.1, maxWidthOrHeight: 400, useWebWorker: true };
             const compressed = await imageCompression(file, options);
             
-            // ALTERAÇÃO: Pasta por loja e nome amigável
             const slugLoja = criarSlug(lojaAtiva.nome);
             const path = `loja_${lojaAtiva.id}/logotipo/logo-${slugLoja}.webp`;
             
@@ -365,8 +410,6 @@
             if (file) {
                 dados.tamanho_bytes = file.size;
                 let fileToUpload = file;
-                
-                // ALTERAÇÃO: Nome amigável para SEO e organização em pastas
                 const slugProd = criarSlug(dados.nome);
                 let fileName = `loja_${lojaAtiva.id}/produtos/${slugProd}_${Date.now()}`;
 
@@ -402,6 +445,7 @@
         } finally {
             btn.disabled = false;
             btn.innerText = "GUARDAR ARTIGO";
+            verificarPlano(); // Re-verifica após salvar
         }
     }
 
