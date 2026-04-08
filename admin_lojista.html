@@ -302,7 +302,7 @@
             });
         }
         
-        const link = window.location.origin + "/catalogo_digital.html?loja=" + lojaAtiva.slug;
+        const link = window.location.origin + "/portugal-vision.github.io/portugal-vision/catalogo_digital.html?loja=" + lojaAtiva.slug;
         document.getElementById('link-catalogo').value = link;
         QRCode.toDataURL(link, { width: 200, margin: 2 }, (err, url) => { 
             if(!err) document.getElementById('img-qrcode').src = url; 
