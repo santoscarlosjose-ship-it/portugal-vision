@@ -219,7 +219,7 @@
             telefone: document.getElementById('r-tel').value,
             morada: morada,
             password: document.getElementById('r-pass').value,
-            slug: document.getElementById('r-nome').value.toLowerCase().trim().replace(/\s+/g, '-')
+            slug: document.getElementById('r-nome').value.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')
         };
         const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
         if (error) alert("Erro: " + error.message); else { lojaAtiva = data; abrirPainel(); }
@@ -256,9 +256,13 @@
             });
         }
         
+        // GERAÇÃO AUTOMÁTICA DO LINK E QR CODE BASEADO NO SLUG DA LOJA
         const link = window.location.origin + "/catalogo_digital.html?loja=" + lojaAtiva.slug;
         document.getElementById('link-catalogo').value = link;
-        QRCode.toDataURL(link, { width: 150 }, (err, url) => { document.getElementById('img-qrcode').src = url; });
+        QRCode.toDataURL(link, { width: 200, margin: 2 }, (err, url) => { 
+            if(!err) document.getElementById('img-qrcode').src = url; 
+        });
+
         carregarDados();
     }
 
@@ -348,9 +352,7 @@
 
         try {
             if (file) {
-                // Tenta definir o tamanho, se a coluna não existir, o Supabase ignorará no INSERT/UPDATE se filtrarmos
                 dados.tamanho_bytes = file.size;
-                
                 let fileToUpload = file;
                 let fileName = `m_${Date.now()}`;
                 if (file.type.startsWith('image/')) {
@@ -372,7 +374,6 @@
                 res = await _sb.from('produtos').insert([dados]);
             }
 
-            // Se o erro for especificamente a falta da coluna, tentamos salvar sem ela automaticamente
             if(res.error && res.error.message.includes("tamanho_bytes")) {
                 delete dados.tamanho_bytes;
                 if(id) res = await _sb.from('produtos').update(dados).eq('id', id);
