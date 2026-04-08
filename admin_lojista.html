@@ -20,7 +20,6 @@
         .tab.active { color: var(--p); border-bottom: 3px solid var(--p); }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
-        /* BANNER DE STATUS */
         .status-banner { padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 14px; display: none; }
         .status-free { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .status-warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
@@ -53,6 +52,9 @@
         .hidden { display: none !important; }
         
         .ferias-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 12px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e63946; }
+
+        /* Estilo para sugestão de IA */
+        .ai-suggestion { font-size: 11px; color: var(--s); margin-bottom: 5px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -125,10 +127,27 @@
         <div class="card">
             <h3 id="form-title">📸 Publicar Artigo</h3>
             <input type="hidden" id="edit-id">
+            
+            <div id="ai-suggestion-box" class="ai-suggestion hidden"></div>
+            
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px">
-                <input type="text" id="p-nome" placeholder="Nome" style="grid-column: span 2">
+                <input type="text" id="p-nome" placeholder="Nome (Ex: Bacalhau à Brás)" style="grid-column: span 2" onblur="sugerirIngredientes(this.value)">
                 <input type="number" id="p-preco" placeholder="Preço (€)">
+                
+                <div style="grid-column: span 3">
+                    <label style="font-size:12px; color:#666">Categoria:</label>
+                    <input type="text" id="p-categoria" list="lista-categorias" placeholder="Selecione ou escreva uma categoria">
+                    <datalist id="lista-categorias">
+                        <option value="Entradas">
+                        <option value="Carne">
+                        <option value="Peixe">
+                        <option value="Bebidas">
+                        <option value="Sobremesas">
+                    </datalist>
+                </div>
+
                 <input type="number" id="p-desc" placeholder="Desc. %" style="grid-column: span 3">
+                
                 <div style="grid-column: span 3">
                     <div class="tags-group" id="p-tags-container">
                         <label class="tag-item"><input type="checkbox" value="normal"> Padrão</label>
@@ -141,6 +160,9 @@
                     </div>
                 </div>
             </div>
+            
+            <textarea id="p-ingredientes" placeholder="Ingredientes/Descrição (A IA ajudará aqui no futuro)" style="width:100%; border-radius:8px; border:1px solid #ccc; padding:10px; margin-bottom:5px; font-family:inherit;"></textarea>
+
             <input type="file" id="p-media" accept="image/*,video/*" capture="environment">
             <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok); margin-top:10px">GUARDAR ARTIGO</button>
             <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#666">CANCELAR</button>
@@ -184,6 +206,27 @@
     
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+    // Mock de IA para sugestão de ingredientes
+    function sugerirIngredientes(nome) {
+        const box = document.getElementById('ai-suggestion-box');
+        const campo = document.getElementById('p-ingredientes');
+        
+        if (nome.toLowerCase().includes("bacalhau à brás")) {
+            box.innerHTML = "✨ Sugestão IA: Bacalhau desfiado, batata palha, ovos, cebola, azeite e azeitonas. <a href='#' onclick='aplicarSugestao(\"Bacalhau desfiado, batata palha, ovos, cebola, azeite e azeitonas.\")'>Aplicar</a>";
+            box.classList.remove('hidden');
+        } else if (nome.toLowerCase().includes("prego")) {
+            box.innerHTML = "✨ Sugestão IA: Carne de vaca, pão torrado, alho e manteiga. <a href='#' onclick='aplicarSugestao(\"Carne de vaca, pão torrado, alho e manteiga.\")'>Aplicar</a>";
+            box.classList.remove('hidden');
+        } else {
+            box.classList.add('hidden');
+        }
+    }
+
+    function aplicarSugestao(texto) {
+        document.getElementById('p-ingredientes').value = texto;
+        document.getElementById('ai-suggestion-box').classList.add('hidden');
+    }
 
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
@@ -395,6 +438,8 @@
             preco: parseFloat(document.getElementById('p-preco').value) || 0, 
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0, 
             tipo_tag: tags, 
+            categoria: document.getElementById('p-categoria').value, // Nova Coluna
+            descricao: document.getElementById('p-ingredientes').value, // Nova Coluna
             loja_id: lojaAtiva.id 
         };
 
@@ -456,6 +501,12 @@
         const totalBytes = (prods || []).reduce((acc, p) => acc + (p.tamanho_bytes || 0), 0);
         document.getElementById('s-storage').innerText = totalBytes > 1048576 ? (totalBytes/1048576).toFixed(1) + " MB" : (totalBytes/1024).toFixed(0) + " KB";
 
+        // Coletar categorias únicas para o datalist de sugestão
+        const catsExistentes = [...new Set((prods || []).map(p => p.categoria).filter(c => c))];
+        const baseCats = ["Entradas", "Carne", "Peixe", "Bebidas", "Sobremesas"];
+        const todasCats = [...new Set([...baseCats, ...catsExistentes])];
+        document.getElementById('lista-categorias').innerHTML = todasCats.map(c => `<option value="${c}">`).join('');
+
         document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
             const isVid = p.imagem_url?.toLowerCase().match(/\.(mp4|webm|mov)$/);
             return `
@@ -466,7 +517,11 @@
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
                 ${isVid ? `<video src="${p.imagem_url}" class="prod-video" autoplay muted loop playsinline></video>` : `<img src="${p.imagem_url}" class="prod-img">`}
-                <div style="padding:8px"><small>${p.nome}</small><br><b>${p.preco}€</b></div>
+                <div style="padding:8px">
+                    <small>${p.categoria || 'Sem cat.'}</small><br>
+                    <small>${p.nome}</small><br>
+                    <b>${p.preco}€</b>
+                </div>
             </div>`;
         }).join('');
     }
@@ -478,6 +533,8 @@
         document.getElementById('p-nome').value = p.nome;
         document.getElementById('p-preco').value = p.preco;
         document.getElementById('p-desc').value = p.desconto_percent || 0;
+        document.getElementById('p-categoria').value = p.categoria || "";
+        document.getElementById('p-ingredientes').value = p.descricao || "";
         document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = p.tipo_tag?.includes(cb.value));
         document.getElementById('form-title').innerText = "✏️ Editar Artigo";
         document.getElementById('btn-cancel').classList.remove('hidden');
@@ -490,6 +547,9 @@
         document.getElementById('p-preco').value = ""; 
         document.getElementById('p-desc').value = "";
         document.getElementById('p-media').value = ""; 
+        document.getElementById('p-categoria').value = "";
+        document.getElementById('p-ingredientes').value = "";
+        document.getElementById('ai-suggestion-box').classList.add('hidden');
         document.getElementById('btn-cancel').classList.add('hidden');
         document.getElementById('form-title').innerText = "📸 Publicar Artigo";
         document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = false);
