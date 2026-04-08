@@ -207,19 +207,16 @@
         document.getElementById('f-' + m).classList.remove('hidden');
     }
 
-    // NOVA FUNÇÃO: VERIFICAR PLANO E DIAS RESTANTES
     function verificarPlano() {
         const banner = document.getElementById('status-banner');
         if (!lojaAtiva) return;
 
-        // Se for plano Pago (PRO), não mostra nada
         if (lojaAtiva.plano === 'pro') {
             banner.style.display = 'none';
             document.getElementById('btn-save-prod').disabled = false;
             return;
         }
 
-        // Lógica para Plano Gratuito
         const dataCriacao = new Date(lojaAtiva.created_at);
         const hoje = new Date();
         const diffTempo = hoje - dataCriacao;
@@ -238,7 +235,7 @@
         } else {
             banner.classList.add('status-expired');
             banner.innerHTML = `❌ Período de teste expirado. Por favor, atualize para a versão PRO para continuar a publicar.`;
-            document.getElementById('btn-save-prod').disabled = true; // Bloqueia novos produtos
+            document.getElementById('btn-save-prod').disabled = true;
             document.getElementById('btn-save-prod').title = "Período de teste expirado";
         }
     }
@@ -264,7 +261,7 @@
             telefone: document.getElementById('r-tel').value,
             morada: morada,
             password: document.getElementById('r-pass').value,
-            plano: 'free', // Padrão ao registar
+            plano: 'free',
             slug: document.getElementById('r-nome').value.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')
         };
         const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
@@ -308,7 +305,7 @@
             if(!err) document.getElementById('img-qrcode').src = url; 
         });
 
-        verificarPlano(); // Verificar status da conta
+        verificarPlano();
         carregarDados();
     }
 
@@ -445,7 +442,7 @@
         } finally {
             btn.disabled = false;
             btn.innerText = "GUARDAR ARTIGO";
-            verificarPlano(); // Re-verifica após salvar
+            verificarPlano();
         }
     }
 
