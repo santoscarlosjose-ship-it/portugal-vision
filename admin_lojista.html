@@ -59,6 +59,10 @@
         .ai-suggestion { font-size: 11px; color: var(--s); margin-bottom: 5px; font-style: italic; }
         .btn-ia-action { width: auto; background: var(--ia); padding: 5px 12px; font-size: 11px; border-radius: 20px; position: absolute; right: 8px; bottom: 8px; transition: 0.3s; }
         .btn-ia-action:hover { background: #5649c1; }
+
+        /* Estilo para a engrenagem clicável */
+        .toggle-titulo { cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+        .toggle-titulo:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -181,22 +185,27 @@
         <div id="grid-prods" class="grid"></div>
 
         <div class="card">
-            <h3>⚙️ Horário de Funcionamento</h3>
+            <h3 class="toggle-titulo" onclick="toggleConfig()">
+                <span>⚙️ Férias e Horário de Funcionamento</span>
+                <span id="seta-config">▼</span>
+            </h3>
             
-            <div class="ferias-box">
-                <h4 style="margin:0 0 10px 0">📅 Período de Férias</h4>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                    <input type="date" id="f-inicio" oninput="marcarAltPerfil()">
-                    <input type="date" id="f-fim" oninput="marcarAltPerfil()">
+            <div id="config-avancada" class="hidden">
+                <div class="ferias-box">
+                    <h4 style="margin:0 0 10px 0">📅 Período de Férias</h4>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                        <input type="date" id="f-inicio" oninput="marcarAltPerfil()">
+                        <input type="date" id="f-fim" oninput="marcarAltPerfil()">
+                    </div>
+                    <label style="font-size:12px; margin-top:5px; display:block">
+                        <input type="checkbox" id="f-ativa" onchange="marcarAltPerfil()" style="width:auto"> Ativar aviso de férias no catálogo
+                    </label>
                 </div>
-                <label style="font-size:12px; margin-top:5px; display:block">
-                    <input type="checkbox" id="f-ativa" onchange="marcarAltPerfil()" style="width:auto"> Ativar aviso de férias no catálogo
-                </label>
-            </div>
 
-            <button onclick="replicarSegunda()" style="background:var(--s); color:white; font-size:10px; margin-bottom:10px; border:none">📋 Copiar Segunda para todos os dias</button>
-            <div id="horarios-lista"></div>
-            <button id="btn-save-config" class="btn-save-main" onclick="salvarHorarios()">ATUALIZAR HORÁRIOS</button>
+                <button onclick="replicarSegunda()" style="background:var(--s); color:white; font-size:10px; margin-bottom:10px; border:none">📋 Copiar Segunda para todos os dias</button>
+                <div id="horarios-lista"></div>
+                <button id="btn-save-config" class="btn-save-main" onclick="salvarHorarios()">ATUALIZAR HORÁRIOS</button>
+            </div>
         </div>
 
         <div class="card" style="text-align:center">
@@ -222,6 +231,19 @@
         let limpo = num.replace(/\D/g, '');
         if (limpo.length === 9) return '351' + limpo;
         return limpo;
+    }
+
+    // Função para mostrar/esconder horários
+    function toggleConfig() {
+        const div = document.getElementById('config-avancada');
+        const seta = document.getElementById('seta-config');
+        if(div.classList.contains('hidden')) {
+            div.classList.remove('hidden');
+            seta.innerText = '▲';
+        } else {
+            div.classList.add('hidden');
+            seta.innerText = '▼';
+        }
     }
 
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
@@ -315,7 +337,8 @@
 
         document.getElementById('f-inicio').value = lojaAtiva.ferias_inicio || "";
         document.getElementById('f-fim').value = lojaAtiva.ferias_fim || "";
-        document.getElementById('f-ativa').checked = lojaAtiva.ferias_ativa || false;
+        // Corrigido para em_ferias conforme o Supabase
+        document.getElementById('f-ativa').checked = lojaAtiva.em_ferias || false;
 
         const h = lojaAtiva.horarios || {};
         diasSemana.forEach((_, i) => {
@@ -352,7 +375,8 @@
             morada: document.getElementById('v-morada-edit').value,
             ferias_inicio: document.getElementById('f-inicio').value,
             ferias_fim: document.getElementById('f-fim').value,
-            ferias_ativa: document.getElementById('f-ativa').checked
+            // CORREÇÃO: Usar 'em_ferias' para bater com a coluna do Supabase
+            em_ferias: document.getElementById('f-ativa').checked
         };
         const { error } = await _sb.from('lojas').update(dados).eq('id', lojaAtiva.id);
         if(!error) { 
@@ -484,7 +508,8 @@
             const { data, error } = await _sb.from('lojas').select('gemini_key').eq('id', lojaAtiva.id).single();
             if (error || !data.gemini_key) throw new Error("Chave não configurada no banco de dados.");
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.gemini_key}`, {
+            // CORREÇÃO: Versão estável v1 e modelo correto
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${data.gemini_key}`, {
                 method: "POST", 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({contents: [{parts: [{text: `Escreve uma descrição gastronómica curta (máximo 20 palavras) e apelativa para: ${nomeProd}`}]}]})
