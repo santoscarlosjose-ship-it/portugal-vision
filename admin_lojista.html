@@ -53,7 +53,6 @@
         
         .ferias-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 12px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e63946; }
 
-        /* Estilo para sugestão de IA */
         .ai-suggestion { font-size: 11px; color: var(--s); margin-bottom: 5px; font-style: italic; }
         .btn-ia-action { width: auto; background: var(--ia); padding: 5px 12px; font-size: 11px; border-radius: 20px; position: absolute; right: 8px; bottom: 8px; transition: 0.3s; }
         .btn-ia-action:hover { background: #5649c1; }
@@ -208,16 +207,13 @@
 
 <script>
     const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
-    // Nota: Esta chave é a do Supabase. Para o Gemini, precisas da API KEY do Google AI Studio. 
-    // Vou usar a lógica de integração direta.
     const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
     const _sb = supabase.createClient(_URL, _KEY);
     
     let lojaAtiva = null;
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-
-
+    // Renderização dos cards de horário
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
@@ -238,100 +234,65 @@
     function selTab(m) {
         ['f-login', 'f-reg', 'f-reset'].forEach(id => document.getElementById(id).classList.add('hidden'));
         document.getElementById('f-' + m).classList.remove('hidden');
-    }
-
-    function verificarPlano() {
-        const banner = document.getElementById('status-banner');
-        if (!lojaAtiva) return;
-
-        if (lojaAtiva.plano === 'pro') {
-            banner.style.display = 'none';
-            document.getElementById('btn-save-prod').disabled = false;
-            return;
-        }
-
-        const dataCriacao = new Date(lojaAtiva.created_at);
-        const hoje = new Date();
-        const diffTempo = hoje - dataCriacao;
-        const diasPassados = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
-        const diasRestantes = 30 - diasPassados;
-
-        banner.style.display = 'block';
-        banner.className = 'status-banner';
-
-        if (diasRestantes > 10) {
-            banner.classList.add('status-free');
-            banner.innerHTML = `🌟 Modo Gratuito: Restam <b>${diasRestantes} dias</b> de teste.`;
-        } else if (diasRestantes <= 10 && diasRestantes > 0) {
-            banner.classList.add('status-warn');
-            banner.innerHTML = `⚠️ O seu período gratuito termina em <b>${diasRestantes} dias</b>! Atualize para não perder o acesso.`;
-        } else {
-            banner.classList.add('status-expired');
-            banner.innerHTML = `❌ Período de teste expirado. Por favor, atualize para a versão PRO para continuar a publicar.`;
-            document.getElementById('btn-save-prod').disabled = true;
-            document.getElementById('btn-save-prod').title = "Período de teste expirado";
-        }
-    }
-
-    async function buscarSugestoes(texto) {
-        if (texto.length < 5) return;
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${texto}&countrycodes=pt&limit=5`);
-        const dados = await res.json();
-        document.getElementById('lista-moradas').innerHTML = dados.map(l => `<option value="${l.display_name}">`).join('');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        if(m !== 'reset') document.getElementById('t-' + (m === 'login' ? 'login' : 'reg')).classList.add('active');
     }
 
     async function registar() {
-        const morada = document.getElementById('r-morada').value;
-        const check = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${morada}&limit=1`);
-        const res = await check.json();
-        if(res.length === 0) return alert("Por favor, selecione uma morada válida da lista.");
-
         const dados = {
             nome: document.getElementById('r-nome').value,
             gerente: document.getElementById('r-gerente').value,
             email: document.getElementById('r-email').value,
             nif: document.getElementById('r-nif').value,
             telefone: document.getElementById('r-tel').value,
-            morada: morada,
+            morada: document.getElementById('r-morada').value,
             password: document.getElementById('r-pass').value,
+            slug: criarSlug(document.getElementById('r-nome').value),
             plano: 'free',
-            slug: document.getElementById('r-nome').value.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')
+            created_at: new Date()
         };
+        if(!dados.email || !dados.password || !dados.nif) return alert("Preencha os campos obrigatórios.");
         const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
-        if (error) alert("Erro: " + error.message); else { lojaAtiva = data; abrirPainel(); }
+        if(error) return alert("Erro: " + error.message);
+        lojaAtiva = data;
+        abrirPainel();
     }
 
     async function login() {
-        const { data } = await _sb.from('lojas').select('*').eq('email', document.getElementById('l-email').value).eq('password', document.getElementById('l-pass').value).maybeSingle();
+        const { data } = await _sb.from('lojas').select('*')
+            .eq('email', document.getElementById('l-email').value)
+            .eq('password', document.getElementById('l-pass').value).maybeSingle();
         if (data) { lojaAtiva = data; abrirPainel(); } else alert("Credenciais erradas.");
     }
 
     function abrirPainel() {
         document.getElementById('auth-area').classList.add('hidden');
         document.getElementById('dash-area').classList.remove('hidden');
+        
+        // Dados Perfil
         document.getElementById('v-nome-edit').value = lojaAtiva.nome || "";
         document.getElementById('v-gerente-edit').value = lojaAtiva.gerente || "";
         document.getElementById('v-nif-edit').value = lojaAtiva.nif || "";
         document.getElementById('v-tel-edit').value = lojaAtiva.telefone || "";
         document.getElementById('v-morada-edit').value = lojaAtiva.morada || "";
-        
+        if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
+
+        // Férias e Horários
         document.getElementById('f-inicio').value = lojaAtiva.ferias_inicio || "";
         document.getElementById('f-fim').value = lojaAtiva.ferias_fim || "";
         document.getElementById('f-ativa').checked = lojaAtiva.ferias_ativa || false;
 
-        if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
-        if(lojaAtiva.horarios) {
-            lojaAtiva.horarios.forEach((h, i) => {
-                if(!h) return;
-                document.getElementById(`h-${i}-m1`).value = h.m1 || "";
-                document.getElementById(`h-${i}-m2`).value = h.m2 || "";
-                document.getElementById(`h-${i}-t1`).value = h.t1 || "";
-                document.getElementById(`h-${i}-t2`).value = h.t2 || "";
-                document.getElementById(`h-${i}-status`).value = h.status || "aberto";
-                atualizarEstiloDia(i);
-            });
-        }
-        
+        const h = lojaAtiva.horarios || {};
+        diasSemana.forEach((_, i) => {
+            const diaH = h[i] || { status: 'fechado' };
+            document.getElementById(`h-${i}-status`).value = diaH.status;
+            document.getElementById(`h-${i}-m1`).value = diaH.m1 || "";
+            document.getElementById(`h-${i}-m2`).value = diaH.m2 || "";
+            document.getElementById(`h-${i}-t1`).value = diaH.t1 || "";
+            document.getElementById(`h-${i}-t2`).value = diaH.t2 || "";
+            atualizarEstiloDia(i);
+        });
+
         const link = window.location.origin + "/portugal-vision/catalogo_digital.html?loja=" + lojaAtiva.slug;
         document.getElementById('link-catalogo').value = link;
         QRCode.toDataURL(link, { width: 200, margin: 2 }, (err, url) => { 
@@ -342,230 +303,177 @@
         carregarDados();
     }
 
-    function criarSlug(texto) {
-        return texto.toLowerCase().trim()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9]/g, '-')
-            .replace(/-+/g, '-');
+    async function atualizarPerfil() {
+        const btn = document.getElementById('btn-save-profile');
+        const dados = {
+            nome: document.getElementById('v-nome-edit').value,
+            gerente: document.getElementById('v-gerente-edit').value,
+            nif: document.getElementById('v-nif-edit').value,
+            telefone: document.getElementById('v-tel-edit').value,
+            morada: document.getElementById('v-morada-edit').value,
+            ferias_inicio: document.getElementById('f-inicio').value,
+            ferias_fim: document.getElementById('f-fim').value,
+            ferias_ativa: document.getElementById('f-ativa').checked
+        };
+        const { error } = await _sb.from('lojas').update(dados).eq('id', lojaAtiva.id);
+        if(!error) { btn.classList.remove('pendente'); alert("Perfil atualizado!"); }
     }
 
     async function subirLogo(input) {
         const file = input.files[0];
-        if (!file) return;
+        if(!file) return;
         try {
-            const options = { maxSizeMB: 0.1, maxWidthOrHeight: 400, useWebWorker: true };
-            const compressed = await imageCompression(file, options);
-            
-            const slugLoja = criarSlug(lojaAtiva.nome);
-            const path = `loja_${lojaAtiva.id}/logotipo/logo-${slugLoja}.webp`;
-            
-            await _sb.storage.from('produtos').upload(path, compressed, { upsert: true });
-            const { data } = _sb.storage.from('produtos').getPublicUrl(path);
+            const compressed = await imageCompression(file, { maxSizeMB: 0.1, maxWidthOrHeight: 400 });
+            const fileName = `logos/loja_${lojaAtiva.id}_${Date.now()}.webp`;
+            await _sb.storage.from('produtos').upload(fileName, compressed);
+            const { data } = _sb.storage.from('produtos').getPublicUrl(fileName);
             await _sb.from('lojas').update({ logo_url: data.publicUrl }).eq('id', lojaAtiva.id);
             document.getElementById('v-logo').src = data.publicUrl;
-            lojaAtiva.logo_url = data.publicUrl;
-            alert("Logótipo atualizado!");
-        } catch (e) { alert("Erro ao subir logótipo."); }
+        } catch (e) { alert("Erro no logo."); }
     }
 
-    function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
-    function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
+    async function salvarHorarios() {
+        const btn = document.getElementById('btn-save-config');
+        const horarios = {};
+        diasSemana.forEach((_, i) => {
+            horarios[i] = {
+                status: document.getElementById(`h-${i}-status`).value,
+                m1: document.getElementById(`h-${i}-m1`).value,
+                m2: document.getElementById(`h-${i}-m2`).value,
+                t1: document.getElementById(`h-${i}-t1`).value,
+                t2: document.getElementById(`h-${i}-t2`).value
+            };
+        });
+        const { error } = await _sb.from('lojas').update({ horarios }).eq('id', lojaAtiva.id);
+        if(!error) { btn.classList.remove('pendente'); alert("Horários guardados!"); }
+    }
 
     function replicarSegunda() {
-        const m1 = document.getElementById('h-0-m1').value;
-        const m2 = document.getElementById('h-0-m2').value;
-        const t1 = document.getElementById('h-0-t1').value;
-        const t2 = document.getElementById('h-0-t2').value;
-        const st = document.getElementById('h-0-status').value;
-        for(let i=1; i<7; i++) {
-            document.getElementById(`h-${i}-m1`).value = m1; 
-            document.getElementById(`h-${i}-m2`).value = m2;
-            document.getElementById(`h-${i}-t1`).value = t1; 
-            document.getElementById(`h-${i}-t2`).value = t2;
-            document.getElementById(`h-${i}-status`).value = st; 
+        const base = ['status', 'm1', 'm2', 't1', 't2'].map(k => document.getElementById(`h-0-${k}`).value);
+        for(let i = 1; i < 7; i++) {
+            ['status', 'm1', 'm2', 't1', 't2'].forEach((k, idx) => document.getElementById(`h-${i}-${k}`).value = base[idx]);
             atualizarEstiloDia(i);
         }
         marcarAltHoras();
     }
 
-    async function gerarDescricaoIA() {
-        const nomeProd = document.getElementById('p-nome').value;
-        const btn = document.getElementById('btn-ia');
-        const campo = document.getElementById('p-ingredientes');
-        const box = document.getElementById('ai-suggestion-box');
-
-        if (!nomeProd) return alert("Escreve o nome do produto primeiro.");
-
-        btn.innerText = "A pensar...";
-        btn.disabled = true;
-
-        // Buscar a chave Gemini da loja atual na base de dados de forma dinâmica pelo slug
-        let GEMINI_API_KEY = "";
-        try {
-            let slugLoja = lojaAtiva && lojaAtiva.slug;
-            // Se não houver slug na lojaAtiva, tenta extrair da URL
-            if (!slugLoja) {
-                const urlParams = new URLSearchParams(window.location.search);
-                slugLoja = urlParams.get('loja');
-            }
-            if (!slugLoja) throw new Error("Slug da loja não encontrado.");
-            const { data, error } = await _sb.from('lojas').select('gemini_key').eq('slug', slugLoja).single();
-            if (error || !data || !data.gemini_key) {
-                throw new Error("Chave Gemini não encontrada para esta loja.");
-            }
-            GEMINI_API_KEY = data.gemini_key;
-        } catch (e) {
-            console.error(e);
-            alert("Erro ao obter a chave Gemini da loja. Contacte o administrador.");
-            btn.innerText = "✨ Gerar com IA";
-            btn.disabled = false;
-            return;
-        }
-
-        const prompt = {
-            contents: [{
-                parts: [{
-                    text: `Age como um chef da plataforma Portugal Vision. Para o produto "${nomeProd}", escreve uma descrição curta, irresistível e lista os ingredientes principais. Não menciones outros pratos. Sê breve.`
-                }]
-            }]
-        };
-
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                body: JSON.stringify(prompt)
-            });
-            const data = await response.json();
-            const respostaTexto = data.candidates[0].content.parts[0].text;
-            
-            campo.value = respostaTexto;
-            box.innerHTML = `✨ IA gerou descrição para <b>${nomeProd}</b>.`;
-            box.classList.remove('hidden');
-        } catch (e) {
-            console.error(e);
-            alert("Erro ao ligar à IA. Verifica a tua chave API Gemini.");
-        } finally {
-            btn.innerText = "✨ Gerar com IA";
-            btn.disabled = false;
-        }
-    }
-            descricao: document.getElementById('p-ingredientes').value, 
-            loja_id: lojaAtiva.id 
-        };
-
-        if(!dados.nome) return alert("Indique o nome do artigo.");
-
-        btn.disabled = true;
-        btn.innerText = "A GUARDAR...";
-
-        try {
-            if (file) {
-                dados.tamanho_bytes = file.size;
-                let fileToUpload = file;
-                const slugProd = criarSlug(dados.nome);
-                let fileName = `loja_${lojaAtiva.id}/produtos/${slugProd}_${Date.now()}`;
-
-                if (file.type.startsWith('image/')) {
-                    fileToUpload = await imageCompression(file, { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true, fileType: 'image/webp' });
-                    fileName += ".webp";
-                } else { 
-                    fileName += file.name.substring(file.name.lastIndexOf('.')); 
-                }
-                
-                const { error: upErr } = await _sb.storage.from('produtos').upload(fileName, fileToUpload);
-                if(upErr) throw upErr;
-                
-                const { data } = _sb.storage.from('produtos').getPublicUrl(fileName);
-                dados.imagem_url = data.publicUrl;
-            }
-
-            let res;
-            if(id) {
-                res = await _sb.from('produtos').update(dados).eq('id', id);
-            } else {
-                res = await _sb.from('produtos').insert([dados]);
-            }
-
-            if(res.error) throw res.error;
-
-            alert("Artigo guardado com sucesso!");
-            cancelarEdicao(); 
-            carregarDados();
-        } catch (err) { 
-            console.error(err);
-            alert("Erro ao guardar artigo: " + err.message); 
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "GUARDAR ARTIGO";
-            verificarPlano();
-        }
-    }
-
     async function carregarDados() {
         const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
-        const { data: m } = await _sb.from('metricas_cliques').select('tipo').eq('loja_id', lojaAtiva.id);
-        
-        document.getElementById('s-views').innerText = m?.filter(i => i.tipo === 'view_loja').length || 0;
-        document.getElementById('s-waps').innerText = m?.filter(i => i.tipo === 'click_whatsapp').length || 0;
-
-        const totalBytes = (prods || []).reduce((acc, p) => acc + (p.tamanho_bytes || 0), 0);
-        document.getElementById('s-storage').innerText = totalBytes > 1048576 ? (totalBytes/1048576).toFixed(1) + " MB" : (totalBytes/1024).toFixed(0) + " KB";
-
-        const catsExistentes = [...new Set((prods || []).map(p => p.categoria).filter(c => c))];
-        const baseCats = ["Entradas", "Carne", "Peixe", "Bebidas", "Sobremesas"];
-        const todasCats = [...new Set([...baseCats, ...catsExistentes])];
-        document.getElementById('lista-categorias').innerHTML = todasCats.map(c => `<option value="${c}">`).join('');
-
+        let totalBytes = 0;
         document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
-            const isVid = p.imagem_url?.toLowerCase().match(/\.(mp4|webm|mov)$/);
+            totalBytes += (p.tamanho_bytes || 0);
             return `
             <div class="prod-card ${p.oculto ? 'oculto' : ''}">
                 <div class="prod-actions">
-                    <button class="btn-circle" style="background:var(--s)" onclick="toggleOcultar(${p.id}, ${p.oculto})">${p.oculto ? '👁️' : '🕶️'}</button>
                     <button class="btn-circle" style="background:orange" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
-                ${isVid ? `<video src="${p.imagem_url}" class="prod-video" autoplay muted loop playsinline></video>` : `<img src="${p.imagem_url}" class="prod-img">`}
+                <img src="${p.imagem_url || ''}" class="prod-img">
                 <div style="padding:8px">
-                    <small>${p.categoria || 'Sem cat.'}</small><br>
                     <small>${p.nome}</small><br>
                     <b>${p.preco}€</b>
                 </div>
             </div>`;
         }).join('');
+        document.getElementById('s-storage').innerText = (totalBytes / 1024).toFixed(1) + " KB";
+        document.getElementById('s-views').innerText = lojaAtiva.vistas || 0;
+        document.getElementById('s-waps').innerText = lojaAtiva.cliques_wa || 0;
     }
 
-    async function toggleOcultar(id, est) { await _sb.from('produtos').update({ oculto: !est }).eq('id', id); carregarDados(); }
+    // --- Funções originais mantidas e conectadas ---
+    function verificarPlano() {
+        const banner = document.getElementById('status-banner');
+        if (!lojaAtiva) return;
+        if (lojaAtiva.plano === 'pro') { banner.style.display = 'none'; return; }
+        const diasRestantes = 30 - Math.floor((new Date() - new Date(lojaAtiva.created_at)) / 86400000);
+        banner.style.display = 'block';
+        banner.className = 'status-banner ' + (diasRestantes > 10 ? 'status-free' : (diasRestantes > 0 ? 'status-warn' : 'status-expired'));
+        banner.innerHTML = diasRestantes > 0 ? `Restam <b>${diasRestantes} dias</b> de teste.` : `Período expirado. Atualize para PRO.`;
+        document.getElementById('btn-save-prod').disabled = (diasRestantes <= 0);
+    }
+
+    async function buscarSugestoes(texto) {
+        if (texto.length < 5) return;
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${texto}&countrycodes=pt&limit=5`);
+        const dados = await res.json();
+        document.getElementById('lista-moradas').innerHTML = dados.map(l => `<option value="${l.display_name}">`).join('');
+    }
+
+    function criarSlug(texto) { return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'); }
+
+    async function gerarDescricaoIA() {
+        const nomeProd = document.getElementById('p-nome').value;
+        const btn = document.getElementById('btn-ia');
+        if (!nomeProd) return alert("Escreve o nome do produto.");
+        btn.innerText = "..."; btn.disabled = true;
+        try {
+            const { data } = await _sb.from('lojas').select('gemini_key').eq('id', lojaAtiva.id).single();
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.gemini_key}`, {
+                method: "POST", body: JSON.stringify({contents: [{parts: [{text: `Descrição curta para: ${nomeProd}`}]}]})
+            });
+            const json = await res.json();
+            document.getElementById('p-ingredientes').value = json.candidates[0].content.parts[0].text;
+        } catch (e) { alert("IA Indisponível"); }
+        btn.innerText = "✨ Gerar com IA"; btn.disabled = false;
+    }
+
+    async function salvarProduto() {
+        const id = document.getElementById('edit-id').value;
+        const btn = document.getElementById('btn-save-prod');
+        const file = document.getElementById('p-media').files[0];
+        const tags = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(cb => cb.value);
+        
+        const dados = {
+            nome: document.getElementById('p-nome').value,
+            preco: parseFloat(document.getElementById('p-preco').value),
+            desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
+            categoria: document.getElementById('p-categoria').value,
+            tipo_tag: tags,
+            descricao: document.getElementById('p-ingredientes').value,
+            loja_id: lojaAtiva.id
+        };
+
+        if(!dados.nome || isNaN(dados.preco)) return alert("Nome e preço inválidos.");
+        btn.disabled = true;
+
+        try {
+            if (file) {
+                const compressed = await imageCompression(file, { maxSizeMB: 0.2, maxWidthOrHeight: 1200 });
+                const fileName = `loja_${lojaAtiva.id}/${Date.now()}.webp`;
+                await _sb.storage.from('produtos').upload(fileName, compressed);
+                dados.imagem_url = _sb.storage.from('produtos').getPublicUrl(fileName).data.publicUrl;
+                dados.tamanho_bytes = file.size;
+            }
+            id ? await _sb.from('produtos').update(dados).eq('id', id) : await _sb.from('produtos').insert([dados]);
+            cancelarEdicao(); carregarDados();
+        } catch (err) { alert(err.message); }
+        btn.disabled = false;
+    }
+
+    function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
+    function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
+    function atualizarEstiloDia(i) { document.getElementById(`card-${i}`).classList.toggle('aberto', document.getElementById(`h-${i}-status`).value === 'aberto'); }
+    async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
     
+    function cancelarEdicao() {
+        ['edit-id', 'p-nome', 'p-preco', 'p-desc', 'p-categoria', 'p-ingredientes', 'p-media'].forEach(id => document.getElementById(id).value = "");
+        document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = false);
+        document.getElementById('form-title').innerText = "📸 Publicar Artigo";
+        document.getElementById('btn-cancel').classList.add('hidden');
+    }
+
     function prepararEdicao(p) {
         document.getElementById('edit-id').value = p.id;
         document.getElementById('p-nome').value = p.nome;
         document.getElementById('p-preco').value = p.preco;
-        document.getElementById('p-desc').value = p.desconto_percent || 0;
         document.getElementById('p-categoria').value = p.categoria || "";
         document.getElementById('p-ingredientes').value = p.descricao || "";
-        document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = p.tipo_tag?.includes(cb.value));
+        const tags = p.tipo_tag || [];
+        document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = tags.includes(c.value));
         document.getElementById('form-title').innerText = "✏️ Editar Artigo";
         document.getElementById('btn-cancel').classList.remove('hidden');
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
-
-    function cancelarEdicao() {
-        document.getElementById('edit-id').value = ""; 
-        document.getElementById('p-nome').value = "";
-        document.getElementById('p-preco').value = ""; 
-        document.getElementById('p-desc').value = "";
-        document.getElementById('p-media').value = ""; 
-        document.getElementById('p-categoria').value = "";
-        document.getElementById('p-ingredientes').value = "";
-        document.getElementById('ai-suggestion-box').classList.add('hidden');
-        document.getElementById('btn-cancel').classList.add('hidden');
-        document.getElementById('form-title').innerText = "📸 Publicar Artigo";
-        document.querySelectorAll('#p-tags-container input').forEach(cb => cb.checked = false);
-    }
-
-    function atualizarEstiloDia(i) { document.getElementById(`card-${i}`).classList.toggle('aberto', document.getElementById(`h-${i}-status`).value === 'aberto'); }
-    async function apagarProd(id) { if(confirm("Apagar?")) { await _sb.from('produtos').delete().eq('id', id); carregarDados(); } }
 </script>
 </body>
 </html>
