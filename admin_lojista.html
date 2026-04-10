@@ -85,7 +85,7 @@
             <input type="text" id="r-gerente" placeholder="Nome do Gerente">
             <input type="email" id="r-email" placeholder="E-mail">
             <input type="text" id="r-nif" placeholder="NIF (Obrigatório)">
-            <input type="text" id="r-tel" placeholder="Telefone">
+            <input type="text" id="r-tel" placeholder="Telefone (ex: 912345678)">
             
             <input type="text" id="r-morada" placeholder="Morada/Localidade" list="lista-moradas" oninput="buscarSugestoes(this.value)">
             <datalist id="lista-moradas"></datalist>
@@ -215,7 +215,15 @@
     const _sb = supabase.createClient(_URL, _KEY);
     
     let lojaAtiva = null;
+    let produtosLocais = []; // Global para evitar erro de JSON no HTML
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+    // Auxiliar para formatar número com indicativo PT
+    function formatarNumeroPT(num) {
+        let limpo = num.replace(/\D/g, '');
+        if (limpo.length === 9) return '351' + limpo;
+        return limpo;
+    }
 
     // Renderização inicial dos horários
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
@@ -251,12 +259,16 @@
     }
 
     async function registar() {
+        const telRaw = document.getElementById('r-tel').value;
+        const telFormatado = formatarNumeroPT(telRaw);
+        
         const dados = {
             nome: document.getElementById('r-nome').value,
             gerente: document.getElementById('r-gerente').value,
             email: document.getElementById('r-email').value,
             nif: document.getElementById('r-nif').value,
-            telefone: document.getElementById('r-tel').value,
+            telefone: telFormatado,
+            whatsapp: telFormatado, // Sincronizado
             morada: document.getElementById('r-morada').value,
             password: document.getElementById('r-pass').value,
             slug: criarSlug(document.getElementById('r-nome').value),
@@ -321,11 +333,15 @@
 
     async function atualizarPerfil() {
         const btn = document.getElementById('btn-save-profile');
+        const telRaw = document.getElementById('v-tel-edit').value;
+        const telFormatado = formatarNumeroPT(telRaw);
+
         const dados = {
             nome: document.getElementById('v-nome-edit').value,
             gerente: document.getElementById('v-gerente-edit').value,
             nif: document.getElementById('v-nif-edit').value,
-            telefone: document.getElementById('v-tel-edit').value,
+            telefone: telFormatado,
+            whatsapp: telFormatado, // Sincronizado
             morada: document.getElementById('v-morada-edit').value,
             ferias_inicio: document.getElementById('f-inicio').value,
             ferias_fim: document.getElementById('f-fim').value,
@@ -335,7 +351,7 @@
         if(!error) { 
             lojaAtiva = {...lojaAtiva, ...dados};
             btn.classList.remove('pendente'); 
-            alert("Perfil atualizado!"); 
+            alert("Perfil e contactos atualizados!"); 
         } else {
             alert("Erro ao guardar: " + error.message);
         }
@@ -384,36 +400,40 @@
         marcarAltHoras();
     }
 
-    // CORREÇÃO MÉTRICAS: Busca dados da tabela 'lojas' para visitas/whatsapp e 'produtos' para armazenamento
+    // CORREÇÃO MÉTRICAS E GRID
     async function carregarDados() {
         if(!lojaAtiva) return;
 
-        // 1. Buscar métricas atualizadas da Loja
-        const { data: infoLoja, error: errLoja } = await _sb
+        // 1. Métricas corrigidas para os novos nomes de coluna
+        const { data: infoLoja } = await _sb
             .from('lojas')
-            .select('vistas, cliques_wa')
+            .select('views_total, whatsapp_total')
             .eq('id', lojaAtiva.id)
             .single();
 
-        if(!errLoja && infoLoja) {
-            document.getElementById('s-views').innerText = infoLoja.vistas || 0;
-            document.getElementById('s-waps').innerText = infoLoja.cliques_wa || 0;
+        if(infoLoja) {
+            document.getElementById('s-views').innerText = infoLoja.views_total || 0;
+            document.getElementById('s-waps').innerText = infoLoja.whatsapp_total || 0;
         }
 
-        // 2. Buscar produtos e calcular espaço em disco
+        // 2. Buscar produtos
         const { data: prods } = await _sb
             .from('produtos')
             .select('*')
             .eq('loja_id', lojaAtiva.id)
             .order('created_at', {ascending: false});
 
+        produtosLocais = prods || [];
         let totalBytes = 0;
-        document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
+        const grid = document.getElementById('grid-prods');
+        grid.innerHTML = "";
+
+        produtosLocais.forEach(p => {
             totalBytes += (parseInt(p.tamanho_bytes) || 0);
-            return `
+            grid.innerHTML += `
             <div class="prod-card ${p.oculto ? 'oculto' : ''}">
                 <div class="prod-actions">
-                    <button class="btn-circle" style="background:orange" onclick='prepararEdicao(${JSON.stringify(p)})'>✏️</button>
+                    <button class="btn-circle" style="background:orange" onclick="prepararEdicao(${p.id})">✏️</button>
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
                 <img src="${p.imagem_url || ''}" class="prod-img">
@@ -422,7 +442,7 @@
                     <b>${p.preco}€</b>
                 </div>
             </div>`;
-        }).join('');
+        });
         
         const kb = totalBytes / 1024;
         document.getElementById('s-storage').innerText = kb > 1000 ? (kb/1024).toFixed(2) + " MB" : kb.toFixed(1) + " KB";
@@ -560,7 +580,11 @@
         document.getElementById('btn-cancel').classList.add('hidden');
     }
 
-    function prepararEdicao(p) {
+    // PREPARAR EDIÇÃO CORRIGIDO (Usa ID em vez de Objeto JSON)
+    function prepararEdicao(id) {
+        const p = produtosLocais.find(item => item.id === id);
+        if(!p) return;
+
         document.getElementById('edit-id').value = p.id;
         document.getElementById('p-nome').value = p.nome;
         document.getElementById('p-preco').value = p.preco;
