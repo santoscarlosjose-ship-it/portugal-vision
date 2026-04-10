@@ -48,7 +48,10 @@
         input, select, button { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
         button:disabled { background: #ccc !important; cursor: not-allowed; }
-        .btn-save-main.pendente { background: var(--err) !important; }
+        
+        .btn-save-main.pendente { background: var(--err) !important; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
         .hidden { display: none !important; }
         
         .ferias-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 12px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e63946; }
@@ -239,7 +242,6 @@
         if(m !== 'reset') document.getElementById('t-' + (m === 'login' ? 'login' : 'reg')).classList.add('active');
     }
 
-    // --- CORREÇÃO: RECUPERAR SENHA ---
     async function recuperarSenha() {
         const email = document.getElementById('reset-email').value;
         if(!email) return alert("Insira o seu e-mail.");
@@ -285,7 +287,6 @@
         document.getElementById('auth-area').classList.add('hidden');
         document.getElementById('dash-area').classList.remove('hidden');
         
-        // Dados Perfil
         document.getElementById('v-nome-edit').value = lojaAtiva.nome || "";
         document.getElementById('v-gerente-edit').value = lojaAtiva.gerente || "";
         document.getElementById('v-nif-edit').value = lojaAtiva.nif || "";
@@ -293,7 +294,6 @@
         document.getElementById('v-morada-edit').value = lojaAtiva.morada || "";
         if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
 
-        // Férias e Horários
         document.getElementById('f-inicio').value = lojaAtiva.ferias_inicio || "";
         document.getElementById('f-fim').value = lojaAtiva.ferias_fim || "";
         document.getElementById('f-ativa').checked = lojaAtiva.ferias_ativa || false;
@@ -319,7 +319,6 @@
         carregarDados();
     }
 
-    // --- CORREÇÃO: ATUALIZAR PERFIL E REFRESCAR DADOS ---
     async function atualizarPerfil() {
         const btn = document.getElementById('btn-save-profile');
         const dados = {
@@ -334,7 +333,6 @@
         };
         const { error } = await _sb.from('lojas').update(dados).eq('id', lojaAtiva.id);
         if(!error) { 
-            // Atualiza o objeto local para refletir nas métricas/outros campos
             lojaAtiva = {...lojaAtiva, ...dados};
             btn.classList.remove('pendente'); 
             alert("Perfil atualizado!"); 
@@ -386,17 +384,29 @@
         marcarAltHoras();
     }
 
-    // --- CORREÇÃO: CARREGAR MÉTRICAS E ESPAÇO REAL ---
+    // CORREÇÃO MÉTRICAS: Busca dados da tabela 'lojas' para visitas/whatsapp e 'produtos' para armazenamento
     async function carregarDados() {
-        // Buscar dados frescos da loja para métricas
-        const { data: infoLoja } = await _sb.from('lojas').select('vistas, cliques_wa').eq('id', lojaAtiva.id).single();
-        if(infoLoja) {
+        if(!lojaAtiva) return;
+
+        // 1. Buscar métricas atualizadas da Loja
+        const { data: infoLoja, error: errLoja } = await _sb
+            .from('lojas')
+            .select('vistas, cliques_wa')
+            .eq('id', lojaAtiva.id)
+            .single();
+
+        if(!errLoja && infoLoja) {
             document.getElementById('s-views').innerText = infoLoja.vistas || 0;
             document.getElementById('s-waps').innerText = infoLoja.cliques_wa || 0;
         }
 
-        // Buscar produtos e calcular espaço
-        const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
+        // 2. Buscar produtos e calcular espaço em disco
+        const { data: prods } = await _sb
+            .from('produtos')
+            .select('*')
+            .eq('loja_id', lojaAtiva.id)
+            .order('created_at', {ascending: false});
+
         let totalBytes = 0;
         document.getElementById('grid-prods').innerHTML = (prods || []).map(p => {
             totalBytes += (parseInt(p.tamanho_bytes) || 0);
@@ -414,7 +424,6 @@
             </div>`;
         }).join('');
         
-        // Converter bytes para KB ou MB para melhor leitura
         const kb = totalBytes / 1024;
         document.getElementById('s-storage').innerText = kb > 1000 ? (kb/1024).toFixed(2) + " MB" : kb.toFixed(1) + " KB";
     }
@@ -441,7 +450,6 @@
 
     function criarSlug(texto) { return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'); }
 
-    // --- CORREÇÃO: IA GEMINI ---
     async function gerarDescricaoIA() {
         const nomeProd = document.getElementById('p-nome').value;
         const btn = document.getElementById('btn-ia');
@@ -449,26 +457,31 @@
         
         btn.innerText = "..."; btn.disabled = true;
         try {
-            // Primeiro busca a chave na tabela lojas
             const { data, error } = await _sb.from('lojas').select('gemini_key').eq('id', lojaAtiva.id).single();
-            if (error || !data.gemini_key) throw new Error("Sem chave");
+            if (error || !data.gemini_key) throw new Error("Chave não configurada no banco de dados.");
 
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.gemini_key}`, {
                 method: "POST", 
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({contents: [{parts: [{text: `Escreve uma descrição gastronómica curta e apelativa para: ${nomeProd}`}]}]})
+                body: JSON.stringify({contents: [{parts: [{text: `Escreve uma descrição gastronómica curta (máximo 20 palavras) e apelativa para: ${nomeProd}`}]}]})
             });
+            
             const json = await res.json();
-            if(json.candidates) {
+            
+            if (json.error) {
+                alert("Erro da Google IA: " + json.error.message);
+            } else if(json.candidates && json.candidates[0].content) {
                 document.getElementById('p-ingredientes').value = json.candidates[0].content.parts[0].text;
             } else {
-                alert("IA Indisponível (Limite ou Erro de Chave)");
+                alert("IA não conseguiu gerar resposta. Verifique a chave.");
             }
-        } catch (e) { alert("IA Indisponível no momento."); }
-        btn.innerText = "✨ Gerar com IA"; btn.disabled = false;
+        } catch (e) { 
+            alert("Erro: " + e.message); 
+        } finally {
+            btn.innerText = "✨ Gerar com IA"; btn.disabled = false;
+        }
     }
 
-    // --- CORREÇÃO: SALVAR PRODUTO COM BYTES ---
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const btn = document.getElementById('btn-save-prod');
@@ -476,9 +489,12 @@
         const file = fileInput.files[0];
         const tags = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(cb => cb.value);
         
+        const precoVal = parseFloat(document.getElementById('p-preco').value);
+        if(!document.getElementById('p-nome').value || isNaN(precoVal)) return alert("Nome e preço são obrigatórios.");
+
         const dados = {
             nome: document.getElementById('p-nome').value,
-            preco: parseFloat(document.getElementById('p-preco').value),
+            preco: precoVal,
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
             categoria: document.getElementById('p-categoria').value,
             tipo_tag: tags,
@@ -486,13 +502,11 @@
             loja_id: lojaAtiva.id
         };
 
-        if(!dados.nome || isNaN(dados.preco)) return alert("Nome e preço são obrigatórios.");
         btn.disabled = true;
         btn.innerText = "A GUARDAR...";
 
         try {
             if (file) {
-                // Compressão para poupar espaço
                 const options = { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true };
                 const compressed = await imageCompression(file, options);
                 const fileName = `loja_${lojaAtiva.id}/${Date.now()}.webp`;
@@ -501,20 +515,23 @@
                 if(upErr) throw upErr;
 
                 dados.imagem_url = _sb.storage.from('produtos').getPublicUrl(fileName).data.publicUrl;
-                dados.tamanho_bytes = compressed.size; // Guarda o tamanho real comprimido
+                dados.tamanho_bytes = compressed.size;
             }
             
-            const { error: dbErr } = id ? 
-                await _sb.from('produtos').update(dados).eq('id', id) : 
-                await _sb.from('produtos').insert([dados]);
+            let res;
+            if (id) {
+                res = await _sb.from('produtos').update(dados).eq('id', id);
+            } else {
+                res = await _sb.from('produtos').insert([dados]);
+            }
 
-            if(dbErr) throw dbErr;
+            if(res.error) throw res.error;
 
             cancelarEdicao(); 
             carregarDados();
-            alert("Artigo guardado!");
+            alert("Artigo guardado com sucesso!");
         } catch (err) { 
-            alert("Erro: " + err.message); 
+            alert("Erro ao guardar: " + err.message); 
         } finally {
             btn.disabled = false;
             btn.innerText = "GUARDAR ARTIGO";
@@ -523,7 +540,11 @@
 
     function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
     function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
-    function atualizarEstiloDia(i) { document.getElementById(`card-${i}`).classList.toggle('aberto', document.getElementById(`h-${i}-status`).value === 'aberto'); }
+    function atualizarEstiloDia(i) { 
+        const card = document.getElementById(`card-${i}`);
+        const status = document.getElementById(`h-${i}-status`).value;
+        card.classList.toggle('aberto', status === 'aberto'); 
+    }
     
     async function apagarProd(id) { 
         if(confirm("Tem a certeza que deseja apagar este artigo?")) { 
