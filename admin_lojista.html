@@ -508,8 +508,8 @@
             const { data, error } = await _sb.from('lojas').select('gemini_key').eq('id', lojaAtiva.id).single();
             if (error || !data.gemini_key) throw new Error("Chave não configurada no banco de dados.");
 
-            // CORREÇÃO: Versão estável v1 e modelo correto
-           // Tenta este URL exato (usando v1beta e o sufixo -latest)
+            // CORREÇÃO: Versão estável v3 e modelo correto
+           // Tenta este URL exato (usando v3 e o sufixo -latest)
      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash-latest:generateContent?key=${data.gemini_key}`; {
                 method: "POST", 
                 headers: { 'Content-Type': 'application/json' },
