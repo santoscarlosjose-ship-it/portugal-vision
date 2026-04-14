@@ -94,6 +94,10 @@
         .tag-item { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; background: #e2e8f0; padding: 6px 12px; border-radius: 16px; cursor: pointer; transition: 0.2s; }
         .tag-item:hover { background: #cbd5e1; }
         .tag-item input { margin: 0; width: auto; cursor: pointer; }
+        
+        .termos-box { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; font-size: 12px; color: #475569; }
+        .termos-box label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+        .termos-box input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -126,6 +130,14 @@
             <datalist id="lista-moradas"></datalist>
             
             <input type="password" id="r-pass" placeholder="Password">
+            
+            <div class="termos-box">
+                <label>
+                    <input type="checkbox" id="r-termos">
+                    <span>Declaro que li e aceito os <b>Termos e Condições</b> de serviço e a <b>Política de Privacidade (RGPD)</b>, consentindo o tratamento dos meus dados para a criação da loja digital.</span>
+                </label>
+            </div>
+
             <button style="background:var(--ok)" onclick="registar()">CRIAR CONTA</button>
         </div>
 
@@ -143,7 +155,7 @@
                     <img id="v-logo" src="https://via.placeholder.com/80">
                     <input type="file" accept="image/*" onchange="subirLogo(this)">
                 </div>
-                <div class="info-perfil" style="flex: 1;">
+                <div class="info-perfil" style="flex: 1; min-width: 0;">
                     <input type="text" id="v-nome-edit" oninput="marcarAltPerfil()" style="font-weight:bold; font-size:1.2rem; margin-top:0;" placeholder="Loja">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <input type="text" id="v-gerente-edit" oninput="marcarAltPerfil()" placeholder="Gerente">
@@ -152,7 +164,10 @@
                         <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" placeholder="Morada">
                     </div>
                 </div>
-                <button onclick="location.reload()" style="width:auto; background:var(--err); padding: 8px 12px; font-size:12px; position:absolute; top:0; right:0">Sair</button>
+                <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
+                    <button onclick="carregarDados()" style="width:100%; background:var(--s); padding: 8px 12px; font-size:12px; margin:0;">🔄 Atualizar</button>
+                    <button onclick="location.reload()" style="width:100%; background:var(--err); padding: 8px 12px; font-size:12px; margin:0;">🚪 Sair</button>
+                </div>
             </div>
 
             <div class="config-mbway">
@@ -190,13 +205,13 @@
                 
                 <div style="grid-column: span 3">
                     <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Categoria:</label>
-                    <input type="text" id="p-categoria" list="lista-categorias" placeholder="Selecione ou escreva uma categoria" style="margin-top:0">
+                    <input type="text" id="p-categoria" list="lista-categorias" autocomplete="off" placeholder="Selecione ou escreva uma categoria" style="margin-top:0">
                     <datalist id="lista-categorias">
-                        <option value="Entradas">
-                        <option value="Carne">
-                        <option value="Peixe">
-                        <option value="Bebidas">
-                        <option value="Sobremesas">
+                        <option value="Entradas"></option>
+                        <option value="Carne"></option>
+                        <option value="Peixe"></option>
+                        <option value="Bebidas"></option>
+                        <option value="Sobremesas"></option>
                     </datalist>
                 </div>
 
@@ -216,7 +231,7 @@
             </div>
             
             <div style="position: relative; margin-top: 10px;">
-                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição..." style="width:100%; height: 130px; resize: vertical;"></textarea>
+                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição..." style="width:100%; height: 200px; resize: vertical;"></textarea>
                 <button type="button" id="btn-ia" class="btn-ia-action" onclick="gerarDescricaoIA()">
                     ✨ Gerar com IA
                 </button>
@@ -332,6 +347,12 @@
     }
 
     async function registar() {
+        // VALIDAÇÃO DOS TERMOS E RGPD
+        const termos = document.getElementById('r-termos').checked;
+        if(!termos) {
+            return alert("É obrigatório aceitar os Termos e Condições e a Política de Privacidade para criar a conta.");
+        }
+
         const telRaw = document.getElementById('r-tel').value;
         const telFormatado = formatarNumeroPT(telRaw);
         
@@ -346,11 +367,15 @@
             password: document.getElementById('r-pass').value,
             slug: criarSlug(document.getElementById('r-nome').value),
             plano: 'free',
+            aceitou_termos: true, // Grava a aceitação na DB
             created_at: new Date()
         };
+
         if(!dados.email || !dados.password || !dados.nif) return alert("Preencha os campos obrigatórios.");
+        
         const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
         if(error) return alert("Erro: " + error.message);
+        
         lojaAtiva = data;
         abrirPainel();
     }
@@ -379,7 +404,6 @@
         document.getElementById('v-morada-edit').value = lojaAtiva.morada || "";
         if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
 
-        // Férias e MBWay
         document.getElementById('f-inicio').value = lojaAtiva.ferias_inicio || "";
         document.getElementById('f-fim').value = lojaAtiva.ferias_fim || "";
         document.getElementById('f-ativa').checked = lojaAtiva.em_ferias || false;
@@ -423,8 +447,6 @@
             ferias_inicio: document.getElementById('f-inicio').value,
             ferias_fim: document.getElementById('f-fim').value,
             em_ferias: document.getElementById('f-ativa').checked,
-            
-            // Dados do MBWay
             mbway_ativo: document.getElementById('v-mbway-ativo').checked,
             mbway_num: document.getElementById('v-mbway-num').value
         };
@@ -507,11 +529,15 @@
         const grid = document.getElementById('grid-prods');
         grid.innerHTML = "";
 
+        // BOTÃO OCULTAR ADICIONADO AO CARTÃO
         produtosLocais.forEach(p => {
             totalBytes += (parseInt(p.tamanho_bytes) || 0);
             grid.innerHTML += `
             <div class="prod-card ${p.oculto ? 'oculto' : ''}">
                 <div class="prod-actions">
+                    <button class="btn-circle" style="background: ${p.oculto ? 'var(--ok)' : '#64748b'}" onclick="alternarOculto(${p.id}, ${p.oculto})" title="Ocultar/Mostrar Artigo">
+                        ${p.oculto ? '👁️' : '🙈'}
+                    </button>
                     <button class="btn-circle" style="background:var(--warn)" onclick="prepararEdicao(${p.id})">✏️</button>
                     <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
                 </div>
@@ -550,7 +576,7 @@
 
     function criarSlug(texto) { return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'); }
 
-    // CORREÇÃO: Função da IA corrigida com o fetch e versão 1.5 estável
+    // NOVA INSTRUÇÃO DE IA E MODELO ATUALIZADO
     async function gerarDescricaoIA() {
         const nomeProd = document.getElementById('p-nome').value;
         const btn = document.getElementById('btn-ia');
@@ -561,12 +587,14 @@
             const { data, error } = await _sb.from('lojas').select('gemini_key').eq('id', lojaAtiva.id).single();
             if (error || !data.gemini_key) throw new Error("Chave não configurada no banco de dados.");
 
-   const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${data.gemini_key}`; 
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${data.gemini_key}`; 
             
+            const instrucaoIA = `Escreve um pequeno texto apaixonante e reconfortante (cerca de 3 a 4 linhas) sobre o prato '${nomeProd}', focando no sabor, na tradição e nas memórias que ele traz. Logo abaixo, cria uma lista com o título '🥣 Ingredientes básicos' contendo os ingredientes prováveis deste prato em formato de tópicos (bullet points).`;
+
             const res = await fetch(url, {
                 method: "POST", 
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({contents: [{parts: [{text: `Escreve uma descrição gastronómica curta (máximo 20 palavras) e apelativa para: ${nomeProd}`}]}]})
+                body: JSON.stringify({contents: [{parts: [{text: instrucaoIA}]}]})
             });
             
             const json = await res.json();
@@ -638,6 +666,18 @@
         } finally {
             btn.disabled = false;
             btn.innerText = "GUARDAR ARTIGO";
+        }
+    }
+
+    // NOVA FUNÇÃO DE OCULTAR ARTIGO
+    async function alternarOculto(id, estadoAtual) {
+        const novoEstado = !estadoAtual;
+        const { error } = await _sb.from('produtos').update({ oculto: novoEstado }).eq('id', id);
+        
+        if (!error) {
+            carregarDados(); // Recarrega a grelha para mostrar as alterações
+        } else {
+            alert("Erro ao alterar visibilidade: " + error.message);
         }
     }
 
