@@ -9,7 +9,7 @@
         body { font-family: 'Inter', system-ui, sans-serif; background: var(--gray); color: #334155; line-height: 1.6; padding: 20px; margin: 0; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         h1 { color: var(--p); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 10px; font-size: 1.8rem; }
-        h2 { color: var(--p); margin-top: 40px; font-size: 1.4rem; border-bottom: 2px solid var(--s); padding-bottom: 8px; display: inline-block; }
+        h2 { color: var(--p); margin-top: 40px; font-size: 1.4rem; border-bottom: 2px solid var(--s); padding-bottom: 8px; display: inline-block; scroll-margin-top: 20px; }
         p { font-size: 0.95rem; margin-bottom: 15px; }
         ul { padding-left: 20px; margin-bottom: 15px; font-size: 0.95rem; }
         li { margin-bottom: 8px; }
@@ -21,14 +21,14 @@
 <body>
 
 <div class="container">
-    <a href="javascript:history.back()" class="btn-voltar">← Voltar ao Registo</a>
+    <a href="admin_lojista.html" class="btn-voltar">← Voltar ao Registo</a>
 
     <h1>Termos e Condições de Serviço e Política de Privacidade</h1>
     <p class="data-atualizacao">Última atualização: 15 de Abril de 2026</p>
 
     <p>Bem-vindo à <b>Portugal Vision</b>. Ao registar-se e utilizar a nossa plataforma, o Lojista (doravante "Utilizador" ou "Lojista") concorda integralmente com os presentes Termos e Condições e com a nossa Política de Privacidade. Se não concordar com alguma das cláusulas, não deverá criar conta nem utilizar o nosso serviço.</p>
 
-    <h2>PARTE I - TERMOS E CONDIÇÕES DE SERVIÇO</h2>
+    <h2 id="termos">PARTE I - TERMOS E CONDIÇÕES DE SERVIÇO</h2>
     
     <p><b>1. Descrição do Serviço</b><br>
     A Portugal Vision fornece um software como serviço (SaaS) que permite a restaurantes e negócios locais criar, gerir e publicar catálogos e menus digitais. O serviço inclui a geração de códigos QR, alojamento de imagens, integração de links diretos para WhatsApp e uma ferramenta de Inteligência Artificial para geração de descrições de produtos.</p>
@@ -42,7 +42,7 @@
 
     <p><b>3. Responsabilidade pelo Conteúdo e Vendas</b></p>
     <ul>
-        <li><b>Conteúdo:</b> O Lojista é o único responsável por todos os textos, imagens, preços e informações (inclindo avisos obrigatórios sobre alergénios) publicados no seu catálogo.</li>
+        <li><b>Conteúdo:</b> O Lojista é o único responsável por todos os textos, imagens, preços e informações (incluindo avisos obrigatórios sobre alergénios) publicados no seu catálogo.</li>
         <li><b>Transações:</b> A Portugal Vision não é intermediária de pagamentos nem participa nas transações entre o Lojista e o cliente final. As encomendas feitas via WhatsApp e os pagamentos realizados (ex: via MBWay ou numerário) são da exclusiva responsabilidade e risco do Lojista e do seu cliente.</li>
         <li><b>MBWay:</b> A disponibilização do número de MBWay no catálogo público é da inteira responsabilidade do Lojista.</li>
     </ul>
@@ -63,7 +63,7 @@
     <p><b>6. Propriedade Intelectual</b><br>
     O Lojista mantém todos os direitos sobre as imagens e textos que carrega na plataforma. A Portugal Vision mantém todos os direitos sobre o código-fonte, design, logótipos e infraestrutura da plataforma.</p>
 
-    <h2>PARTE II - POLÍTICA DE PRIVACIDADE E RGPD</h2>
+    <h2 id="privacidade">PARTE II - POLÍTICA DE PRIVACIDADE E RGPD</h2>
 
     <p>Esta secção explica como a Portugal Vision recolhe, utiliza e protege os seus dados pessoais, em estrito cumprimento do Regulamento Geral sobre a Proteção de Dados (RGPD - Regulamento UE 2016/679).</p>
 
