@@ -139,21 +139,14 @@
         </div>
 
         <div id="f-reg" class="hidden">
-            <input type="text" id="r-nome" placeholder="Nome da Loja">
-            <input type="text" id="r-gerente" placeholder="Nome do Gerente">
-            <input type="email" id="r-email" placeholder="E-mail">
-            <input type="text" id="r-nif" placeholder="NIF (Obrigatório)">
-            <input type="text" id="r-tel" placeholder="Telefone (ex: 912345678)">
-            
-            <input type="text" id="r-morada" placeholder="Morada/Localidade" list="lista-moradas" oninput="buscarSugestoes(this.value)">
-            <datalist id="lista-moradas"></datalist>
-            
-            <input type="password" id="r-pass" placeholder="Password">
+            <input type="text" id="r-nome" placeholder="Nome da Loja (Para criar o seu catálogo)">
+            <input type="email" id="r-email" placeholder="E-mail de acesso">
+            <input type="password" id="r-pass" placeholder="Password segura">
             
             <div class="termos-box">
                 <label>
                     <input type="checkbox" id="r-termos">
-                    <span>Declaro que li e aceito os <b>Termos e Condições</b> de serviço e a <b>Política de Privacidade (RGPD)</b>, consentindo o tratamento dos meus dados para a criação da loja digital.</span>
+                    <span>Declaro que li e aceito os <a href="termos.html" target="_blank" style="color: var(--s); font-weight: bold;">Termos e Condições</a> de serviço e a <a href="termos.html" target="_blank" style="color: var(--s); font-weight: bold;">Política de Privacidade (RGPD)</a>, consentindo o tratamento dos meus dados para a criação da loja.</span>
                 </label>
             </div>
 
@@ -179,8 +172,8 @@
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <input type="text" id="v-gerente-edit" oninput="marcarAltPerfil()" placeholder="Gerente">
                         <input type="text" id="v-nif-edit" oninput="marcarAltPerfil()" placeholder="NIF">
-                        <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" placeholder="Telefone">
-                        <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" placeholder="Morada">
+                        <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" placeholder="Telefone / WhatsApp">
+                        <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" placeholder="Morada / Código Postal">
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
@@ -362,52 +355,107 @@
         if(!email) return alert("Insira o seu e-mail.");
         const { error } = await _sb.auth.resetPasswordForEmail(email);
         if(error) alert("Erro: " + error.message);
-        else alert("Se o e-mail existir na nossa base, receberá um link em breve.");
+        else alert("Se o e-mail existir na nossa base, receberá um link de recuperação na sua caixa de entrada.");
     }
 
+    // REGISTO SEGURO COM SUPABASE AUTH E SIMPLIFICADO
     async function registar() {
         const termos = document.getElementById('r-termos').checked;
-        if(!termos) {
-            return alert("É obrigatório aceitar os Termos e Condições e a Política de Privacidade para criar a conta.");
+        if(!termos) return alert("É obrigatório aceitar os Termos e Condições e a Política de Privacidade.");
+
+        const nomeInput = document.getElementById('r-nome').value;
+        const emailInput = document.getElementById('r-email').value;
+        const passInput = document.getElementById('r-pass').value;
+
+        if(!nomeInput || !emailInput || !passInput) return alert("Preencha todos os campos obrigatórios (Nome, E-mail e Password).");
+
+        const btn = document.querySelector('#f-reg button');
+        btn.disabled = true;
+        btn.innerText = "A CRIAR CONTA...";
+
+        try {
+            // 1. Criar o utilizador seguro no Supabase Auth
+            const { data: authData, error: authError } = await _sb.auth.signUp({
+                email: emailInput,
+                password: passInput
+            });
+
+            if (authError) throw new Error("Erro na Autenticação: " + authError.message);
+            if (!authData.user) throw new Error("Erro desconhecido ao criar utilizador. Verifique as credenciais.");
+
+            // 2. Preparar os dados da loja
+            const dadosLoja = {
+                auth_id: authData.user.id, // Ligação à conta segura
+                nome: nomeInput,
+                email: emailInput,
+                slug: criarSlug(nomeInput),
+                plano: 'free',
+                aceitou_termos: true,
+                created_at: new Date()
+            };
+
+            // 3. Guardar o perfil da loja na tabela
+            const { data: lojaData, error: lojaError } = await _sb.from('lojas').insert([dadosLoja]).select().single();
+            
+            if (lojaError) throw new Error("Erro ao criar perfil da loja: " + lojaError.message);
+
+            lojaAtiva = lojaData;
+            abrirPainel();
+
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "CRIAR CONTA";
         }
-
-        const telRaw = document.getElementById('r-tel').value;
-        const telFormatado = formatarNumeroPT(telRaw);
-        
-        const dados = {
-            nome: document.getElementById('r-nome').value,
-            gerente: document.getElementById('r-gerente').value,
-            email: document.getElementById('r-email').value,
-            nif: document.getElementById('r-nif').value,
-            telefone: telFormatado,
-            whatsapp: telFormatado, 
-            morada: document.getElementById('r-morada').value,
-            password: document.getElementById('r-pass').value,
-            slug: criarSlug(document.getElementById('r-nome').value),
-            plano: 'free',
-            aceitou_termos: true,
-            created_at: new Date()
-        };
-
-        if(!dados.email || !dados.password || !dados.nif) return alert("Preencha os campos obrigatórios.");
-        
-        const { data, error } = await _sb.from('lojas').insert([dados]).select().single();
-        if(error) return alert("Erro: " + error.message);
-        
-        lojaAtiva = data;
-        abrirPainel();
     }
 
+    // LOGIN SEGURO COM SUPABASE AUTH
     async function login() {
-        const { data, error } = await _sb.from('lojas').select('*')
-            .eq('email', document.getElementById('l-email').value)
-            .eq('password', document.getElementById('l-pass').value).maybeSingle();
-        
-        if (data) { 
-            lojaAtiva = data; 
-            abrirPainel(); 
-        } else {
-            alert("Credenciais erradas ou conta inexistente.");
+        const emailInput = document.getElementById('l-email').value;
+        const passInput = document.getElementById('l-pass').value;
+
+        if(!emailInput || !passInput) return alert("Preencha o e-mail e a password.");
+
+        const btn = document.querySelector('#f-login button');
+        btn.disabled = true;
+        btn.innerText = "A ENTRAR...";
+
+        try {
+            // 1. Validar as credenciais com o Supabase Auth (Seguro e Encriptado)
+            const { data: authData, error: authError } = await _sb.auth.signInWithPassword({
+                email: emailInput,
+                password: passInput
+            });
+
+            if (authError) throw new Error("Credenciais inválidas. Verifique o e-mail e a password.");
+
+            // 2. Buscar o perfil da loja correspondente a este utilizador
+            const { data: lojaData, error: lojaError } = await _sb.from('lojas')
+                .select('*')
+                .eq('auth_id', authData.user.id)
+                .maybeSingle();
+
+            if (lojaError || !lojaData) {
+                // Fallback de transição para contas antigas que não têm auth_id (apenas temporário)
+                const { data: lojaAntiga } = await _sb.from('lojas').select('*').eq('email', emailInput).maybeSingle();
+                if(lojaAntiga) {
+                    lojaAtiva = lojaAntiga;
+                    await _sb.from('lojas').update({ auth_id: authData.user.id }).eq('id', lojaAntiga.id);
+                } else {
+                    throw new Error("Conta autenticada, mas perfil da loja não encontrado.");
+                }
+            } else {
+                lojaAtiva = lojaData;
+            }
+
+            abrirPainel();
+
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "ENTRAR";
         }
     }
 
