@@ -9,25 +9,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --p: #2c3e50; --s: #a89f91; --ok: #27ae60; --accent: #c0392b;
-            --bg: #fdfbf7; --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --p: #2c3e50; /* Cor Primária Dinâmica */
+            --s: #a89f91; 
+            --ok: #27ae60; /* Cor de Ação Dinâmica */
+            --accent: #c0392b;
+            --bg: #fdfbf7; 
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
         
         body { 
             font-family: 'Inter', sans-serif; background: var(--bg); color: var(--p); margin: 0; padding-bottom: 20px;
-            background-image: radial-gradient(#e5e5f7 0.5px, transparent 0.5px); background-size: 20px 20px;
+            transition: background 0.5s ease;
         }
 
-        /* --- ECRÃ DE BLOQUEIO (Master Control) --- */
+        /* Temas Sazonais Dinâmicos */
+        body.tema-natal { --p: #c0392b; --ok: #27ae60; background-color: #fbfdfc; background-image: radial-gradient(#c0392b 0.5px, transparent 0.5px); background-size: 20px 20px; }
+        body.tema-namorados { --p: #e84393; --ok: #fd79a8; background-color: #fff0f5; background-image: radial-gradient(#fd79a8 0.5px, transparent 0.5px); background-size: 20px 20px; }
+        body.tema-bruxas { --p: #d35400; --ok: #8e44ad; background-color: #1e272e; color: #f5f6fa; }
+        body.tema-bruxas .card-front, body.tema-bruxas .card-back { background: #2d3436; color: white; border-color: #d35400; }
+        body.tema-bruxas .header { background: #1e272e; border-bottom: 1px solid #d35400; color: #f5f6fa; }
+        body.tema-bruxas .header h2 { color: #d35400; }
+
+        /* --- ECRÃ DE BLOQUEIO --- */
         #block-screen {
             position: fixed; inset: 0; background: white; z-index: 99999;
             display: none; flex-direction: column; align-items: center; justify-content: center;
             padding: 40px; text-align: center;
         }
 
-        .header { background: white; padding: 50px 20px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .header { background: white; padding: 50px 20px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); transition: 0.5s; }
         .logo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: var(--card-shadow); margin-bottom: 20px; }
-        .header h2 { font-family: 'Playfair Display', serif; font-size: 2.2em; margin: 0; color: #1a1a1a; text-transform: uppercase; letter-spacing: 1px; }
+        .header h2 { font-family: 'Playfair Display', serif; font-size: 2.2em; margin: 0; color: var(--p); text-transform: uppercase; letter-spacing: 1px; transition: 0.5s;}
 
         .categories-container { padding: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
         .cat-btn { background: white; border: 1px solid #eee; color: #777; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: 500; }
@@ -37,38 +49,41 @@
         #search-input { width: 100%; padding: 16px 25px; border-radius: 50px; border: 1px solid #eee; background: white; font-size: 16px; outline: none; box-shadow: var(--card-shadow); }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; padding: 20px; max-width: 1200px; margin: auto; }
-        .card { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.06); transition: 0.4s; display: flex; flex-direction: column; height: 100%; }
-        .card:hover { transform: translateY(-8px); }
-
-        .img-container { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #fff; padding: 12px; box-sizing: border-box; }
-        .card img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; transition: 0.8s; border: 1px solid rgba(0,0,0,0.03); }
-
-        .info { padding: 20px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; }
-        .info strong { font-size: 1.25em; color: #1a1a1a; display: block; margin-bottom: 8px; min-height: 1.2em; }
         
-        .price-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .price { font-size: 1.5em; font-weight: 800; color: var(--p); }
-        .old-price { color: #b2bec3; text-decoration: line-through; font-size: 1em; }
-        .discount-label { color: var(--accent); font-weight: 600; font-size: 0.85em; background: #fff5f5; padding: 2px 8px; border-radius: 6px; }
+        /* --- MÁGICA DOS CARTÕES 3D (FLIP CARDS) --- */
+        .card-container { perspective: 1000px; height: 420px; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; cursor: pointer; border-radius: 24px; box-shadow: var(--card-shadow); }
+        .card-container:hover .card-inner { box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .card-container.flipped .card-inner { transform: rotateY(180deg); }
 
-        .btn-item-wpp { background: var(--ok); color: white; text-decoration: none; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; cursor: pointer; border: none; width: 100%; box-sizing: border-box; margin-top: auto; }
-        .btn-item-wpp:hover { opacity: 0.9; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: white; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* FRENTE DO CARTÃO */
+        .img-container { width: 100%; height: 200px; overflow: hidden; background: #fff; padding: 12px; box-sizing: border-box; flex-shrink: 0;}
+        .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; border: 1px solid rgba(0,0,0,0.03); }
+        .info { padding: 15px 20px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;}
+        .info strong { font-size: 1.2em; display: block; margin-bottom: 5px; }
+        .price-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; }
+        .price { font-size: 1.4em; font-weight: 800; color: var(--p); }
+        .old-price { color: #b2bec3; text-decoration: line-through; font-size: 0.9em; }
+        .btn-flip { background: #f1f5f9; color: #475569; padding: 8px; border-radius: 12px; font-size: 0.85em; font-weight: 600; margin-top: 10px; }
 
+        /* COSTAS DO CARTÃO */
+        .card-back { transform: rotateY(180deg); padding: 25px; background: #f8fafc; text-align: left; overflow-y: auto; }
+        .card-back h4 { margin: 0 0 10px 0; color: var(--p); font-family: 'Playfair Display'; font-size: 1.2em;}
+        .card-desc { font-size: 0.9em; color: #475569; line-height: 1.5; margin-bottom: 15px; flex-grow: 1;}
+        .alergenios-badge { background: #fef3c7; color: #b45309; padding: 6px 10px; border-radius: 8px; font-size: 0.8em; font-weight: 600; margin-bottom: 15px; display: inline-block;}
+
+        /* BOTAO COMPRAR (A ser atualizado na Fase 2) */
+        .btn-add-cart { background: var(--ok); color: white; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; width: 100%; cursor: pointer; transition: 0.3s; margin-top: 10px;}
+        .btn-add-cart:hover { opacity: 0.9; transform: scale(0.98); }
+
+        /* FOOTER */
         .footer { background: white; padding: 60px 20px; text-align: center; border-top: 1px solid #eee; margin-top: 50px; }
         .map-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 25px; margin-bottom: 30px; }
         .btn-map { padding: 12px 25px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; }
         .google-maps { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
         .waze { background: #33ccff; color: white; }
-
-        .legal-footer { border-top: 1px solid #f0f0f0; padding: 40px 20px; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; list-style: none; padding: 0; margin-bottom: 10px; }
-        .legal-links a, .complaints-book a { color: #95a5a6; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; font-weight: 600; }
-        .legal-links a:hover, .complaints-book a:hover { color: var(--p); }
-
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 700px; max-height: 80vh; overflow-y: auto; position: relative; text-align: left; line-height: 1.6; }
-        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #999; }
-        .modal-content h3 { font-family: 'Playfair Display'; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -77,13 +92,6 @@
     <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
     <h1 style="font-family: 'Playfair Display'; margin-bottom: 10px;">Acesso Indisponível</h1>
     <p>Este catálogo não se encontra ativo no momento.</p>
-</div>
-
-<div id="legalModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">×</span>
-        <div id="modalText"></div>
-    </div>
 </div>
 
 <div class="header">
@@ -103,57 +111,18 @@
     <h3 style="font-family: 'Playfair Display';">Onde nos encontrar</h3>
     <p id="footer-morada" style="color: #636e72; font-size: 0.95em;"></p>
     <div class="map-buttons">
-        <a id="link-gmaps" target="_blank" class="btn-map google-maps">
-            <i class="fas fa-map-marker-alt"></i> Google Maps
-        </a>
-        <a id="link-waze" target="_blank" class="btn-map waze">
-            <i class="fab fa-waze"></i> Waze
-        </a>
-    </div>
-
-    <div class="legal-footer">
-        <ul class="legal-links">
-            <li><a onclick="showLegal('termos')">Termos e Condições</a></li>
-            <li><a onclick="showLegal('privacidade')">Privacidade</a></li>
-            <li><a onclick="showLegal('cookies')">Cookies</a></li>
-        </ul>
-        
-        <div class="complaints-book">
-            <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">
-                Livro de Reclamações
-            </a>
-        </div>
-        
-        <p style="font-size: 0.75em; color: #bdc3c7; margin-top: 20px;">
-            © 2026 Portugal Vision. Todos os direitos reservados.
-        </p>
+        <a id="link-gmaps" target="_blank" class="btn-map google-maps"><i class="fas fa-map-marker-alt"></i> Google Maps</a>
+        <a id="link-waze" target="_blank" class="btn-map waze"><i class="fab fa-waze"></i> Waze</a>
     </div>
 </div>
 
 <script>
+    // Ligação à tua Base de Dados Segura
     const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
+    
     let todosProdutos = [];
     let categoriaSelecionada = 'todos';
-    let whatsappLoja = "";
-    let idDaLoja = null;
-
-    const legalTexts = {
-        termos: `<h3>Termos e Condições</h3><p>Este catálogo é uma plataforma de exposição da Portugal Vision...</p>`,
-        privacidade: `<h3>Política de Privacidade</h3><p>Não recolhemos dados sensíveis...</p>`,
-        cookies: `<h3>Política de Cookies</h3><p>Utilizamos apenas cookies essenciais...</p>`
-    };
-
-    function showLegal(type) {
-        document.getElementById('modalText').innerHTML = legalTexts[type];
-        document.getElementById('legalModal').style.display = 'block';
-    }
-
-    function closeModal() { document.getElementById('legalModal').style.display = 'none'; }
-
-    async function registarClique(tipo) {
-        if (!idDaLoja) return;
-        try { await _sb.from('metricas_cliques').insert([{ loja_id: idDaLoja, tipo: tipo }]); } catch (e) {}
-    }
+    let lojaAtual = null;
 
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -163,41 +132,51 @@
         // BUSCA DADOS DA LOJA
         const { data: loja, error } = await _sb.from('lojas').select('*').eq('slug', slug).single();
         
-        // --- VERIFICAÇÃO MASTER CONTROL ---
         if (!loja || loja.status !== 'ativa' || loja.status_catalogo === false) {
             document.getElementById('block-screen').style.display = 'flex';
             return;
         }
 
-        if (loja) {
-            idDaLoja = loja.id;
-            whatsappLoja = (loja.whatsapp || "").replace(/\s/g, ""); // Usando campo whatsapp
-            document.getElementById('v-nome').innerText = loja.nome;
-            document.getElementById('footer-morada').innerText = loja.morada || "";
-            
-            // Registar visualização
-            registarClique('view_loja');
-
-            const mEnc = encodeURIComponent(loja.morada || "");
-            document.getElementById('link-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${mEnc}`;
-            document.getElementById('link-waze').href = `https://waze.com/ul?q=${mEnc}&navigate=yes`;
-
-            if (loja.logo_url) {
-                const logo = document.getElementById('v-logo');
-                logo.src = loja.logo_url; 
-                logo.style.display = 'inline-block';
-            }
-
-            // CARREGAR PRODUTOS
-            const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id).eq('oculto', false);
-            todosProdutos = produtos || [];
-            
-            const cats = [...new Set(todosProdutos.map(p => p.categoria))].filter(Boolean);
-            document.getElementById('cat-list').innerHTML = `<button class="cat-btn active" onclick="setCategoria('todos', this)">Todos</button>` +
-                cats.map(c => `<button class="cat-btn" onclick="setCategoria('${c}', this)">${c}</button>`).join('');
-
-            renderizar(todosProdutos);
+        lojaAtual = loja;
+        
+        // 1. Aplicar Tema Sazonal
+        if(loja.tema_sazonal && loja.tema_sazonal !== 'padrao') {
+            document.body.classList.add(`tema-${loja.tema_sazonal}`);
         }
+
+        // 2. Preencher Dados da Loja
+        document.getElementById('v-nome').innerText = loja.nome;
+        document.getElementById('footer-morada').innerText = loja.morada || "";
+        
+        const mEnc = encodeURIComponent(loja.morada || loja.nome);
+        document.getElementById('link-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${mEnc}`;
+        document.getElementById('link-waze').href = `https://waze.com/ul?q=${mEnc}&navigate=yes`;
+
+        if (loja.logo_url) {
+            const logo = document.getElementById('v-logo');
+            logo.src = loja.logo_url; 
+            logo.style.display = 'inline-block';
+        }
+
+        // 3. REGISTAR VISITA (Contador do Painel)
+        // Lemos as visualizações atuais e somamos 1
+        const novasVisitas = (loja.views_total || 0) + 1;
+        await _sb.from('lojas').update({ views_total: novasVisitas }).eq('id', loja.id);
+
+        // 4. CARREGAR PRODUTOS
+        const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id).eq('oculto', false);
+        todosProdutos = produtos || [];
+        
+        const cats = [...new Set(todosProdutos.map(p => p.categoria))].filter(Boolean);
+        document.getElementById('cat-list').innerHTML = `<button class="cat-btn active" onclick="setCategoria('todos', this)">Todos</button>` +
+            cats.map(c => `<button class="cat-btn" onclick="setCategoria('${c}', this)">${c}</button>`).join('');
+
+        renderizar(todosProdutos);
+    }
+
+    // Função que vira o cartão 3D
+    function virarCartao(id) {
+        document.getElementById(`card-${id}`).classList.toggle('flipped');
     }
 
     function renderizar(lista) {
@@ -211,22 +190,49 @@
             const preco = parseFloat(p.preco) || 0;
             const desc = parseInt(p.desconto_percent) || 0;
             const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
-            const wppUrl = `https://wa.me/${whatsappLoja}?text=${encodeURIComponent('Olá, gostaria de reservar: ' + p.nome)}`;
+            
+            // Lógica dos Alergénios (Só mostra se for restaurante e tiver alergénios)
+            let alergeniosHtml = '';
+            if(lojaAtual.tipo_negocio === 'restaurante' && p.alergenios && p.alergenios.length > 0) {
+                alergeniosHtml = `<div class="alergenios-badge">⚠️ Contém: ${p.alergenios.join(', ')}</div>`;
+            }
 
             return `
-                <div class="card">
-                    <div class="img-container">
-                        <img src="${p.imagem_url || 'https://via.placeholder.com/400x300?text=Portugal+Vision'}" loading="lazy">
-                    </div>
-                    <div class="info">
-                        <strong>${p.nome}</strong>
-                        <div class="price-box">
-                            <span class="price">${final}€</span>
-                            ${desc > 0 ? `<span class="old-price">${preco.toFixed(2)}€</span><span class="discount-label">-${desc}%</span>` : ''}
+                <div class="card-container" id="card-${p.id}">
+                    <div class="card-inner">
+                        
+                        <div class="card-front" onclick="virarCartao(${p.id})">
+                            <div class="img-container">
+                                <img src="${p.imagem_url || 'https://via.placeholder.com/400x300?text=Sem+Imagem'}" loading="lazy">
+                            </div>
+                            <div class="info">
+                                <div>
+                                    <strong>${p.nome}</strong>
+                                    <div class="price-box">
+                                        <span class="price">${final}€</span>
+                                        ${desc > 0 ? `<span class="old-price">${preco.toFixed(2)}€</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="btn-flip"><i class="fas fa-undo"></i> Ver Detalhes</div>
+                            </div>
                         </div>
-                        <a onclick="registarClique('click_whatsapp'); window.open('${wppUrl}', '_blank')" class="btn-item-wpp">
-                            <i class="fab fa-whatsapp"></i> Reservar agora
-                        </a>
+
+                        <div class="card-back">
+                            <h4>${p.nome}</h4>
+                            <div class="card-desc">
+                                ${p.descricao ? p.descricao.replace(/\n/g, '<br>') : 'Sem descrição disponível.'}
+                            </div>
+                            ${alergeniosHtml}
+                            
+                            <button onclick="window.open('https://wa.me/${lojaAtual.whatsapp}?text=Olá, quero encomendar: ${p.nome}', '_blank'); event.stopPropagation();" class="btn-add-cart">
+                                <i class="fab fa-whatsapp"></i> Reservar por WhatsApp
+                            </button>
+                            
+                            <button onclick="virarCartao(${p.id}); event.stopPropagation();" style="background: none; border: none; width: 100%; color: #94a3b8; margin-top: 10px; cursor: pointer;">
+                                Voltar
+                            </button>
+                        </div>
+
                     </div>
                 </div>`;
         }).join('');
