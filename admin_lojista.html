@@ -573,50 +573,66 @@
     async function carregarDados() {
         if(!lojaAtiva) return;
 
-        const { data: infoLoja } = await _sb
-            .from('lojas')
-            .select('views_total, whatsapp_total')
-            .eq('id', lojaAtiva.id)
-            .single();
-
-        if(infoLoja) {
-            document.getElementById('s-views').innerText = infoLoja.views_total || 0;
-            document.getElementById('s-waps').innerText = infoLoja.whatsapp_total || 0;
+        const btnAtualizar = document.querySelector('button[onclick="carregarDados()"]');
+        if(btnAtualizar) {
+            btnAtualizar.innerText = "⏳ A carregar...";
+            btnAtualizar.disabled = true;
         }
 
-        const { data: prods } = await _sb
-            .from('produtos')
-            .select('*')
-            .eq('loja_id', lojaAtiva.id)
-            .order('created_at', {ascending: false});
+        try {
+            const { data: infoLoja } = await _sb
+                .from('lojas')
+                .select('views_total, whatsapp_total')
+                .eq('id', lojaAtiva.id)
+                .single();
 
-        produtosLocais = prods || [];
-        let totalBytes = 0;
-        const grid = document.getElementById('grid-prods');
-        grid.innerHTML = "";
+            if(infoLoja) {
+                document.getElementById('s-views').innerText = infoLoja.views_total || 0;
+                document.getElementById('s-waps').innerText = infoLoja.whatsapp_total || 0;
+            }
 
-        produtosLocais.forEach(p => {
-            totalBytes += (parseInt(p.tamanho_bytes) || 0);
-            grid.innerHTML += `
-            <div class="prod-card ${p.oculto ? 'oculto' : ''}">
-                <div class="prod-actions">
-                    <button class="btn-circle" style="background: ${p.oculto ? 'var(--ok)' : '#64748b'}" onclick="alternarOculto(${p.id}, ${p.oculto})" title="Ocultar/Mostrar Artigo">
-                        ${p.oculto ? '👁️' : '🙈'}
-                    </button>
-                    <button class="btn-circle" style="background:var(--warn)" onclick="prepararEdicao(${p.id})">✏️</button>
-                    <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
-                </div>
-                <img src="${p.imagem_url || ''}" class="prod-img">
-                <div style="padding:12px">
-                    <small style="color: #64748b; font-weight: 600;">${p.categoria || 'Sem categoria'}</small><br>
-                    <span style="font-weight: 600; font-size: 14px; display: block; margin: 4px 0;">${p.nome}</span>
-                    <b style="color: var(--ok); font-size: 16px;">${p.preco}€</b>
-                </div>
-            </div>`;
-        });
-        
-        const kb = totalBytes / 1024;
-        document.getElementById('s-storage').innerText = kb > 1000 ? (kb/1024).toFixed(2) + " MB" : kb.toFixed(1) + " KB";
+            const { data: prods } = await _sb
+                .from('produtos')
+                .select('*')
+                .eq('loja_id', lojaAtiva.id)
+                .order('created_at', {ascending: false});
+
+            produtosLocais = prods || [];
+            let totalBytes = 0;
+            const grid = document.getElementById('grid-prods');
+            grid.innerHTML = "";
+
+            produtosLocais.forEach(p => {
+                totalBytes += (parseInt(p.tamanho_bytes) || 0);
+                grid.innerHTML += `
+                <div class="prod-card ${p.oculto ? 'oculto' : ''}">
+                    <div class="prod-actions">
+                        <button class="btn-circle" style="background: ${p.oculto ? 'var(--ok)' : '#64748b'}" onclick="alternarOculto(${p.id}, ${p.oculto})" title="Ocultar/Mostrar Artigo">
+                            ${p.oculto ? '👁️' : '🙈'}
+                        </button>
+                        <button class="btn-circle" style="background:var(--warn)" onclick="prepararEdicao(${p.id})">✏️</button>
+                        <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
+                    </div>
+                    <img src="${p.imagem_url || ''}" class="prod-img">
+                    <div style="padding:12px">
+                        <small style="color: #64748b; font-weight: 600;">${p.categoria || 'Sem categoria'}</small><br>
+                        <span style="font-weight: 600; font-size: 14px; display: block; margin: 4px 0;">${p.nome}</span>
+                        <b style="color: var(--ok); font-size: 16px;">${p.preco}€</b>
+                    </div>
+                </div>`;
+            });
+            
+            const kb = totalBytes / 1024;
+            document.getElementById('s-storage').innerText = kb > 1000 ? (kb/1024).toFixed(2) + " MB" : kb.toFixed(1) + " KB";
+            
+        } catch (err) {
+            console.error(err);
+        } finally {
+            if(btnAtualizar) {
+                btnAtualizar.innerText = "🔄 Atualizar";
+                btnAtualizar.disabled = false;
+            }
+        }
     }
 
     function verificarPlano() {
