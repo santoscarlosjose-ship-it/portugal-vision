@@ -510,7 +510,6 @@
             telefone: telFormatado,
             whatsapp: telFormatado, 
             morada: document.getElementById('v-morada-edit').value,
-            // Correção para não enviar texto em branco quando não há data
             ferias_inicio: document.getElementById('f-inicio').value || null,
             ferias_fim: document.getElementById('f-fim').value || null,
             em_ferias: document.getElementById('f-ativa').checked,
@@ -647,32 +646,32 @@
         const btn = document.getElementById('btn-ia');
         if (!nomeProd) return alert("Escreve o nome do produto.");
         
-        btn.innerText = "..."; btn.disabled = true;
+        btn.innerText = "A gerar..."; btn.disabled = true;
         try {
-            const { data, error } = await _sb.from('lojas').select('gemini_key').eq('id', lojaAtiva.id).single();
-            if (error || !data.gemini_key) throw new Error("Chave não configurada no banco de dados.");
-
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${data.gemini_key}`; 
-            
-            const instrucaoIA = `Escreve um pequeno texto apaixonante e reconfortante (cerca de 3 a 4 linhas) sobre o prato '${nomeProd}', focando no sabor, na tradição e nas memórias que ele traz. Logo abaixo, cria uma lista com o título '🥣 Ingredientes básicos' contendo os ingredientes prováveis deste prato em formato de tópicos (bullet points).`;
-
-            const res = await fetch(url, {
-                method: "POST", 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({contents: [{parts: [{text: instrucaoIA}]}]})
+            // Agora chamamos a tua Função Segura (Edge Function) no Supabase!
+            const { data, error } = await _sb.functions.invoke('gerar-descricao', {
+                body: { nomeProduto: nomeProd }
             });
-            
-            const json = await res.json();
-            
-            if (json.error) {
-                alert("Erro da Google IA: " + json.error.message);
-            } else if(json.candidates && json.candidates[0].content) {
-                document.getElementById('p-ingredientes').value = json.candidates[0].content.parts[0].text;
+
+            if (error) {
+                throw new Error("Erro na IA: " + error.message);
+            }
+
+            if (data && data.descricao) {
+                // Coloca o texto gerado na caixa
+                document.getElementById('p-ingredientes').value = data.descricao;
+                
+                // Atualiza os créditos na memória da loja
+                lojaAtiva.creditos_ia = data.creditosRestantes;
+                console.log(`Sucesso! Ficas com ${data.creditosRestantes} créditos de IA.`);
+            } else if (data && data.error) {
+                throw new Error(data.error);
             } else {
-                alert("IA não conseguiu gerar resposta. Verifique a chave.");
+                throw new Error("Resposta inválida do servidor.");
             }
         } catch (e) { 
-            alert("Erro: " + e.message); 
+            // Mostra o erro (ex: "Créditos esgotados")
+            alert(e.message); 
         } finally {
             btn.innerText = "✨ Gerar com IA"; btn.disabled = false;
         }
