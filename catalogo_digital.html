@@ -9,16 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --p: #2c3e50; /* Cor Primária Dinâmica */
+            --p: #2c3e50; 
             --s: #a89f91; 
-            --ok: #27ae60; /* Cor de Ação Dinâmica */
+            --ok: #27ae60; 
             --accent: #c0392b;
             --bg: #fdfbf7; 
             --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
         
         body { 
-            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--p); margin: 0; padding-bottom: 20px;
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--p); margin: 0; padding-bottom: 80px;
             transition: background 0.5s ease;
         }
 
@@ -58,7 +58,6 @@
 
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: white; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden; }
         
-        /* FRENTE DO CARTÃO */
         .img-container { width: 100%; height: 200px; overflow: hidden; background: #fff; padding: 12px; box-sizing: border-box; flex-shrink: 0;}
         .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; border: 1px solid rgba(0,0,0,0.03); }
         .info { padding: 15px 20px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;}
@@ -68,22 +67,54 @@
         .old-price { color: #b2bec3; text-decoration: line-through; font-size: 0.9em; }
         .btn-flip { background: #f1f5f9; color: #475569; padding: 8px; border-radius: 12px; font-size: 0.85em; font-weight: 600; margin-top: 10px; }
 
-        /* COSTAS DO CARTÃO */
         .card-back { transform: rotateY(180deg); padding: 25px; background: #f8fafc; text-align: left; overflow-y: auto; }
         .card-back h4 { margin: 0 0 10px 0; color: var(--p); font-family: 'Playfair Display'; font-size: 1.2em;}
         .card-desc { font-size: 0.9em; color: #475569; line-height: 1.5; margin-bottom: 15px; flex-grow: 1;}
         .alergenios-badge { background: #fef3c7; color: #b45309; padding: 6px 10px; border-radius: 8px; font-size: 0.8em; font-weight: 600; margin-bottom: 15px; display: inline-block;}
 
-        /* BOTAO COMPRAR (A ser atualizado na Fase 2) */
-        .btn-add-cart { background: var(--ok); color: white; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; width: 100%; cursor: pointer; transition: 0.3s; margin-top: 10px;}
+        .btn-add-cart { background: var(--ok); color: white; padding: 12px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; width: 100%; cursor: pointer; transition: 0.3s; margin-top: auto;}
         .btn-add-cart:hover { opacity: 0.9; transform: scale(0.98); }
 
-        /* FOOTER */
+        /* --- CARRINHO DE COMPRAS FLUTUANTE --- */
+        .cart-floater { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--p); color: white; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 16px; display: none; align-items: center; gap: 15px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; transition: 0.3s; border: none;}
+        .cart-floater:hover { transform: translateX(-50%) translateY(-5px); }
+        .cart-floater.visible { display: flex; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cart-badge { background: var(--accent); color: white; border-radius: 50%; padding: 4px 10px; font-size: 14px; }
+        @keyframes slideUp { from { bottom: -100px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+
+        /* --- MODAL DO CARRINHO (CHECKOUT) --- */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .modal-content { background: white; margin: 10vh auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999; transition: 0.2s;}
+        .close-modal:hover { color: var(--err); }
+        .modal-content h3 { font-family: 'Playfair Display'; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-size: 1.5em;}
+        
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+        .cart-item-info { flex-grow: 1; }
+        .cart-item-title { font-weight: 600; color: #334155; }
+        .cart-item-price { color: var(--ok); font-weight: bold; }
+        .cart-item-actions { display: flex; align-items: center; gap: 10px; }
+        .btn-qty { background: #e2e8f0; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; color: #475569; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+        .btn-qty:hover { background: #cbd5e1; }
+
+        .cart-total-zone { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e2e8f0; display: flex; justify-content: space-between; font-size: 1.2em; font-weight: 800; color: var(--p); }
+        
+        .mbway-info { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 12px; margin-top: 20px; font-size: 0.9em; color: #166534; display: none; }
+        .mbway-info strong { color: #15803d; }
+
+        .btn-checkout { background: var(--ok); color: white; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 1.1em; display: block; width: 100%; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        .btn-checkout:hover { background: #219653; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); }
+
+        /* FOOTER E LEGAL */
         .footer { background: white; padding: 60px 20px; text-align: center; border-top: 1px solid #eee; margin-top: 50px; }
         .map-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 25px; margin-bottom: 30px; }
         .btn-map { padding: 12px 25px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; }
         .google-maps { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
         .waze { background: #33ccff; color: white; }
+        .legal-footer { border-top: 1px solid #f0f0f0; padding: 40px 20px; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; list-style: none; padding: 0; margin-bottom: 10px; }
+        .legal-links a, .complaints-book a { color: #95a5a6; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; font-weight: 600; }
+        .legal-links a:hover, .complaints-book a:hover { color: var(--p); }
     </style>
 </head>
 <body>
@@ -92,6 +123,37 @@
     <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
     <h1 style="font-family: 'Playfair Display'; margin-bottom: 10px;">Acesso Indisponível</h1>
     <p>Este catálogo não se encontra ativo no momento.</p>
+</div>
+
+<div id="legalModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeLegalModal()">×</span>
+        <div id="modalText"></div>
+    </div>
+</div>
+
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="fecharCarrinho()">×</span>
+        <h3>O seu Pedido</h3>
+        
+        <div id="cart-items-container">
+            </div>
+
+        <div class="cart-total-zone">
+            <span>Total:</span>
+            <span id="cart-total-price">0.00€</span>
+        </div>
+
+        <div id="mbway-zone" class="mbway-info">
+            <i class="fas fa-mobile-alt"></i> <strong>Pagamento MBWay Disponível!</strong><br>
+            Pode enviar o valor para o nº <strong id="mbway-phone"></strong>. Por favor, envie o comprovativo pelo WhatsApp ao finalizar o pedido.
+        </div>
+
+        <button class="btn-checkout" onclick="finalizarPedido()">
+            <i class="fab fa-whatsapp"></i> Confirmar e Enviar Pedido
+        </button>
+    </div>
 </div>
 
 <div class="header">
@@ -107,6 +169,10 @@
 
 <div id="lista-produtos" class="grid"></div>
 
+<button id="cart-floater" class="cart-floater" onclick="abrirCarrinho()">
+    <i class="fas fa-shopping-basket"></i> Ver Pedido <span id="cart-count" class="cart-badge">0</span>
+</button>
+
 <div class="footer">
     <h3 style="font-family: 'Playfair Display';">Onde nos encontrar</h3>
     <p id="footer-morada" style="color: #636e72; font-size: 0.95em;"></p>
@@ -114,24 +180,50 @@
         <a id="link-gmaps" target="_blank" class="btn-map google-maps"><i class="fas fa-map-marker-alt"></i> Google Maps</a>
         <a id="link-waze" target="_blank" class="btn-map waze"><i class="fab fa-waze"></i> Waze</a>
     </div>
+
+    <div class="legal-footer">
+        <ul class="legal-links">
+            <li><a onclick="showLegal('termos')">Termos e Condições</a></li>
+            <li><a onclick="showLegal('privacidade')">Privacidade</a></li>
+            <li><a onclick="showLegal('cookies')">Cookies</a></li>
+        </ul>
+        <div class="complaints-book">
+            <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">Livro de Reclamações</a>
+        </div>
+        <p style="font-size: 0.75em; color: #bdc3c7; margin-top: 20px;">© 2026 Portugal Vision. Todos os direitos reservados.</p>
+    </div>
 </div>
 
 <script>
-    // Ligação à tua Base de Dados Segura
     const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
     
     let todosProdutos = [];
     let categoriaSelecionada = 'todos';
     let lojaAtual = null;
+    let carrinho = []; // Memória do pedido
+
+    const legalTexts = {
+        termos: `<h3>Termos e Condições</h3><p>Este catálogo é uma plataforma de exposição da Portugal Vision...</p>`,
+        privacidade: `<h3>Política de Privacidade</h3><p>Não recolhemos dados sensíveis...</p>`,
+        cookies: `<h3>Política de Cookies</h3><p>Utilizamos apenas cookies essenciais...</p>`
+    };
+
+    function showLegal(type) {
+        document.getElementById('modalText').innerHTML = legalTexts[type];
+        document.getElementById('legalModal').style.display = 'block';
+    }
+    function closeLegalModal() { document.getElementById('legalModal').style.display = 'none'; }
+
+    async function registarVisita(lojaId, currentViews) {
+        try { await _sb.from('lojas').update({ views_total: currentViews + 1 }).eq('id', lojaId); } catch (e) {}
+    }
 
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
         if (!slug) return;
 
-        // BUSCA DADOS DA LOJA
-        const { data: loja, error } = await _sb.from('lojas').select('*').eq('slug', slug).single();
-        
+        const { data: loja } = await _sb.from('lojas').select('*').eq('slug', slug).single();
         if (!loja || loja.status !== 'ativa' || loja.status_catalogo === false) {
             document.getElementById('block-screen').style.display = 'flex';
             return;
@@ -139,12 +231,8 @@
 
         lojaAtual = loja;
         
-        // 1. Aplicar Tema Sazonal
-        if(loja.tema_sazonal && loja.tema_sazonal !== 'padrao') {
-            document.body.classList.add(`tema-${loja.tema_sazonal}`);
-        }
+        if(loja.tema_sazonal && loja.tema_sazonal !== 'padrao') { document.body.classList.add(`tema-${loja.tema_sazonal}`); }
 
-        // 2. Preencher Dados da Loja
         document.getElementById('v-nome').innerText = loja.nome;
         document.getElementById('footer-morada').innerText = loja.morada || "";
         
@@ -154,16 +242,17 @@
 
         if (loja.logo_url) {
             const logo = document.getElementById('v-logo');
-            logo.src = loja.logo_url; 
-            logo.style.display = 'inline-block';
+            logo.src = loja.logo_url; logo.style.display = 'inline-block';
         }
 
-        // 3. REGISTAR VISITA (Contador do Painel)
-        // Lemos as visualizações atuais e somamos 1
-        const novasVisitas = (loja.views_total || 0) + 1;
-        await _sb.from('lojas').update({ views_total: novasVisitas }).eq('id', loja.id);
+        // Setup MBWay info se ativo
+        if (loja.mbway_ativo && loja.mbway_num) {
+            document.getElementById('mbway-zone').style.display = 'block';
+            document.getElementById('mbway-phone').innerText = loja.mbway_num;
+        }
 
-        // 4. CARREGAR PRODUTOS
+        registarVisita(loja.id, loja.views_total || 0);
+
         const { data: produtos } = await _sb.from('produtos').select('*').eq('loja_id', loja.id).eq('oculto', false);
         todosProdutos = produtos || [];
         
@@ -174,9 +263,111 @@
         renderizar(todosProdutos);
     }
 
-    // Função que vira o cartão 3D
-    function virarCartao(id) {
-        document.getElementById(`card-${id}`).classList.toggle('flipped');
+    function calcularPrecoFinal(preco, desconto) {
+        const p = parseFloat(preco) || 0;
+        const d = parseInt(desconto) || 0;
+        return d > 0 ? (p * (1 - d / 100)) : p;
+    }
+
+    function virarCartao(id) { document.getElementById(`card-${id}`).classList.toggle('flipped'); }
+
+    // --- SISTEMA DO CARRINHO ---
+    function adicionarAoCarrinho(idProduto, nome, precoRaw, desconto, event) {
+        event.stopPropagation(); // Impede o cartão de virar
+        const precoFinal = calcularPrecoFinal(precoRaw, desconto);
+        
+        const itemExistente = carrinho.find(item => item.id === idProduto);
+        if (itemExistente) {
+            itemExistente.qtde += 1;
+        } else {
+            carrinho.push({ id: idProduto, nome: nome, preco: precoFinal, qtde: 1 });
+        }
+        
+        atualizarFloater();
+        
+        // Efeito visual no botão clicado
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-check"></i> Adicionado!`;
+        btn.style.background = "#166534"; // Verde mais escuro
+        setTimeout(() => { btn.innerHTML = originalText; btn.style.background = "var(--ok)"; }, 1500);
+    }
+
+    function atualizarFloater() {
+        const totalItens = carrinho.reduce((sum, item) => sum + item.qtde, 0);
+        const floater = document.getElementById('cart-floater');
+        document.getElementById('cart-count').innerText = totalItens;
+        
+        if (totalItens > 0) { floater.classList.add('visible'); } 
+        else { floater.classList.remove('visible'); fecharCarrinho(); }
+    }
+
+    function abrirCarrinho() {
+        const container = document.getElementById('cart-items-container');
+        let html = '';
+        let totalPreco = 0;
+
+        carrinho.forEach(item => {
+            const subtotal = item.preco * item.qtde;
+            totalPreco += subtotal;
+            html += `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">${item.nome}</div>
+                        <div class="cart-item-price">${item.preco.toFixed(2)}€ x ${item.qtde} = ${subtotal.toFixed(2)}€</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <button class="btn-qty" onclick="alterarQtde(${item.id}, -1)">-</button>
+                        <span>${item.qtde}</span>
+                        <button class="btn-qty" onclick="alterarQtde(${item.id}, 1)">+</button>
+                    </div>
+                </div>`;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('cart-total-price').innerText = totalPreco.toFixed(2) + '€';
+        document.getElementById('cartModal').style.display = 'block';
+    }
+
+    function fecharCarrinho() { document.getElementById('cartModal').style.display = 'none'; }
+
+    function alterarQtde(idProduto, delta) {
+        const item = carrinho.find(i => i.id === idProduto);
+        if (item) {
+            item.qtde += delta;
+            if (item.qtde <= 0) { carrinho = carrinho.filter(i => i.id !== idProduto); }
+            atualizarFloater();
+            if (carrinho.length > 0) { abrirCarrinho(); }
+        }
+    }
+
+    async function finalizarPedido() {
+        if(carrinho.length === 0) return;
+        
+        // 1. Somar clique de WhatsApp na BD
+        try { await _sb.from('lojas').update({ whatsapp_total: (lojaAtual.whatsapp_total || 0) + 1 }).eq('id', lojaAtual.id); } catch(e){}
+
+        // 2. Construir a mensagem formatada
+        let textoWpp = `Olá! Queria fazer o seguinte pedido:\n\n`;
+        let total = 0;
+        
+        carrinho.forEach(item => {
+            const subtotal = item.preco * item.qtde;
+            total += subtotal;
+            textoWpp += `▪️ ${item.qtde}x ${item.nome} (${subtotal.toFixed(2)}€)\n`;
+        });
+        
+        textoWpp += `\n*TOTAL: ${total.toFixed(2)}€*`;
+        
+        if (lojaAtual.mbway_ativo) { textoWpp += `\n\nVou efetuar o pagamento por MBWay. Segue o comprovativo logo abaixo.`; }
+        
+        // 3. Redirecionar para o WhatsApp
+        const numLoja = (lojaAtual.whatsapp || "").replace(/\s/g, "");
+        const url = `https://wa.me/${numLoja}?text=${encodeURIComponent(textoWpp)}`;
+        
+        // Limpar carrinho e fechar modal
+        carrinho = []; atualizarFloater(); fecharCarrinho();
+        window.open(url, '_blank');
     }
 
     function renderizar(lista) {
@@ -187,11 +378,10 @@
         }
 
         container.innerHTML = lista.map(p => {
-            const preco = parseFloat(p.preco) || 0;
+            const precoFixo = parseFloat(p.preco) || 0;
             const desc = parseInt(p.desconto_percent) || 0;
-            const final = desc > 0 ? (preco * (1 - desc / 100)).toFixed(2) : preco.toFixed(2);
+            const final = calcularPrecoFinal(precoFixo, desc).toFixed(2);
             
-            // Lógica dos Alergénios (Só mostra se for restaurante e tiver alergénios)
             let alergeniosHtml = '';
             if(lojaAtual.tipo_negocio === 'restaurante' && p.alergenios && p.alergenios.length > 0) {
                 alergeniosHtml = `<div class="alergenios-badge">⚠️ Contém: ${p.alergenios.join(', ')}</div>`;
@@ -200,7 +390,6 @@
             return `
                 <div class="card-container" id="card-${p.id}">
                     <div class="card-inner">
-                        
                         <div class="card-front" onclick="virarCartao(${p.id})">
                             <div class="img-container">
                                 <img src="${p.imagem_url || 'https://via.placeholder.com/400x300?text=Sem+Imagem'}" loading="lazy">
@@ -210,10 +399,10 @@
                                     <strong>${p.nome}</strong>
                                     <div class="price-box">
                                         <span class="price">${final}€</span>
-                                        ${desc > 0 ? `<span class="old-price">${preco.toFixed(2)}€</span>` : ''}
+                                        ${desc > 0 ? `<span class="old-price">${precoFixo.toFixed(2)}€</span>` : ''}
                                     </div>
                                 </div>
-                                <div class="btn-flip"><i class="fas fa-undo"></i> Ver Detalhes</div>
+                                <div class="btn-flip"><i class="fas fa-undo"></i> Ver Info</div>
                             </div>
                         </div>
 
@@ -224,15 +413,14 @@
                             </div>
                             ${alergeniosHtml}
                             
-                            <button onclick="window.open('https://wa.me/${lojaAtual.whatsapp}?text=Olá, quero encomendar: ${p.nome}', '_blank'); event.stopPropagation();" class="btn-add-cart">
-                                <i class="fab fa-whatsapp"></i> Reservar por WhatsApp
+                            <button onclick="adicionarAoCarrinho(${p.id}, '${p.nome.replace(/'/g, "\\'")}', ${precoFixo}, ${desc}, event)" class="btn-add-cart">
+                                <i class="fas fa-cart-plus"></i> Adicionar
                             </button>
                             
-                            <button onclick="virarCartao(${p.id}); event.stopPropagation();" style="background: none; border: none; width: 100%; color: #94a3b8; margin-top: 10px; cursor: pointer;">
+                            <button onclick="virarCartao(${p.id}); event.stopPropagation();" style="background: none; border: none; width: 100%; color: #94a3b8; margin-top: 15px; cursor: pointer;">
                                 Voltar
                             </button>
                         </div>
-
                     </div>
                 </div>`;
         }).join('');
