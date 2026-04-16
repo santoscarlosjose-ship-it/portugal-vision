@@ -99,6 +99,10 @@
         .termos-box label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
         .termos-box input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; cursor: pointer; }
 
+        /* Estilos Novos para Alergénios */
+        .alergenios-container { background: #fffbeb; padding: 12px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 15px; }
+        .alergenios-container h5 { margin: 0 0 10px 0; color: #b45309; font-size: 13px; }
+
         /* Correção Responsiva para Ecrãs de Telemóvel */
         @media (max-width: 600px) {
             .header-loja {
@@ -174,6 +178,15 @@
                         <input type="text" id="v-nif-edit" oninput="marcarAltPerfil()" placeholder="NIF">
                         <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" placeholder="Telefone / WhatsApp">
                         <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" placeholder="Morada / Código Postal">
+                        
+                        <div style="grid-column: span 2">
+                            <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Tipo de Negócio (Define as opções do Catálogo):</label>
+                            <select id="v-tipo-negocio" onchange="marcarAltPerfil(); atualizarLayoutNegocio();" style="margin-top: 0;">
+                                <option value="restaurante">🍽️ Restaurante / Café / Bar</option>
+                                <option value="retalho">🛍️ Loja / Retalho / Vestuário</option>
+                                <option value="servicos">✂️ Serviços / Cabeleireiro / Oficinas</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
@@ -219,26 +232,30 @@
                     <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Categoria:</label>
                     <input type="text" id="p-categoria" list="lista-categorias" autocomplete="off" placeholder="Selecione ou escreva uma categoria" style="margin-top:0">
                     <datalist id="lista-categorias">
-                        <option value="Entradas"></option>
-                        <option value="Carne"></option>
-                        <option value="Peixe"></option>
-                        <option value="Bebidas"></option>
-                        <option value="Sobremesas"></option>
-                    </datalist>
+                        </datalist>
                 </div>
 
                 <input type="number" id="p-desc" placeholder="Desc. %" style="grid-column: span 3">
                 
                 <div style="grid-column: span 3">
                     <div class="tags-group" id="p-tags-container">
-                        <label class="tag-item"><input type="checkbox" value="normal"> Padrão</label>
-                        <label class="tag-item"><input type="checkbox" value="promo"> Promoção</label>
-                        <label class="tag-item"><input type="checkbox" value="novo"> Novidade</label>
-                        <label class="tag-item"><input type="checkbox" value="destaque"> Destaque</label>
-                        <label class="tag-item"><input type="checkbox" value="menu"> Menu</label>
-                        <label class="tag-item"><input type="checkbox" value="prato"> Prato do Dia</label>
-                        <label class="tag-item"><input type="checkbox" value="lastcall"> Promo Última Hora</label>
-                    </div>
+                        </div>
+                </div>
+            </div>
+
+            <div id="sec-alergenios" class="alergenios-container">
+                <h5>⚠️ Informação de Alergénios (Obrigatório por Lei)</h5>
+                <div class="tags-group" id="p-alergenios-container">
+                    <label class="tag-item"><input type="checkbox" value="Glúten"> 🌾 Glúten</label>
+                    <label class="tag-item"><input type="checkbox" value="Lactose"> 🥛 Lactose</label>
+                    <label class="tag-item"><input type="checkbox" value="Ovos"> 🥚 Ovos</label>
+                    <label class="tag-item"><input type="checkbox" value="Peixe"> 🐟 Peixe</label>
+                    <label class="tag-item"><input type="checkbox" value="Amendoim"> 🥜 Amendoim</label>
+                    <label class="tag-item"><input type="checkbox" value="Soja"> 🌱 Soja</label>
+                    <label class="tag-item"><input type="checkbox" value="Marisco"> 🦐 Marisco</label>
+                    <label class="tag-item"><input type="checkbox" value="Frutos de Casca"> 🌰 Frutos de Casca</label>
+                    <label class="tag-item"><input type="checkbox" value="Sésamo"> 🥯 Sésamo</label>
+                    <label class="tag-item"><input type="checkbox" value="Mostarda"> 🌭 Mostarda</label>
                 </div>
             </div>
             
@@ -298,6 +315,60 @@
     let lojaAtiva = null;
     let produtosLocais = []; 
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+    // CONFIGURAÇÕES DINÂMICAS DE NEGÓCIO
+    const configNegocios = {
+        restaurante: {
+            tags: [
+                { val: "normal", txt: "Padrão" }, { val: "promo", txt: "Promoção" }, { val: "novo", txt: "Novidade" },
+                { val: "destaque", txt: "Destaque" }, { val: "menu", txt: "Menu" }, { val: "prato", txt: "Prato do Dia" }, { val: "lastcall", txt: "Promo Última Hora" }
+            ],
+            cats: ["Entradas", "Carne", "Peixe", "Massas/Pizzas", "Vegetariano", "Bebidas", "Sobremesas"],
+            mostraAlergenios: true, placeholder: "Nome (Ex: Bacalhau à Brás)"
+        },
+        retalho: {
+            tags: [
+                { val: "normal", txt: "Padrão" }, { val: "promo", txt: "Promoção" }, { val: "novo", txt: "Nova Coleção" },
+                { val: "destaque", txt: "Destaque" }, { val: "limitado", txt: "Edição Limitada" }, { val: "outlet", txt: "Outlet" }
+            ],
+            cats: ["Homem", "Mulher", "Criança", "Acessórios", "Calçado", "Saldos"],
+            mostraAlergenios: false, placeholder: "Nome (Ex: T-Shirt Básica Branca)"
+        },
+        servicos: {
+            tags: [
+                { val: "normal", txt: "Padrão" }, { val: "promo", txt: "Promoção" }, { val: "novo", txt: "Novo Serviço" },
+                { val: "destaque", txt: "Destaque" }, { val: "pack", txt: "Pack Especial" }, { val: "rapido", txt: "Serviço Rápido" }
+            ],
+            cats: ["Corte", "Coloração", "Estética", "Packs", "Consultoria"],
+            mostraAlergenios: false, placeholder: "Nome (Ex: Corte de Cabelo + Lavagem)"
+        }
+    };
+
+    function atualizarLayoutNegocio() {
+        const tipo = document.getElementById('v-tipo-negocio').value || 'restaurante';
+        const config = configNegocios[tipo];
+
+        // 1. Atualizar Placeholder do Nome
+        document.getElementById('p-nome').placeholder = config.placeholder;
+
+        // 2. Atualizar Categorias Sugeridas
+        document.getElementById('lista-categorias').innerHTML = config.cats.map(c => `<option value="${c}"></option>`).join('');
+
+        // 3. Atualizar Tags
+        document.getElementById('p-tags-container').innerHTML = config.tags.map(t => 
+            `<label class="tag-item"><input type="checkbox" value="${t.val}"> ${t.txt}</label>`
+        ).join('');
+
+        // 4. Mostrar/Esconder Alergénios
+        const secAlergenios = document.getElementById('sec-alergenios');
+        if (config.mostraAlergenios) {
+            secAlergenios.classList.remove('hidden');
+        } else {
+            secAlergenios.classList.add('hidden');
+            // Desmarca todos se esconder
+            document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = false);
+        }
+    }
 
     function formatarNumeroPT(num) {
         let limpo = num.replace(/\D/g, '');
@@ -383,9 +454,9 @@
             if (authError) throw new Error("Erro na Autenticação: " + authError.message);
             if (!authData.user) throw new Error("Erro desconhecido ao criar utilizador. Verifique as credenciais.");
 
-            // 2. Preparar os dados da loja
+            // 2. Preparar os dados da loja (tipo_negocio por defeito fica restaurante na BD)
             const dadosLoja = {
-                auth_id: authData.user.id, // Ligação à conta segura
+                auth_id: authData.user.id,
                 nome: nomeInput,
                 email: emailInput,
                 slug: criarSlug(nomeInput),
@@ -422,7 +493,6 @@
         btn.innerText = "A ENTRAR...";
 
         try {
-            // 1. Validar as credenciais com o Supabase Auth (Seguro e Encriptado)
             const { data: authData, error: authError } = await _sb.auth.signInWithPassword({
                 email: emailInput,
                 password: passInput
@@ -430,14 +500,12 @@
 
             if (authError) throw new Error("Credenciais inválidas. Verifique o e-mail e a password.");
 
-            // 2. Buscar o perfil da loja correspondente a este utilizador
             const { data: lojaData, error: lojaError } = await _sb.from('lojas')
                 .select('*')
                 .eq('auth_id', authData.user.id)
                 .maybeSingle();
 
             if (lojaError || !lojaData) {
-                // Fallback de transição para contas antigas que não têm auth_id (apenas temporário)
                 const { data: lojaAntiga } = await _sb.from('lojas').select('*').eq('email', emailInput).maybeSingle();
                 if(lojaAntiga) {
                     lojaAtiva = lojaAntiga;
@@ -468,6 +536,12 @@
         document.getElementById('v-nif-edit').value = lojaAtiva.nif || "";
         document.getElementById('v-tel-edit').value = lojaAtiva.telefone || "";
         document.getElementById('v-morada-edit').value = lojaAtiva.morada || "";
+        
+        // Atualizar Seletor de Tipo de Negócio
+        const tipoSelect = document.getElementById('v-tipo-negocio');
+        tipoSelect.value = lojaAtiva.tipo_negocio || 'restaurante';
+        atualizarLayoutNegocio(); // Atualiza as tags visuais imediatamente
+
         if(lojaAtiva.logo_url) document.getElementById('v-logo').src = lojaAtiva.logo_url;
 
         document.getElementById('f-inicio').value = lojaAtiva.ferias_inicio || "";
@@ -510,6 +584,7 @@
             telefone: telFormatado,
             whatsapp: telFormatado, 
             morada: document.getElementById('v-morada-edit').value,
+            tipo_negocio: document.getElementById('v-tipo-negocio').value, // Guarda o novo campo
             ferias_inicio: document.getElementById('f-inicio').value || null,
             ferias_fim: document.getElementById('f-fim').value || null,
             em_ferias: document.getElementById('f-ativa').checked,
@@ -604,6 +679,13 @@
 
             produtosLocais.forEach(p => {
                 totalBytes += (parseInt(p.tamanho_bytes) || 0);
+                
+                // Mostrar ícones de alergénios no cartão, se existirem
+                let alergeniosHtml = "";
+                if(p.alergenios && p.alergenios.length > 0) {
+                    alergeniosHtml = `<div style="margin-top: 4px; font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; display: inline-block;">⚠️ ${p.alergenios.join(', ')}</div>`;
+                }
+
                 grid.innerHTML += `
                 <div class="prod-card ${p.oculto ? 'oculto' : ''}">
                     <div class="prod-actions">
@@ -618,6 +700,7 @@
                         <small style="color: #64748b; font-weight: 600;">${p.categoria || 'Sem categoria'}</small><br>
                         <span style="font-weight: 600; font-size: 14px; display: block; margin: 4px 0;">${p.nome}</span>
                         <b style="color: var(--ok); font-size: 16px;">${p.preco}€</b>
+                        <br>${alergeniosHtml}
                     </div>
                 </div>`;
             });
@@ -646,15 +729,6 @@
         document.getElementById('btn-save-prod').disabled = (diasRestantes <= 0);
     }
 
-    async function buscarSugestoes(texto) {
-        if (texto.length < 5) return;
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${texto}&countrycodes=pt&limit=5`);
-            const dados = await res.json();
-            document.getElementById('lista-moradas').innerHTML = dados.map(l => `<option value="${l.display_name}">`).join('');
-        } catch(e) {}
-    }
-
     function criarSlug(texto) { return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'); }
 
     async function gerarDescricaoIA() {
@@ -664,7 +738,6 @@
         
         btn.innerText = "A gerar..."; btn.disabled = true;
         try {
-            // Agora chamamos a tua Função Segura (Edge Function) no Supabase!
             const { data, error } = await _sb.functions.invoke('gerar-descricao', {
                 body: { nomeProduto: nomeProd }
             });
@@ -674,19 +747,14 @@
             }
 
             if (data && data.descricao) {
-                // Coloca o texto gerado na caixa
                 document.getElementById('p-ingredientes').value = data.descricao;
-                
-                // Atualiza os créditos na memória da loja
                 lojaAtiva.creditos_ia = data.creditosRestantes;
-                console.log(`Sucesso! Ficas com ${data.creditosRestantes} créditos de IA.`);
             } else if (data && data.error) {
                 throw new Error(data.error);
             } else {
                 throw new Error("Resposta inválida do servidor.");
             }
         } catch (e) { 
-            // Mostra o erro (ex: "Créditos esgotados")
             alert(e.message); 
         } finally {
             btn.innerText = "✨ Gerar com IA"; btn.disabled = false;
@@ -698,7 +766,10 @@
         const btn = document.getElementById('btn-save-prod');
         const fileInput = document.getElementById('p-media');
         const file = fileInput.files[0];
+        
+        // Vai ler as tags e alergénios que estão clicados
         const tags = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(cb => cb.value);
+        const alergenios = Array.from(document.querySelectorAll('#p-alergenios-container input:checked')).map(cb => cb.value);
         
         const precoVal = parseFloat(document.getElementById('p-preco').value);
         if(!document.getElementById('p-nome').value || isNaN(precoVal)) return alert("Nome e preço são obrigatórios.");
@@ -709,6 +780,7 @@
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
             categoria: document.getElementById('p-categoria').value,
             tipo_tag: tags,
+            alergenios: alergenios, // Envia a lista de alergénios para a BD
             descricao: document.getElementById('p-ingredientes').value,
             loja_id: lojaAtiva.id
         };
@@ -781,6 +853,7 @@
             if(el) el.value = "";
         });
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = false);
+        document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = false);
         document.getElementById('form-title').innerText = "📸 Publicar Artigo";
         document.getElementById('btn-cancel').classList.add('hidden');
     }
@@ -795,8 +868,13 @@
         document.getElementById('p-desc').value = p.desconto_percent || 0;
         document.getElementById('p-categoria').value = p.categoria || "";
         document.getElementById('p-ingredientes').value = p.descricao || "";
+        
         const tags = p.tipo_tag || [];
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = tags.includes(c.value));
+        
+        const alergenios = p.alergenios || [];
+        document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = alergenios.includes(c.value));
+
         document.getElementById('form-title').innerText = "✏️ Editar Artigo";
         document.getElementById('btn-cancel').classList.remove('hidden');
         window.scrollTo({top: 0, behavior: 'smooth'});
