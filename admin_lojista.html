@@ -510,8 +510,9 @@
             telefone: telFormatado,
             whatsapp: telFormatado, 
             morada: document.getElementById('v-morada-edit').value,
-            ferias_inicio: document.getElementById('f-inicio').value,
-            ferias_fim: document.getElementById('f-fim').value,
+            // Correção para não enviar texto em branco quando não há data
+            ferias_inicio: document.getElementById('f-inicio').value || null,
+            ferias_fim: document.getElementById('f-fim').value || null,
             em_ferias: document.getElementById('f-ativa').checked,
             mbway_ativo: document.getElementById('v-mbway-ativo').checked,
             mbway_num: document.getElementById('v-mbway-num').value
