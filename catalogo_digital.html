@@ -19,57 +19,48 @@
         
         body { 
             font-family: 'Inter', sans-serif; background: var(--bg); color: var(--p); margin: 0; padding-bottom: 80px;
-            transition: background 0.5s ease;
+            transition: background 0.5s ease, color 0.5s ease;
             overflow-x: hidden; 
         }
 
-        /* --- TEMAS SAZONAIS (Cores e Fundos) --- */
-        
-        /* NOVO TEMA DE NATAL DARK MODE (Para encaixar o vídeo de fundo preto) */
-        body.tema-natal { --p: #fdfbf7; --ok: #27ae60; background-color: #000; color: #fdfbf7; }
-        body.tema-natal .card-front, body.tema-natal .card-back, body.tema-natal .header { background: rgba(15, 15, 15, 0.6); color: white; border-color: #c0392b; }
-        body.tema-natal .footer { background: rgba(15, 15, 15, 0.6); }
-        body.tema-natal .cat-btn { background: rgba(30,30,30,0.8); color: #ccc; border-color: #444; }
-        body.tema-natal .cat-btn.active { background: #c0392b; color: white; border-color: #c0392b; }
-        body.tema-natal #search-input { background: rgba(30,30,30,0.8); color: white; border-color: #444; }
-        body.tema-natal .card-back { background: rgba(25, 25, 25, 0.95); }
-        body.tema-natal .card-desc { color: #cbd5e1; }
-        body.tema-natal .btn-flip { background: #333; color: #f8fcfb; }
-
+        /* --- TEMAS SAZONAIS (Cores Base para quando NÃO há vídeo) --- */
+        body.tema-natal { --p: #c0392b; --ok: #1e6b3e; background-color: transparent; }
         body.tema-namorados { --p: #d63031; --ok: #e84393; background-color: #fff5f5; }
         body.tema-bruxas { --p: #e67e22; --ok: #8e44ad; background-color: #1a1a1a; color: #ecf0f1; }
         body.tema-bruxas .card-front, body.tema-bruxas .card-back, body.tema-bruxas .header { background: transparent; color: white; border-color: #444; }
         body.tema-pascoa { --p: #6c5ce7; --ok: #fab1a0; background-color: #f9f7ff; }
-        
         body.tema-anonovo { --p: #d4af37; --ok: #b8860b; background-color: transparent; color: #fdfbf7; }
         body.tema-anonovo .card-front, body.tema-anonovo .card-back, body.tema-anonovo .header { background: transparent; color: white; border-color: #d4af37; }
         body.tema-carnaval { --p: #8e44ad; --ok: #f39c12; background-color: transparent; }
         body.tema-pai { --p: #2980b9; --ok: #34495e; background-color: transparent; }
         body.tema-mae { --p: #e84393; --ok: #fd79a8; background-color: transparent; }
 
-        /* --- VÍDEO DE FUNDO (MOLDURA ANIMADA) --- */
+        /* --- MODO VÍDEO (DARK MODE AUTOMÁTICO) --- */
+        /* Esta classe é ativada pelo JS apenas se houver um vídeo configurado */
+        body.video-mode { --p: #fdfbf7; --ok: #27ae60; background-color: #000; color: #fdfbf7; }
+        body.video-mode .card-front, body.video-mode .card-back, body.video-mode .header { background: rgba(15, 15, 15, 0.6); color: white; border-color: #444; }
+        body.video-mode .footer { background: rgba(15, 15, 15, 0.6); }
+        body.video-mode .cat-btn { background: rgba(30,30,30,0.8); color: #ccc; border-color: #444; }
+        body.video-mode .cat-btn.active { background: var(--ok); color: white; border-color: var(--ok); }
+        body.video-mode #search-input { background: rgba(30,30,30,0.8); color: white; border-color: #444; }
+        body.video-mode .card-back { background: rgba(25, 25, 25, 0.95); }
+        body.video-mode .card-desc { color: #cbd5e1; }
+        body.video-mode .btn-flip { background: #333; color: #f8fcfb; }
+
+        /* --- VÍDEO DE FUNDO --- */
         #seasonal-frame-video {
-            position: fixed; 
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: fill; /* Estica o vídeo para colar nas bordas do telemóvel */
-            pointer-events: none; 
-            z-index: 0; /* Fica no fundo absoluto */
-            display: none; /* Escondido por defeito */
-        }
-        
-        body.tema-natal #seasonal-frame-video {
-            display: block; /* Mostra o vídeo apenas no Natal */
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            object-fit: fill; pointer-events: none; z-index: 0; display: none; 
         }
 
-        /* --- MOLDURAS ESTÁTICAS (Para os outros temas) --- */
+        /* --- MOLDURAS ESTÁTICAS (IMAGENS PNG) --- */
         #seasonal-frame {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             pointer-events: none; z-index: 1; transition: 0.5s;
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat; transform: translateZ(0); 
         }
+        /* Apenas metes imagens aqui se NÃO usares vídeo para o tema */
+        body.tema-natal #seasonal-frame { background-image: url('URL_DA_IMAGEM_NATAL.png'); } /* Só será usada se tirares o link do vídeo */
         body.tema-namorados #seasonal-frame { background-image: url('URL_DA_IMAGEM_NAMORADOS.png'); }
         body.tema-bruxas #seasonal-frame { background-image: url('URL_DA_IMAGEM_HALLOWEEN.png'); }
         body.tema-pascoa #seasonal-frame { background-image: url('URL_DA_IMAGEM_PASCOA.png'); }
@@ -78,7 +69,7 @@
         body.tema-pai #seasonal-frame { background-image: url('URL_DA_IMAGEM_PAI.png'); }
         body.tema-mae #seasonal-frame { background-image: url('URL_DA_IMAGEM_MAE.png'); }
 
-        /* --- ANIMAÇÕES DE ENFEITES PREMIUM (FÍSICA ORGÂNICA JAVASCRIPT) --- */
+        /* --- ANIMAÇÕES DE ENFEITES PREMIUM --- */
         #seasonal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
         .particle { position: absolute; pointer-events: none; will-change: transform, opacity; }
         
@@ -196,7 +187,7 @@
 </head>
 <body>
 
-<video id="seasonal-frame-video" autoplay loop muted playsinline src="SUBSTITUIR_PELO_LINK_DO_VIDEO_AQUI.mp4"></video>
+<video id="seasonal-frame-video" autoplay loop muted playsinline src=""></video>
 
 <div id="seasonal-frame"></div>
 <div id="seasonal-overlay"></div>
@@ -316,16 +307,46 @@
         try { await _sb.from('lojas').update({ views_total: currentViews + 1 }).eq('id', lojaId); } catch (e) {}
     }
 
+    // --- DICIONÁRIO DE VÍDEOS INTELIGENTE ---
+    // Cola aqui os links de vídeos para os temas que quiseres!
+    const videosSazonais = {
+        'natal': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Natal.mp4',
+        'namorados': '', // Ex: 'https://.../namorados.mp4'
+        'bruxas': '',
+        'pascoa': '',
+        'anonovo': '',
+        'carnaval': '',
+        'pai': '',
+        'mae': ''
+    };
+
     function activarEfeitosSazonais(tema) {
         const overlay = document.getElementById('seasonal-overlay');
         const iconBox = document.getElementById('theme-icon');
-        overlay.innerHTML = ''; 
+        const videoEl = document.getElementById('seasonal-frame-video');
         
+        overlay.innerHTML = ''; 
         let emoji = "", anima = "", total = 0, isBorderOnly = false;
 
-        // Como o vídeo já tem neve, para o Natal desativamos as partículas extra de código para não sobrecarregar
-        if(tema === 'natal') { iconBox.innerText = ""; return; } 
-        else if(tema === 'namorados') { emoji = "💖"; anima = "floatUpOrganic"; total = 30; iconBox.innerText = "💘"; }
+        // VERIFICAR SE O TEMA TEM VÍDEO
+        const urlVideo = videosSazonais[tema];
+
+        if (urlVideo && urlVideo !== '') {
+            // MODO VÍDEO ATIVADO
+            videoEl.src = urlVideo;
+            videoEl.style.display = 'block';
+            document.body.classList.add('video-mode');
+            iconBox.innerText = ""; // Esconde o emoji para ficar limpo
+            return; // Sai da função: o vídeo faz o trabalho todo, não usamos partículas!
+        } else {
+            // MODO PARTÍCULAS ATIVADO (Sem Vídeo)
+            videoEl.style.display = 'none';
+            videoEl.src = '';
+            document.body.classList.remove('video-mode');
+        }
+
+        // Configuração das Partículas (apenas roda se NÃO houver vídeo)
+        if(tema === 'namorados') { emoji = "💖"; anima = "floatUpOrganic"; total = 30; iconBox.innerText = "💘"; }
         else if(tema === 'bruxas') { emoji = "🎃"; anima = "floatUpOrganic"; total = 25; iconBox.innerText = "👻"; }
         else if(tema === 'pascoa') { emoji = "🌸"; anima = "fallOrganic"; total = 30; iconBox.innerText = "🐰"; }
         else if(tema === 'carnaval') { emoji = "🎊"; anima = "fallOrganic"; total = 40; iconBox.innerText = "🎭"; }
