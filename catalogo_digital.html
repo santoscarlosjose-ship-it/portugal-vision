@@ -8,13 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        /* Regra de Ouro para evitar ecrãs a "dançar" lateralmente nos telemóveis */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root { 
             --p: #2c3e50; 
             --s: #a89f91; 
             --ok: #27ae60; 
             --accent: #c0392b;
             --bg: #fdfbf7; 
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
         body { 
@@ -27,23 +32,20 @@
         body.tema-natal { --p: #c0392b; --ok: #1e6b3e; background-color: transparent; }
         body.tema-namorados { --p: #d63031; --ok: #e84393; background-color: #fff5f5; }
         body.tema-bruxas { --p: #e67e22; --ok: #8e44ad; background-color: #1a1a1a; color: #ecf0f1; }
-        body.tema-bruxas .card-front, body.tema-bruxas .card-back, body.tema-bruxas .header { background: transparent; color: white; border-color: #444; }
+        body.tema-bruxas .card-front, body.tema-bruxas .card-back { background: #2c3e50; color: white; border-color: #444; }
         body.tema-pascoa { --p: #6c5ce7; --ok: #fab1a0; background-color: #f9f7ff; }
         body.tema-anonovo { --p: #d4af37; --ok: #b8860b; background-color: transparent; color: #fdfbf7; }
-        body.tema-anonovo .card-front, body.tema-anonovo .card-back, body.tema-anonovo .header { background: transparent; color: white; border-color: #d4af37; }
+        body.tema-anonovo .card-front, body.tema-anonovo .card-back { background: rgba(26,26,26,0.95); color: white; border-color: #d4af37; }
         body.tema-carnaval { --p: #8e44ad; --ok: #f39c12; background-color: transparent; }
         body.tema-pai { --p: #2980b9; --ok: #34495e; background-color: transparent; }
         body.tema-mae { --p: #e84393; --ok: #fd79a8; background-color: transparent; }
 
         /* --- MODO VÍDEO (DARK MODE AUTOMÁTICO) --- */
-        /* Esta classe é ativada pelo JS apenas se houver um vídeo configurado */
         body.video-mode { --p: #fdfbf7; --ok: #27ae60; background-color: #000; color: #fdfbf7; }
-        body.video-mode .card-front, body.video-mode .card-back, body.video-mode .header { background: rgba(15, 15, 15, 0.6); color: white; border-color: #444; }
-        body.video-mode .footer { background: rgba(15, 15, 15, 0.6); }
+        body.video-mode .card-front, body.video-mode .card-back { background: rgba(15, 15, 15, 0.85); color: white; border-color: #333; }
         body.video-mode .cat-btn { background: rgba(30,30,30,0.8); color: #ccc; border-color: #444; }
         body.video-mode .cat-btn.active { background: var(--ok); color: white; border-color: var(--ok); }
         body.video-mode #search-input { background: rgba(30,30,30,0.8); color: white; border-color: #444; }
-        body.video-mode .card-back { background: rgba(25, 25, 25, 0.95); }
         body.video-mode .card-desc { color: #cbd5e1; }
         body.video-mode .btn-flip { background: #333; color: #f8fcfb; }
 
@@ -59,8 +61,7 @@
             pointer-events: none; z-index: 1; transition: 0.5s;
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat; transform: translateZ(0); 
         }
-        /* Apenas metes imagens aqui se NÃO usares vídeo para o tema */
-        body.tema-natal #seasonal-frame { background-image: url('URL_DA_IMAGEM_NATAL.png'); } /* Só será usada se tirares o link do vídeo */
+        body.tema-natal #seasonal-frame { background-image: url('URL_DA_IMAGEM_NATAL.png'); } 
         body.tema-namorados #seasonal-frame { background-image: url('URL_DA_IMAGEM_NAMORADOS.png'); }
         body.tema-bruxas #seasonal-frame { background-image: url('URL_DA_IMAGEM_HALLOWEEN.png'); }
         body.tema-pascoa #seasonal-frame { background-image: url('URL_DA_IMAGEM_PASCOA.png'); }
@@ -94,48 +95,49 @@
         /* --- ECRÃ DE BLOQUEIO --- */
         #block-screen { position: fixed; inset: 0; background: white; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
 
-        /* --- CABEÇALHO --- */
+        /* --- CABEÇALHO (100% Limpo e Transparente) --- */
         .header { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            padding: 50px 20px; text-align: center; transition: 0.5s; position: relative; z-index: 2; 
+            background: transparent; 
+            padding: 40px 20px 20px; text-align: center; position: relative; z-index: 2; border: none;
         }
-        .logo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: var(--card-shadow); margin-bottom: 20px; }
-        .header h2 { font-family: 'Playfair Display', serif; font-size: 2.2em; margin: 0; color: var(--p); text-transform: uppercase; letter-spacing: 1px; transition: 0.5s;}
+        .logo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        .header h2 { font-family: 'Playfair Display', serif; font-size: 2.2em; margin: 0; color: var(--p); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.1);}
 
-        .categories-container { padding: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 2;}
-        .cat-btn { background: white; border: 1px solid #eee; color: #777; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: 500; }
+        .categories-container { padding: 10px 20px 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 2;}
+        .cat-btn { background: white; border: 1px solid #eee; color: #777; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
         .cat-btn.active { background: var(--p); color: white; border-color: var(--p); }
 
         .search-container { padding: 0 20px 30px; max-width: 600px; margin: auto; position: relative; z-index: 2;}
-        #search-input { width: 100%; padding: 16px 25px; border-radius: 50px; border: 1px solid #eee; background: white; font-size: 16px; outline: none; box-shadow: var(--card-shadow); transition: 0.3s;}
+        #search-input { width: 100%; padding: 16px 25px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1); background: white; font-size: 16px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s;}
 
         /* --- GRADE DE PRODUTOS --- */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; padding: 20px; max-width: 1200px; margin: auto; position: relative; z-index: 2; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: auto; position: relative; z-index: 2; }
         
         /* --- MÁGICA DOS CARTÕES 3D (FLIP CARDS) --- */
         .card-container { perspective: 1000px; height: 420px; position: relative; z-index: 3; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; cursor: pointer; border-radius: 24px; box-shadow: var(--card-shadow); }
-        .card-container:hover .card-inner { box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .card-container:hover .card-inner { box-shadow: 0 15px 35px rgba(0,0,0,0.2); transform: translateY(-5px); }
         .card-container.flipped .card-inner { transform: rotateY(180deg); }
 
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: white; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden; transition: 0.5s; }
+        .card-front, .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 24px; background: white; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden; transition: 0.5s; }
         
-        .img-container { width: 100%; height: 200px; overflow: hidden; background: #fff; padding: 12px; box-sizing: border-box; flex-shrink: 0;}
-        .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; border: 1px solid rgba(0,0,0,0.03); }
-        .info { padding: 15px 20px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;}
-        .info strong { font-size: 1.2em; display: block; margin-bottom: 5px; }
+        /* IMAGEM COLADA ÀS BORDAS (Edge-to-Edge) */
+        .img-container { width: 100%; height: 210px; overflow: hidden; flex-shrink: 0; position: relative;}
+        .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 24px 24px 0 0; }
+        
+        .info { padding: 20px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;}
+        .info strong { font-size: 1.25em; display: block; margin-bottom: 5px; }
         .price-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; }
         .price { font-size: 1.4em; font-weight: 800; color: var(--ok); }
         .old-price { color: #b2bec3; text-decoration: line-through; font-size: 0.9em; }
-        .btn-flip { background: #f1f5f9; color: #475569; padding: 8px; border-radius: 12px; font-size: 0.85em; font-weight: 600; margin-top: 10px; transition: 0.3s;}
+        .btn-flip { background: #f1f5f9; color: #475569; padding: 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600; margin-top: 15px; transition: 0.3s;}
 
         .card-back { transform: rotateY(180deg); padding: 25px; background: #f8fafc; text-align: left; overflow-y: auto; }
-        .card-back h4 { margin: 0 0 10px 0; color: var(--p); font-family: 'Playfair Display'; font-size: 1.2em;}
-        .card-desc { font-size: 0.9em; color: #475569; line-height: 1.5; margin-bottom: 15px; flex-grow: 1;}
+        .card-back h4 { margin: 0 0 10px 0; color: var(--p); font-family: 'Playfair Display'; font-size: 1.3em;}
+        .card-desc { font-size: 0.95em; color: #475569; line-height: 1.5; margin-bottom: 15px; flex-grow: 1;}
         .alergenios-badge { background: #fef3c7; color: #b45309; padding: 6px 10px; border-radius: 8px; font-size: 0.8em; font-weight: 600; margin-bottom: 15px; display: inline-block;}
 
-        .btn-add-cart { background: var(--ok); color: white; padding: 12px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; width: 100%; cursor: pointer; transition: 0.3s; margin-top: auto;}
+        .btn-add-cart { background: var(--ok); color: white; padding: 14px; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; width: 100%; cursor: pointer; transition: 0.3s; margin-top: auto;}
         .btn-add-cart:hover { opacity: 0.9; transform: scale(0.98); }
 
         /* --- CARRINHO DE COMPRAS FLUTUANTE --- */
@@ -145,20 +147,20 @@
         .cart-badge { background: white; color: var(--ok); border-radius: 50%; padding: 4px 10px; font-size: 14px; }
         @keyframes slideUp { from { bottom: -100px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
 
-        /* --- MODAL DO CARRINHO & LEGAL --- */
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .modal-content { background: white; margin: 10vh auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); color: #333;}
-        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999; transition: 0.2s;}
+        /* --- MODAL DO CARRINHO & LEGAL (Estável no Telemóvel) --- */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 20px;}
+        .modal-content { background: white; margin: 5vh auto; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); color: #333;}
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999; transition: 0.2s; z-index: 10;}
         .close-modal:hover { color: var(--accent); }
-        .modal-content h3 { font-family: 'Playfair Display'; color: #2c3e50; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-size: 1.5em;}
+        .modal-content h3 { font-family: 'Playfair Display'; color: #2c3e50; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-size: 1.5em; padding-right: 30px;}
         
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
-        .cart-item-info { flex-grow: 1; }
+        .cart-item-info { flex-grow: 1; padding-right: 15px;}
         .cart-item-title { font-weight: 500; font-size: 0.95em; color: #334155; margin-bottom: 3px; }
         .cart-item-price { color: var(--ok); font-weight: 700; font-size: 0.9em; }
         
-        .cart-item-actions { display: flex; align-items: center; gap: 10px; }
-        .btn-qty { background: #e2e8f0; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; color: #475569; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+        .cart-item-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0;}
+        .btn-qty { background: #e2e8f0; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; color: #475569; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
         .btn-qty:hover { background: #cbd5e1; }
 
         .cart-total-zone { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e2e8f0; display: flex; justify-content: space-between; font-size: 1.2em; font-weight: 800; color: #2c3e50; }
@@ -169,20 +171,20 @@
         .btn-checkout { background: var(--ok); color: white; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 1.1em; display: block; width: 100%; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; }
         .btn-checkout:hover { background: #219653; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); }
 
-        /* --- RODAPÉ --- */
+        /* --- RODAPÉ (Limpo e Transparente) --- */
         .footer { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            padding: 60px 20px; text-align: center; margin-top: 50px; position: relative; z-index: 2; transition: 0.5s;
+            background: transparent; 
+            padding: 40px 20px; text-align: center; margin-top: 20px; position: relative; z-index: 2; transition: 0.5s; border: none;
         }
-        .map-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 25px; margin-bottom: 30px; }
-        .btn-map { padding: 12px 25px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; color: #333; }
-        .google-maps { background: #f1f3f4; border: 1px solid #dadce0; }
-        .waze { background: #33ccff; color: white; border: none; }
-        .legal-footer { padding: 40px 20px; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; list-style: none; padding: 0; margin-bottom: 10px; }
-        .legal-links a, .complaints-book a { color: inherit; opacity: 0.7; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; font-weight: 600; }
-        .legal-links a:hover, .complaints-book a:hover { opacity: 1; }
+        .map-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; margin-bottom: 20px; }
+        .btn-map { padding: 12px 25px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; color: var(--p); background: rgba(255,255,255,0.9); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.3s;}
+        .btn-map:hover { transform: translateY(-2px); }
+        .google-maps { color: #3c4043; }
+        .waze { color: #007bb5; }
+        .legal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; list-style: none; padding: 0; margin: 0; }
+        .legal-links a, .complaints-book a { color: inherit; opacity: 0.8; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; font-weight: 600; }
+        .legal-links a:hover, .complaints-book a:hover { opacity: 1; text-decoration: underline;}
     </style>
 </head>
 <body>
@@ -247,8 +249,7 @@
 </button>
 
 <div class="footer">
-    <h3 style="font-family: 'Playfair Display';">Onde nos encontrar</h3>
-    <p id="footer-morada" style="font-size: 0.95em; opacity: 0.8;"></p>
+    <p id="footer-morada" style="font-size: 0.95em; opacity: 0.9; margin-bottom: 5px;"></p>
     <div class="map-buttons">
         <a id="link-gmaps" target="_blank" class="btn-map google-maps"><i class="fas fa-map-marker-alt"></i> Google Maps</a>
         <a id="link-waze" target="_blank" class="btn-map waze"><i class="fab fa-waze"></i> Waze</a>
@@ -260,10 +261,10 @@
             <li><a onclick="showLegal('privacidade')">Privacidade</a></li>
             <li><a onclick="showLegal('cookies')">Cookies</a></li>
         </ul>
-        <div class="complaints-book">
+        <div class="complaints-book" style="margin-top: 10px;">
             <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank">Livro de Reclamações</a>
         </div>
-        <p style="font-size: 0.75em; opacity: 0.5; margin-top: 20px;">© 2026 Portugal Vision. Todos os direitos reservados.</p>
+        <p style="font-size: 0.75em; opacity: 0.6; margin-top: 20px;">© 2026 Portugal Vision. Todos os direitos reservados.</p>
     </div>
 </div>
 
@@ -308,10 +309,9 @@
     }
 
     // --- DICIONÁRIO DE VÍDEOS INTELIGENTE ---
-    // Cola aqui os links de vídeos para os temas que quiseres!
     const videosSazonais = {
         'natal': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Natal.mp4',
-        'namorados': '', // Ex: 'https://.../namorados.mp4'
+        'namorados': '', 
         'bruxas': '',
         'pascoa': '',
         'anonovo': '',
@@ -328,24 +328,20 @@
         overlay.innerHTML = ''; 
         let emoji = "", anima = "", total = 0, isBorderOnly = false;
 
-        // VERIFICAR SE O TEMA TEM VÍDEO
         const urlVideo = videosSazonais[tema];
 
         if (urlVideo && urlVideo !== '') {
-            // MODO VÍDEO ATIVADO
             videoEl.src = urlVideo;
             videoEl.style.display = 'block';
             document.body.classList.add('video-mode');
-            iconBox.innerText = ""; // Esconde o emoji para ficar limpo
-            return; // Sai da função: o vídeo faz o trabalho todo, não usamos partículas!
+            iconBox.innerText = ""; 
+            return; 
         } else {
-            // MODO PARTÍCULAS ATIVADO (Sem Vídeo)
             videoEl.style.display = 'none';
             videoEl.src = '';
             document.body.classList.remove('video-mode');
         }
 
-        // Configuração das Partículas (apenas roda se NÃO houver vídeo)
         if(tema === 'namorados') { emoji = "💖"; anima = "floatUpOrganic"; total = 30; iconBox.innerText = "💘"; }
         else if(tema === 'bruxas') { emoji = "🎃"; anima = "floatUpOrganic"; total = 25; iconBox.innerText = "👻"; }
         else if(tema === 'pascoa') { emoji = "🌸"; anima = "fallOrganic"; total = 30; iconBox.innerText = "🐰"; }
@@ -415,7 +411,7 @@
         }
 
         document.getElementById('v-nome').innerText = loja.nome;
-        document.getElementById('footer-morada').innerText = loja.morada || "";
+        if(loja.morada) document.getElementById('footer-morada').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${loja.morada}`;
         
         const mEnc = encodeURIComponent(loja.morada || loja.nome);
         document.getElementById('link-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${mEnc}`;
@@ -548,7 +544,7 @@
     function renderizar(lista) {
         const container = document.getElementById('lista-produtos');
         if(lista.length === 0) {
-            container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding:50px; color:gray;">Nenhum produto encontrado.</p>';
+            container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding:50px; opacity:0.7;">Nenhum produto encontrado.</p>';
             return;
         }
 
