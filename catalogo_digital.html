@@ -124,12 +124,34 @@
         .cart-badge { background: white; color: var(--ok); border-radius: 50%; padding: 4px 10px; font-size: 14px; }
         @keyframes slideUp { from { bottom: -100px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
 
-        /* Estilos do Modal */
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 20px;}
-        .modal-content { background: white; margin: 5vh auto; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); color: #333;}
+        /* Estilos do Modal Melhorados para evitar cortes */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 15px;}
+        
+        .modal-content { 
+            background: white; 
+            margin: 2vh auto; /* Menos margem no topo em mobile */
+            padding: 25px; 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 500px; 
+            max-height: 90vh; /* Altura máxima segura */
+            overflow-y: auto; /* Garante que o conteúdo faz scroll */
+            position: relative; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            overscroll-behavior: contain; /* Evita que o fundo faça scroll acidentalmente */
+        }
+        
+        /* O "Corpo" interno do modal precisa de margem para não tapar o botão no fim */
+        .modal-body {
+            padding-bottom: 20px;
+        }
+
         .close-modal { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999; transition: 0.2s; z-index: 10;}
         .close-modal:hover { color: var(--accent); }
-        .modal-content h3 { font-family: 'Playfair Display'; color: #2c3e50; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-size: 1.5em; padding-right: 30px;}
+        .modal-content h3 { font-family: 'Playfair Display'; color: #2c3e50; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-size: 1.5em; padding-right: 30px; flex-shrink: 0;}
         
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
         .cart-item-info { flex-grow: 1; padding-right: 15px;}
@@ -145,15 +167,21 @@
         /* Estilos dos Inputs de Reserva/Levantamento */
         .input-form { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; background: #f8fafc; transition: 0.3s; margin-bottom: 5px; }
         .input-form:focus { outline: none; border-color: var(--ok); background: white; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); }
-        .order-type-box { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .order-type-box label { background: white; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; font-weight: 600; font-size: 0.95em; transition: 0.2s; }
+        .order-type-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .order-type-box label { background: white; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; flex: 1; justify-content: center; font-weight: 600; font-size: 0.85em; transition: 0.2s; white-space: nowrap;}
         .order-type-box label:hover { background: #f1f5f9; }
-        .order-type-box input[type="radio"] { accent-color: var(--ok); transform: scale(1.2); }
+        .order-type-box input[type="radio"] { accent-color: var(--ok); transform: scale(1.1); margin:0;}
 
-        .mbway-info { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 12px; margin-top: 20px; font-size: 0.9em; color: #166534; display: none; }
+        /* Estilos de Pagamento */
+        .payment-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .payment-box label { background: white; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; flex: 1; justify-content: center; font-weight: 600; font-size: 0.85em; transition: 0.2s; white-space: nowrap;}
+        .payment-box label:hover { background: #f1f5f9; }
+        .payment-box input[type="radio"] { accent-color: var(--ok); transform: scale(1.1); margin:0;}
+
+        .mbway-info { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 0.9em; color: #166534; display: none; }
         .mbway-info strong { color: #15803d; }
 
-        .btn-checkout { background: var(--ok); color: white; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 1.1em; display: block; width: 100%; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        .btn-checkout { background: var(--ok); color: white; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 1.1em; display: block; width: 100%; border: none; cursor: pointer; margin-top: 20px; transition: 0.3s; flex-shrink: 0;}
         .btn-checkout:hover { background: #219653; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); }
 
         .footer { background: transparent; padding: 40px 20px; text-align: center; margin-top: 20px; position: relative; z-index: 2; transition: 0.5s; border: none;}
@@ -193,57 +221,78 @@
         <span class="close-modal" onclick="fecharCarrinho()">×</span>
         <h3>O seu Pedido</h3>
         
-        <div id="cart-items-container"></div>
+        <div class="modal-body">
+            <div id="cart-items-container"></div>
 
-        <div class="cart-total-zone">
-            <span>Total:</span>
-            <span id="cart-total-price">0.00€</span>
-        </div>
-
-        <div id="order-type-section" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
-            <h4 style="margin: 0 0 15px 0; color: var(--p); font-size: 1.1em; font-family: 'Playfair Display';">Como deseja encomendar?</h4>
-            
-            <div class="order-type-box">
-                <label>
-                    <input type="radio" name="tipo_pedido" value="levantamento" checked onchange="toggleOrderFields()">
-                    🥡 Levantamento
-                </label>
-                <label>
-                    <input type="radio" name="tipo_pedido" value="reserva" onchange="toggleOrderFields()">
-                    🪑 Reserva
-                </label>
+            <div class="cart-total-zone">
+                <span>Total:</span>
+                <span id="cart-total-price">0.00€</span>
             </div>
 
-            <div id="fields-levantamento" style="display: grid; gap: 10px;">
-                <input type="text" id="cli-nome-lev" placeholder="O seu Nome" class="input-form">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 14px; font-weight: 600; color: #475569; width: 60px;">Hora:</span>
-                    <input type="time" id="cli-hora-lev" class="input-form" style="margin: 0;">
+            <div id="order-type-section" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+                <h4 style="margin: 0 0 10px 0; color: var(--p); font-size: 1em; font-family: 'Playfair Display';">1. Como deseja encomendar?</h4>
+                
+                <div class="order-type-box">
+                    <label>
+                        <input type="radio" name="tipo_pedido" value="levantamento" checked onchange="toggleOrderFields()">
+                        🥡 Levantamento
+                    </label>
+                    <label>
+                        <input type="radio" name="tipo_pedido" value="reserva" onchange="toggleOrderFields()">
+                        🪑 Reserva
+                    </label>
+                </div>
+
+                <div id="fields-levantamento" style="display: grid; gap: 10px;">
+                    <input type="text" id="cli-nome-lev" placeholder="O seu Nome" class="input-form">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 14px; font-weight: 600; color: #475569; width: 60px;">Hora:</span>
+                        <input type="time" id="cli-hora-lev" class="input-form" style="margin: 0;">
+                    </div>
+                </div>
+
+                <div id="fields-reserva" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="cli-nome-res" placeholder="Nome da Reserva" class="input-form" style="grid-column: span 2;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Data:</span>
+                        <input type="date" id="cli-data-res" class="input-form" style="margin: 0;">
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Hora:</span>
+                        <input type="time" id="cli-hora-res" class="input-form" style="margin: 0;">
+                    </div>
+                    <input type="number" id="cli-pessoas-res" placeholder="Nº de Pessoas" class="input-form" style="grid-column: span 2;" min="1">
                 </div>
             </div>
 
-            <div id="fields-reserva" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="text" id="cli-nome-res" placeholder="Nome da Reserva" class="input-form" style="grid-column: span 2;">
-                <div style="display: flex; flex-direction: column;">
-                    <span style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Data:</span>
-                    <input type="date" id="cli-data-res" class="input-form" style="margin: 0;">
+            <div id="payment-section" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+                <h4 style="margin: 0 0 10px 0; color: var(--p); font-size: 1em; font-family: 'Playfair Display';">2. Método de Pagamento</h4>
+                
+                <div class="payment-box">
+                    <label>
+                        <input type="radio" name="tipo_pagamento" value="Dinheiro" checked onchange="togglePaymentFields()">
+                        💶 Dinheiro
+                    </label>
+                    <label>
+                        <input type="radio" name="tipo_pagamento" value="Multibanco" onchange="togglePaymentFields()">
+                        💳 Multibanco
+                    </label>
+                    <label id="label-mbway" style="display:none;">
+                        <input type="radio" name="tipo_pagamento" value="MBWay" id="radio-mbway" onchange="togglePaymentFields()">
+                        📱 MBWay
+                    </label>
                 </div>
-                <div style="display: flex; flex-direction: column;">
-                    <span style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Hora:</span>
-                    <input type="time" id="cli-hora-res" class="input-form" style="margin: 0;">
+
+                <div id="mbway-zone" class="mbway-info">
+                    <i class="fas fa-mobile-alt"></i> <strong>Pagamento MBWay Selecionado!</strong><br>
+                    Pode enviar o valor para o nº <strong id="mbway-phone"></strong>. Por favor, envie o comprovativo pelo WhatsApp após enviar este pedido.
                 </div>
-                <input type="number" id="cli-pessoas-res" placeholder="Nº de Pessoas" class="input-form" style="grid-column: span 2;" min="1">
             </div>
-        </div>
 
-        <div id="mbway-zone" class="mbway-info">
-            <i class="fas fa-mobile-alt"></i> <strong>Pagamento MBWay Disponível!</strong><br>
-            Pode enviar o valor para o nº <strong id="mbway-phone"></strong>. Por favor, envie o comprovativo pelo WhatsApp ao finalizar o pedido.
+            <button class="btn-checkout" onclick="finalizarPedido()">
+                <i class="fab fa-whatsapp"></i> Confirmar e Enviar Pedido
+            </button>
         </div>
-
-        <button class="btn-checkout" onclick="finalizarPedido()">
-            <i class="fab fa-whatsapp"></i> Confirmar e Enviar Pedido
-        </button>
     </div>
 </div>
 
@@ -312,7 +361,7 @@
     const videosSazonais = {
         'natal': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Natal.mp4',
         'namorados': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Dia%20dos%20Namorados.mp4', 
-        'bruxas': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Dia%20das%20Bruxas.mp4',
+        'bruxas': '',
         'pascoa': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Feliz%20Pascoa.mp4',
         'anonovo': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Feliz%20Ano%20Novo.mp4',
         'carnaval': '',
@@ -415,7 +464,6 @@
         document.getElementById('link-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${mEnc}`;
         document.getElementById('link-waze').href = `https://waze.com/ul?q=${mEnc}&navigate=yes`;
 
-        // INJEÇÃO DINÂMICA DO LOGÓTIPO PARA A APP NATIVA
         if (loja.logo_url) {
             const logo = document.getElementById('v-logo');
             logo.src = loja.logo_url; logo.style.display = 'inline-block';
@@ -424,7 +472,6 @@
             document.getElementById('dynamic-apple-icon').href = loja.logo_url;
             document.title = loja.nome + " | Menu";
 
-            // Limpa o manifest vazio padrão e injeta o da loja
             const oldManifest = document.getElementById('dynamic-manifest');
             if (oldManifest) oldManifest.remove();
 
@@ -447,8 +494,9 @@
             document.head.appendChild(linkManifest);
         }
 
+        // MOSTRAR OPÇÃO MBWAY SE A LOJA TIVER ATIVADO
         if (loja.mbway_ativo && loja.mbway_num) {
-            document.getElementById('mbway-zone').style.display = 'block';
+            document.getElementById('label-mbway').style.display = 'flex';
             document.getElementById('mbway-phone').innerText = loja.mbway_num;
         }
 
@@ -498,7 +546,7 @@
         else { floater.classList.remove('visible'); fecharCarrinho(); }
     }
 
-    // NOVA FUNÇÃO: Alterna os campos de Levantamento / Reserva
+    // ALTERNA ENTRE OS CAMPOS DE LEVANTAMENTO E RESERVA
     function toggleOrderFields() {
         const tipo = document.querySelector('input[name="tipo_pedido"]:checked').value;
         const fLev = document.getElementById('fields-levantamento');
@@ -510,6 +558,18 @@
         } else {
             fLev.style.display = 'none';
             fRes.style.display = 'grid';
+        }
+    }
+
+    // ALTERNA A CAIXA INFORMATIVA DO MBWAY
+    function togglePaymentFields() {
+        const pag = document.querySelector('input[name="tipo_pagamento"]:checked').value;
+        const mbwayZone = document.getElementById('mbway-zone');
+        
+        if (pag === 'MBWay') {
+            mbwayZone.style.display = 'block';
+        } else {
+            mbwayZone.style.display = 'none';
         }
     }
 
@@ -557,20 +617,21 @@
         
         try { await _sb.from('lojas').update({ whatsapp_total: (lojaAtual.whatsapp_total || 0) + 1 }).eq('id', lojaAtual.id); } catch(e){}
 
-        // RECOLHER INFO DO LEVANTAMENTO OU RESERVA
+        // RECOLHER INFO DO LEVANTAMENTO/RESERVA E PAGAMENTO
         const tipoPedido = document.querySelector('input[name="tipo_pedido"]:checked').value;
+        const tipoPagamento = document.querySelector('input[name="tipo_pagamento"]:checked').value;
         let infoExtra = "";
 
         if (tipoPedido === 'levantamento') {
             const nome = document.getElementById('cli-nome-lev').value || "Não informado";
             const hora = document.getElementById('cli-hora-lev').value || "O mais breve possível";
-            infoExtra = `*Tipo:* 🥡 Levantamento no Local\n*Nome:* ${nome}\n*Hora de Recolha:* ${hora}\n\n`;
+            infoExtra = `*Tipo:* 🥡 Levantamento no Local\n*Nome:* ${nome}\n*Hora de Recolha:* ${hora}\n*Pagamento:* ${tipoPagamento}\n\n`;
         } else {
             const nome = document.getElementById('cli-nome-res').value || "Não informado";
             const data = document.getElementById('cli-data-res').value || "Hoje";
             const hora = document.getElementById('cli-hora-res').value || "A definir";
             const pessoas = document.getElementById('cli-pessoas-res').value || "1";
-            infoExtra = `*Tipo:* 🪑 Reserva de Mesa com Pedido\n*Nome:* ${nome}\n*Data:* ${data}\n*Hora:* ${hora}\n*Nº Pessoas:* ${pessoas}\n\n`;
+            infoExtra = `*Tipo:* 🪑 Reserva de Mesa com Pedido\n*Nome:* ${nome}\n*Data:* ${data}\n*Hora:* ${hora}\n*Nº Pessoas:* ${pessoas}\n*Pagamento:* ${tipoPagamento}\n\n`;
         }
 
         let textoWpp = `Olá! Gostaria de fazer o seguinte pedido:\n\n${infoExtra}*📝 O Meu Pedido:*\n`;
@@ -584,7 +645,9 @@
         
         textoWpp += `\n*TOTAL: ${total.toFixed(2)}€*`;
         
-        if (lojaAtual.mbway_ativo) { textoWpp += `\n\nVou efetuar o pagamento por MBWay. Segue o comprovativo logo abaixo.`; }
+        if (tipoPagamento === 'MBWay' && lojaAtual.mbway_ativo) { 
+            textoWpp += `\n\n(Vou enviar o comprovativo de transferência MBWay a seguir.)`; 
+        }
         
         const numLoja = (lojaAtual.whatsapp || "").replace(/\s/g, "");
         const url = `https://wa.me/${numLoja}?text=${encodeURIComponent(textoWpp)}`;
@@ -610,7 +673,6 @@
                 alergeniosHtml = `<div class="alergenios-badge">⚠️ Contém: ${p.alergenios.join(', ')}</div>`;
             }
 
-            // HTML DINÂMICO PARA O PREÇO + DESCONTO
             let htmlPreco = `<span class="price">${final}€</span>`;
             if (desc > 0) {
                 htmlPreco += ` <span class="old-price">${precoFixo.toFixed(2)}€</span>`;
