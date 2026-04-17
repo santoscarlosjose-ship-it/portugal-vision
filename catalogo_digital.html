@@ -77,7 +77,7 @@
             background-image: url('URL_DA_IMAGEM_MAE.png');
         }
 
-        /* --- ANIMAÇÕES DE ENFEITES PREMIUM --- */
+        /* --- ANIMAÇÕES DE ENFEITES PREMIUM (FÍSICA ORGÂNICA) --- */
         #seasonal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             pointer-events: none; 
@@ -85,21 +85,32 @@
             overflow: hidden; 
         }
         .particle { 
-            position: absolute; font-size: 24px; opacity: 0.8; 
+            position: absolute; 
+            pointer-events: none;
+            will-change: transform, opacity; /* Boost de Performance */
         }
         
-        @keyframes fall {
-            from { transform: translateY(-50px) rotate(0deg); }
-            to { transform: translateY(110vh) rotate(360deg); }
+        /* Neve / Confetes - Queda com Balanço Lateral */
+        @keyframes fallOrganic {
+            0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: var(--max-opacity, 0.8); }
+            90% { opacity: var(--max-opacity, 0.8); }
+            100% { transform: translate3d(var(--sway-end, 100px), 110vh, 0) rotate(var(--rot-end, 360deg)); opacity: 0; }
         }
-        @keyframes floatUp {
-            from { transform: translateY(110vh) rotate(0deg); opacity: 1; }
-            to { transform: translateY(-10vh) rotate(20deg); opacity: 0; }
+
+        /* Corações / Fantasmas - Subida com Ziguezague */
+        @keyframes floatUpOrganic {
+            0% { transform: translate3d(0, 110vh, 0) rotate(0deg) scale(0.5); opacity: 0; }
+            20% { opacity: var(--max-opacity, 0.9); transform: translate3d(var(--sway-mid, -30px), 80vh, 0) rotate(15deg) scale(1); }
+            80% { opacity: var(--max-opacity, 0.9); transform: translate3d(var(--sway-end, 40px), 20vh, 0) rotate(-15deg) scale(1.1); }
+            100% { transform: translate3d(0, -10vh, 0) rotate(0deg) scale(1.2); opacity: 0; }
         }
-        @keyframes pulsePulse { 
-            0% { transform: scale(1); opacity: 0.6; } 
-            50% { transform: scale(1.3); opacity: 1; } 
-            100% { transform: scale(1); opacity: 0.6; } 
+
+        /* Brilhos / Foguetes - Pulso Brilhante */
+        @keyframes pulseSpark {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(var(--scale-max, 1.5)) rotate(var(--rot-end, 180deg)); opacity: var(--max-opacity, 1); }
+            100% { transform: scale(0) rotate(var(--rot-end, 360deg)); opacity: 0; }
         }
 
         /* --- ECRÃ DE BLOQUEIO --- */
@@ -109,7 +120,7 @@
             padding: 40px; text-align: center;
         }
 
-        /* --- CABEÇALHO 100% TRANSPARENTE --- */
+        /* --- CABEÇALHO --- */
         .header { 
             background: transparent; 
             padding: 50px 20px; 
@@ -193,7 +204,7 @@
         .btn-checkout { background: var(--ok); color: white; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 1.1em; display: block; width: 100%; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; }
         .btn-checkout:hover { background: #219653; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); }
 
-        /* --- RODAPÉ 100% TRANSPARENTE --- */
+        /* --- RODAPÉ --- */
         .footer { 
             background: transparent; 
             padding: 60px 20px; 
@@ -301,7 +312,7 @@
     let lojaAtual = null;
     let carrinho = []; 
 
-    // TEXTOS LEGAIS BLINDADOS E FORMATADOS PARA O MODAL
+    // TEXTOS LEGAIS BLINDADOS
     const legalTexts = {
         termos: `
             <h3 style="font-family: 'Playfair Display', serif; color: var(--p); border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Termos e Condições</h3>
@@ -334,7 +345,7 @@
         try { await _sb.from('lojas').update({ views_total: currentViews + 1 }).eq('id', lojaId); } catch (e) {}
     }
 
-    // --- FUNÇÃO MAGICA: MOLDURAS E EFEITOS NAS BORDAS ---
+    // --- FUNÇÃO MAGICA: MOLDURAS E FÍSICA DE PARTÍCULAS PREMIUM ---
     function activarEfeitosSazonais(tema) {
         const overlay = document.getElementById('seasonal-overlay');
         const iconBox = document.getElementById('theme-icon');
@@ -342,14 +353,15 @@
         
         let emoji = "", anima = "", total = 0, isBorderOnly = false;
 
-        if(tema === 'natal') { emoji = "❄️"; anima = "fall"; total = 35; iconBox.innerText = "🎄"; }
-        else if(tema === 'namorados') { emoji = "💖"; anima = "floatUp"; total = 25; iconBox.innerText = "💘"; }
-        else if(tema === 'bruxas') { emoji = "🎃"; anima = "floatUp"; total = 20; iconBox.innerText = "👻"; }
-        else if(tema === 'pascoa') { emoji = "🌸"; anima = "fall"; total = 25; iconBox.innerText = "🐰"; }
-        else if(tema === 'carnaval') { emoji = "🎊"; anima = "fall"; total = 35; iconBox.innerText = "🎭"; }
-        else if(tema === 'anonovo') { emoji = "🎆"; anima = "pulsePulse"; total = 16; isBorderOnly = true; iconBox.innerText = "🥂"; }
-        else if(tema === 'pai') { emoji = "👔"; anima = "pulsePulse"; total = 14; isBorderOnly = true; iconBox.innerText = "👨‍👧‍👦"; }
-        else if(tema === 'mae') { emoji = "🌷"; anima = "pulsePulse"; total = 16; isBorderOnly = true; iconBox.innerText = "👩‍👧‍👦"; }
+        // Configuração de cada tema (Ícones refinados e Físicas ajustadas)
+        if(tema === 'natal') { emoji = "❄️"; anima = "fallOrganic"; total = 40; iconBox.innerText = "🎄"; }
+        else if(tema === 'namorados') { emoji = "💖"; anima = "floatUpOrganic"; total = 30; iconBox.innerText = "💘"; }
+        else if(tema === 'bruxas') { emoji = "🎃"; anima = "floatUpOrganic"; total = 25; iconBox.innerText = "👻"; }
+        else if(tema === 'pascoa') { emoji = "🌸"; anima = "fallOrganic"; total = 30; iconBox.innerText = "🐰"; }
+        else if(tema === 'carnaval') { emoji = "🎊"; anima = "fallOrganic"; total = 40; iconBox.innerText = "🎭"; }
+        else if(tema === 'anonovo') { emoji = "✨"; anima = "pulseSpark"; total = 40; isBorderOnly = true; iconBox.innerText = "🥂"; }
+        else if(tema === 'pai') { emoji = "👔"; anima = "pulseSpark"; total = 20; isBorderOnly = true; iconBox.innerText = "👨‍👧‍👦"; }
+        else if(tema === 'mae') { emoji = "🌷"; anima = "pulseSpark"; total = 25; isBorderOnly = true; iconBox.innerText = "👩‍👧‍👦"; }
         else { return; }
 
         for(let i=0; i<total; i++) {
@@ -357,19 +369,44 @@
             p.className = 'particle';
             p.innerText = emoji;
             
-            if (isBorderOnly) {
-                p.style.left = (i % 2 === 0) ? (Math.random() * 8 + 2 + "vw") : (Math.random() * 8 + 85 + "vw");
-                p.style.top = Math.random() * 90 + "vh";
-                p.style.animationDuration = (Math.random() * 2 + 1.5) + "s";
-                p.style.animationName = 'pulsePulse';
-                p.style.animationIterationCount = 'infinite';
+            // 1. PROFUNDIDADE (Depth of Field) - Tamanhos e Desfoques variados
+            const size = Math.random() * 1.5 + 0.5; // Entre 0.5em e 2em
+            p.style.fontSize = size + 'em';
+            
+            // Se a partícula for pequena (longe), aplica desfoque e menos opacidade
+            if(size < 1) {
+                p.style.filter = 'blur(2px)';
+                p.style.setProperty('--max-opacity', '0.4');
             } else {
-                p.style.left = Math.random() * 100 + "vw";
-                p.style.top = "-50px";
-                p.style.animationDuration = (Math.random() * 4 + 3) + "s";
-                p.style.animationDelay = Math.random() * 5 + "s";
-                p.style.animationName = anima;
+                p.style.filter = 'none';
+                p.style.setProperty('--max-opacity', '0.85');
             }
+
+            // 2. MOVIMENTO ORGÂNICO (Sway) - Oscilação única para cada partícula
+            const sway = (Math.random() - 0.5) * 150; // Vai balançar até 75px para a esq ou dir
+            p.style.setProperty('--sway-end', sway + 'px');
+            p.style.setProperty('--sway-mid', (sway / 2) + 'px');
+            p.style.setProperty('--rot-end', (Math.random() * 720 - 360) + 'deg'); // Rotação caótica
+            p.style.setProperty('--scale-max', Math.random() * 0.8 + 0.7);
+            
+            // 3. POSICIONAMENTO E TIMING
+            if (isBorderOnly) {
+                // Brilhos nas bordas
+                p.style.left = (i % 2 === 0) ? (Math.random() * 10 + 2 + "vw") : (Math.random() * 10 + 80 + "vw");
+                p.style.top = Math.random() * 95 + "vh";
+                p.style.animationDuration = (Math.random() * 3 + 2) + "s"; // Pulsa entre 2s e 5s
+                p.style.animationDelay = Math.random() * 5 + "s";
+            } else {
+                // Neve/Corações a ocupar o ecrã inteiro
+                p.style.left = Math.random() * 100 + "vw";
+                p.style.animationDuration = (Math.random() * 6 + 4) + "s"; // Cai suavemente entre 4s e 10s
+                p.style.animationDelay = Math.random() * 10 + "s"; // Espalha o início para não cair tudo de uma vez
+            }
+            
+            // Aplica a animação
+            p.style.animationName = anima;
+            p.style.animationTimingFunction = "ease-in-out"; // Suaviza o início e o fim da curva
+            p.style.animationIterationCount = "infinite";
             
             overlay.appendChild(p);
         }
