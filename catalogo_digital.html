@@ -61,19 +61,27 @@
         body.video-mode .btn-flip { background: #333; color: #f8fcfb; }
 
         /* --- A MÁGICA DA MARCA DE ÁGUA E DO FUNDO TRANSPARENTE AQUI --- */
+        /* --- A MÁGICA DO VÍDEO NO FUNDO --- */
         #seasonal-frame-video { 
             position: fixed; 
             top: 0; 
             left: 0; 
             width: 100vw; 
             height: 100vh; 
-            object-fit: cover; /* Altera de fill para cover para não distorcer */
+            object-fit: cover; /* Formato perfeito para Telemóvel */
             pointer-events: none; 
-            z-index: 50; /* Fica por cima de tudo */
+            z-index: 0; /* CORREÇÃO 1: Passou de 10 (frente) para 0 (trás de tudo) */
             display: none; 
-            mix-blend-mode: screen; /* Faz o preto desaparecer */
-            opacity: 0.85; /* Dá um tom mais premium */
-            transform: scale(1.08); /* Esconde a marca de água fora do ecrã */
+            mix-blend-mode: screen; /* O preto fica transparente */
+            opacity: 0.6; /* CORREÇÃO 2: Baixei a opacidade para a comida ter mais destaque que o fundo */
+            transform: scale(1.08); /* Esconde a marca de água */
+        }
+
+        /* CORREÇÃO 3: Resolve o problema de ficar esticado no Computador */
+        @media (min-width: 768px) {
+            #seasonal-frame-video {
+                object-fit: contain; /* Impede o vídeo de fazer um zoom gigante em monitores horizontais */
+            }
         }
 
         #seasonal-frame { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; transition: 0.5s; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; transform: translateZ(0); }
