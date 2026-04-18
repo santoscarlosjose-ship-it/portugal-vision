@@ -150,6 +150,8 @@
         
         .input-form { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; background: #f8fafc; transition: 0.3s; margin-bottom: 5px; }
         .input-form:focus { outline: none; border-color: var(--ok); background: white; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); }
+        select.input-form { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23475569%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 14px top 50%; background-size: 12px auto; padding-right: 40px; }
+        
         .order-type-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .order-type-box label { background: white; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; flex: 1; justify-content: center; font-weight: 600; font-size: 0.85em; transition: 0.2s; white-space: nowrap;}
         .order-type-box label:hover { background: #f1f5f9; }
@@ -218,13 +220,15 @@
                         <label><input type="radio" name="tipo_pedido" value="levantamento" checked onchange="toggleOrderFields()"> 🥡 Levantamento</label>
                         <label><input type="radio" name="tipo_pedido" value="reserva" onchange="toggleOrderFields()"> 🪑 Reserva</label>
                     </div>
+                    
                     <div id="fields-levantamento" style="display: grid; gap: 10px;">
                         <input type="text" id="cli-nome-lev" placeholder="O seu Nome" class="input-form">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span style="font-size: 14px; font-weight: 600; color: #475569; width: 60px;">Hora:</span>
-                            <input type="time" id="cli-hora-lev" class="input-form" style="margin: 0;">
+                            <select id="cli-hora-lev" class="input-form" style="margin: 0;"></select>
                         </div>
                     </div>
+                    
                     <div id="fields-reserva" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <input type="text" id="cli-nome-res" placeholder="Nome da Reserva" class="input-form" style="grid-column: span 2;">
                         <div style="display: flex; flex-direction: column;">
@@ -233,7 +237,7 @@
                         </div>
                         <div style="display: flex; flex-direction: column;">
                             <span style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Hora:</span>
-                            <input type="time" id="cli-hora-res" class="input-form" style="margin: 0;">
+                            <select id="cli-hora-res" class="input-form" style="margin: 0;"></select>
                         </div>
                         <input type="number" id="cli-pessoas-res" placeholder="Nº de Pessoas" class="input-form" style="grid-column: span 2;" min="1">
                     </div>
@@ -325,7 +329,7 @@
     const videosSazonais = {
         'natal': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Natal.mp4',
         'namorados': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Dia%20dos%20Namorados.mp4', 
-        'bruxas': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Dia%20das%20Bruxas.mp4',
+        'bruxas': '',
         'pascoa': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Feliz%20Pascoa.mp4',
         'anonovo': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Feliz%20Ano%20Novo.mp4',
         'carnaval': '',
@@ -403,11 +407,20 @@
         }
     }
 
-    // CÉREBRO: VERIFICA SE A LOJA ESTÁ ABERTA
+    // NOVA FUNÇÃO: Gera opções de horas de 15 em 15 minutos de forma elegante
+    function preencherHorariosDropdown() {
+        let options = '<option value="" disabled selected>Escolha a hora...</option>';
+        for (let h = 11; h <= 23; h++) {
+            ['00', '15', '30', '45'].forEach(m => {
+                options += `<option value="${h}:${m}">${h}:${m}</option>`;
+            });
+        }
+        document.getElementById('cli-hora-lev').innerHTML = options;
+        document.getElementById('cli-hora-res').innerHTML = options;
+    }
+
     function verificarSeAberto(loja) {
         const agora = new Date();
-        
-        // 1. Férias
         if (loja.em_ferias) {
             if (!loja.ferias_inicio && !loja.ferias_fim) return { aberto: false, motivo: "A loja encontra-se encerrada para férias." };
             const hojeIso = agora.toISOString().split('T')[0];
@@ -415,22 +428,14 @@
                 return { aberto: false, motivo: `Em férias de ${loja.ferias_inicio} até ${loja.ferias_fim}.` };
             }
         }
-
-        // 2. Horário Semanal
         if (loja.horarios) {
-            // O JavaScript considera Domingo=0, Segunda=1. A nossa DB usa Segunda=0, Domingo=6.
             const diaDb = (agora.getDay() + 6) % 7; 
             const horarioHoje = loja.horarios[diaDb];
-
-            if (!horarioHoje || horarioHoje.status === 'fechado') {
-                return { aberto: false, motivo: "Encerrado no dia de hoje." };
-            }
+            if (!horarioHoje || horarioHoje.status === 'fechado') return { aberto: false, motivo: "Encerrado no dia de hoje." };
 
             const horaStr = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
-            const m1 = horarioHoje.m1 || "00:00";
-            const m2 = horarioHoje.m2 || "00:00";
-            const t1 = horarioHoje.t1 || "00:00";
-            const t2 = horarioHoje.t2 || "00:00";
+            const m1 = horarioHoje.m1 || "00:00"; const m2 = horarioHoje.m2 || "00:00";
+            const t1 = horarioHoje.t1 || "00:00"; const t2 = horarioHoje.t2 || "00:00";
 
             const manhaAberto = (horaStr >= m1 && horaStr <= m2 && m1 !== m2);
             const tardeAberto = (horaStr >= t1 && horaStr <= t2 && t1 !== t2);
@@ -440,7 +445,6 @@
                 return { aberto: false, motivo: `Fechado no momento. ${textoHorario}` };
             }
         }
-
         return { aberto: true, motivo: "" };
     }
 
@@ -457,17 +461,17 @@
 
         lojaAtual = loja;
 
-        // VERIFICAR HORÁRIO DA LOJA E INIBIR BOTÃO SE FECHADO
+        // Preenche os select dropdowns com as horas limpas
+        preencherHorariosDropdown();
+
         const estadoLoja = verificarSeAberto(lojaAtual);
         if (!estadoLoja.aberto) {
-            // Faixa Superior
             const bannerFechado = document.createElement('div');
             bannerFechado.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; text-align: center; padding: 12px 20px; font-weight: bold; z-index: 99999; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);";
             bannerFechado.innerHTML = `⚠️ ${estadoLoja.motivo}`;
             document.body.appendChild(bannerFechado);
-            document.body.style.paddingTop = "40px"; // Afasta o menu do banner
+            document.body.style.paddingTop = "40px";
 
-            // Bloquear botão de Checkout
             document.getElementById('btn-checkout-final').style.display = 'none';
             document.getElementById('checkout-options-wrapper').style.display = 'none';
             
