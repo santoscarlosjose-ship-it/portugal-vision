@@ -72,12 +72,12 @@
             z-index: 0; /* Fica no fundo, atrás da comida */
             display: none; 
             mix-blend-mode: screen; /* Faz o preto desaparecer */
-            opacity: 0.85; /* Suave para não ofuscar os pratos */
-            transform: scale(1.05); /* Ligeiro zoom para esconder a marca de água no canto */
+            opacity: 0.90; /* Suave para não ofuscar os pratos */
+            transform: scale(1.00); /* Ligeiro zoom para esconder a marca de água no canto */
         }
 
         /* --- A MÁGICA EXCLUSIVA PARA O COMPUTADOR (Monitores horizontais) --- */
-        @media (min-width: 768px) {
+        @media (min-width: 1080px) {
             #seasonal-frame-video {
                 object-fit: contain; /* Impede o zoom monstruoso. O vídeo fica no centro no tamanho real. */
                 opacity: 0.3; /* Ainda mais suave no PC */
