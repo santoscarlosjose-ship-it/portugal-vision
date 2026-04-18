@@ -60,22 +60,29 @@
         body.video-mode .card-desc { color: #cbd5e1; }
         body.video-mode .btn-flip { background: #333; color: #f8fcfb; }
 
-        /* --- A MÁGICA DA MARCA DE ÁGUA E DO FUNDO TRANSPARENTE AQUI --- */
-        /* --- A MÁGICA DO VÍDEO NO FUNDO --- */
-       /* --- A MÁGICA DO VÍDEO NO FUNDO --- */
+/* --- O VÍDEO (Comportamento Base para Telemóvel) --- */
         #seasonal-frame-video { 
             position: fixed; 
             top: 0; 
             left: 0; 
             width: 100vw; 
             height: 100vh; 
-            object-fit: cover; /* Força a preencher o ecrã todo (tira as faixas pretas laterais no PC) */
+            object-fit: cover; /* No telemóvel: preenche o ecrã todo na perfeição */
             pointer-events: none; 
-            z-index: 0; /* Mantém-se atrás dos pratos para se conseguir ler o menu */
+            z-index: 0; /* Fica no fundo, atrás da comida */
             display: none; 
-            mix-blend-mode: screen; 
-            opacity: 0.35; /* Baixei a opacidade. Assim brilha no fundo, mas não rouba a atenção da comida! */
-            transform: scale(1.08); /* Continua a esconder a marca de água */
+            mix-blend-mode: screen; /* Faz o preto desaparecer */
+            opacity: 0.5; /* Suave para não ofuscar os pratos */
+            transform: scale(1.05); /* Ligeiro zoom para esconder a marca de água no canto */
+        }
+
+        /* --- A MÁGICA EXCLUSIVA PARA O COMPUTADOR (Monitores horizontais) --- */
+        @media (min-width: 768px) {
+            #seasonal-frame-video {
+                object-fit: contain; /* Impede o zoom monstruoso. O vídeo fica no centro no tamanho real. */
+                opacity: 0.3; /* Ainda mais suave no PC */
+                /* Como temos o mix-blend-mode: screen, os lados não ficam pretos, ficam transparentes! */
+            }
         }
 
         #seasonal-frame { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; transition: 0.5s; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; transform: translateZ(0); }
