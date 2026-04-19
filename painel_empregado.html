@@ -25,7 +25,7 @@
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
 
         /* ÁREA PRINCIPAL (GRELHA) */
-        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; flex-grow: 1; overflow: hidden; }
+        .main-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; padding: 20px; flex-grow: 1; overflow: hidden; }
         @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; overflow-y: auto; } }
         
         .coluna { background: transparent; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 5px; }
@@ -38,7 +38,14 @@
         
         .card.chamada-empregado { border-left-color: var(--warning); }
         .card.chamada-conta { border-left-color: var(--danger); }
+        
+        /* Cores base para os tipos de serviço */
         .card.pedido-mesa { border-left-color: var(--primary); }
+        .card.pedido-takeaway { border-left-color: #8b5cf6; } /* Roxo para Takeaway */
+        .card.pedido-reserva { border-left-color: #14b8a6; } /* Teal para Reserva */
+        
+        /* Destaque quando aguarda confirmação na mesa */
+        .card.aguarda-confirmacao { border-left-color: var(--warning); background: #fffbeb; }
 
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         .mesa-tag { font-size: 1.5em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
@@ -56,10 +63,15 @@
         .btn-resolve:hover { background: #e2e8f0; }
         .btn-success { background: var(--success); color: white; }
         .btn-success:hover { background: #059669; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { background: #d97706; }
 
         /* ESTADO VAZIO */
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
         .empty-state i { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
+        
+        .ronda-box { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #e2e8f0;}
+        .ronda-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 5px; display: flex; justify-content: space-between;}
     </style>
 </head>
 <body>
@@ -95,7 +107,7 @@
 
         <div class="coluna">
             <div class="coluna-header">
-                <span>📝 Pedidos nas Mesas</span>
+                <span>📝 Gestão de Pedidos</span>
                 <span class="badge" id="count-pedidos">0</span>
             </div>
             <div id="lista-pedidos">
@@ -106,7 +118,6 @@
 </div>
 
 <script>
-    // As tuas chaves do Supabase
     const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
     
     let minhaLojaId = null;
@@ -146,7 +157,6 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'flex';
 
-        // Descobrir a loja deste utilizador
         const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', userId).single();
         if (!loja) {
             alert("Não tem nenhuma loja registada.");
@@ -156,14 +166,12 @@
         minhaLojaId = loja.id;
         document.getElementById('nome-restaurante').innerText = loja.nome + " - Sala";
 
-        // Carregar os dados que lá estão agora
         carregarDados();
 
-        // A MÁGICA: Subscrever atualizações em Tempo Real!
         _sb.channel('sala-updates')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, payload => {
                 tocarSomAlerta();
-                carregarDados(); // Recarrega os dados silenciosamente
+                carregarDados(); 
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, payload => {
                 tocarSomAlerta();
@@ -174,14 +182,14 @@
 
     // 4. CARREGAR E RENDERIZAR DADOS
     async function carregarDados() {
-        // Buscar Chamadas
+        // Chamadas (Mantém-se igual)
         const { data: chamadas } = await _sb.from('chamadas_sala').select('*').eq('loja_id', minhaLojaId).eq('estado', 'pendente').order('created_at', { ascending: true });
         
-        // Buscar Pedidos de Mesa
-        const { data: pedidos } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).eq('tipo_pedido', 'mesa').neq('estado', 'finalizado').order('created_at', { ascending: true });
+        // Pedidos (AGORA BUSCA TODOS, não apenas os de mesa)
+        const { data: pedidos } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).neq('estado', 'finalizado').order('created_at', { ascending: true });
 
         renderizarChamadas(chamadas || []);
-        renderizarPedidos(pedidos || []);
+        renderizarPedidosInteligentes(pedidos || []);
     }
 
     function formatarHora(isoString) {
@@ -219,41 +227,127 @@
         }).join('');
     }
 
-    function renderizarPedidos(lista) {
-        document.getElementById('count-pedidos').innerText = lista.length;
+    // A MÁGICA DO AGRUPAMENTO (RONDAS/SOMAS)
+    function renderizarPedidosInteligentes(listaBruta) {
         const div = document.getElementById('lista-pedidos');
         
-        if (lista.length === 0) {
-            div.innerHTML = '<div class="empty-state"><i class="fas fa-utensils"></i><p>Nenhum pedido pendente.</p></div>';
+        if (listaBruta.length === 0) {
+            div.innerHTML = '<div class="empty-state"><i class="fas fa-utensils"></i><p>Nenhum pedido em curso.</p></div>';
+            document.getElementById('count-pedidos').innerText = 0;
             return;
         }
 
-        div.innerHTML = lista.map(p => {
-            let itensHtml = p.itens.map(item => `<li><strong>${item.qtde}x</strong> ${item.nome}</li>`).join('');
-            
-            let btnAcao = '';
-            let estadoHtml = '';
+        // 1. Separar Mesas de Externos (Takeaway/Reserva)
+        const externos = listaBruta.filter(p => p.tipo_pedido !== 'mesa');
+        const pedidosMesa = listaBruta.filter(p => p.tipo_pedido === 'mesa');
 
-            if(p.estado === 'pendente') {
-                estadoHtml = `<span style="color: var(--danger); font-weight:bold;">A enviar para cozinha...</span>`;
-                btnAcao = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'preparacao')">Aceitar e Enviar</button>`;
-            } else if(p.estado === 'preparacao') {
-                estadoHtml = `<span style="color: var(--warning); font-weight:bold;">Na Cozinha 🍳</span>`;
-                btnAcao = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')">Marcar Pronto p/ Servir</button>`;
-            } else if(p.estado === 'pronto') {
-                estadoHtml = `<span style="color: var(--success); font-weight:bold;">Pronto a Servir! 🔔</span>`;
-                btnAcao = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'finalizado')"><i class="fas fa-check-double"></i> Encerrar Pedido</button>`;
+        // 2. Agrupar as Mesas
+        const mesasAgrupadas = {};
+        pedidosMesa.forEach(p => {
+            if (!mesasAgrupadas[p.mesa]) {
+                mesasAgrupadas[p.mesa] = {
+                    mesa: p.mesa,
+                    rondas: [],
+                    totalAcumulado: 0,
+                    temParaConfirmar: false,
+                    tudoPronto: true, // Começa assumindo que está tudo pronto até provar o contrário
+                    horaPrimeiraRonda: p.created_at
+                };
+            }
+            mesasAgrupadas[p.mesa].rondas.push(p);
+            mesasAgrupadas[p.mesa].totalAcumulado += p.total;
+            
+            if (p.estado === 'aguarda_confirmacao') mesasAgrupadas[p.mesa].temParaConfirmar = true;
+            if (p.estado !== 'pronto') mesasAgrupadas[p.mesa].tudoPronto = false;
+        });
+
+        // 3. Contar cartões totais (Mesas ativas + Externos)
+        const totalCartoes = Object.keys(mesasAgrupadas).length + externos.length;
+        document.getElementById('count-pedidos').innerText = totalCartoes;
+
+        let htmlFinal = '';
+
+        // --- RENDERIZAR MESAS ---
+        Object.values(mesasAgrupadas).forEach(m => {
+            let rondasHtml = '';
+            let idParaConfirmar = null;
+
+            m.rondas.forEach((ronda, index) => {
+                let itensHtml = ronda.itens.map(item => `<li><strong>${item.qtde}x</strong> ${item.nome}</li>`).join('');
+                let statusBadge = '';
+                
+                if (ronda.estado === 'aguarda_confirmacao') {
+                    statusBadge = `<span style="color:var(--warning);">⚠️ Confirmar</span>`;
+                    idParaConfirmar = ronda.id; // Guarda o ID para o botão mestre do cartão
+                } else if (ronda.estado === 'pendente') {
+                    statusBadge = `<span style="color:var(--danger);">Na Fila</span>`;
+                } else if (ronda.estado === 'preparacao') {
+                    statusBadge = `<span style="color:var(--primary);">Na Cozinha 🍳</span>`;
+                } else if (ronda.estado === 'pronto') {
+                    statusBadge = `<span style="color:var(--success);">Pronto 🔔</span>`;
+                }
+
+                rondasHtml += `
+                    <div class="ronda-box">
+                        <div class="ronda-title">Ronda ${index + 1} <span>${statusBadge}</span></div>
+                        <ul class="itens-lista">${itensHtml}</ul>
+                    </div>
+                `;
+            });
+
+            // Lógica principal do Cartão da Mesa
+            let classeEstado = 'pedido-mesa';
+            let btnAcao = '';
+
+            if (m.temParaConfirmar) {
+                classeEstado += ' aguarda-confirmacao';
+                btnAcao = `<button class="btn-action btn-warning" onclick="avancarPedido(${idParaConfirmar}, 'pendente')"><i class="fas fa-eye"></i> Confirmar na Mesa</button>`;
+            } else if (m.tudoPronto) {
+                btnAcao = `<button class="btn-action btn-resolve" onclick="fecharMesa('${m.mesa}', ${JSON.stringify(m.rondas.map(r=>r.id))})"><i class="fas fa-check-double"></i> Limpar Mesa (Total: ${m.totalAcumulado.toFixed(2)}€)</button>`;
+            } else {
+                btnAcao = `<button class="btn-action btn-resolve" style="opacity:0.5; cursor:not-allowed;">Em processamento...</button>`;
             }
 
-            return `
-                <div class="card pedido-mesa">
+            htmlFinal += `
+                <div class="card ${classeEstado}">
                     <div class="card-header">
-                        <div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${p.mesa}</div>
+                        <div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div>
+                        <div class="time-tag"><i class="far fa-clock"></i> ${formatarHora(m.horaPrimeiraRonda)}</div>
+                    </div>
+                    <div class="card-body">
+                        ${rondasHtml}
+                        <div style="margin-top: 15px; font-weight: 900; font-size: 1.2em; text-align:right;">Total da Conta: ${m.totalAcumulado.toFixed(2)}€</div>
+                    </div>
+                    <div class="card-footer">
+                        ${btnAcao}
+                    </div>
+                </div>
+            `;
+        });
+
+        // --- RENDERIZAR EXTERNOS (TAKEAWAY / RESERVAS) ---
+        externos.forEach(p => {
+            let itensHtml = p.itens.map(item => `<li><strong>${item.qtde}x</strong> ${item.nome}</li>`).join('');
+            let icon = p.tipo_pedido === 'levantamento' ? '<i class="fas fa-shopping-bag"></i> Takeaway' : '<i class="far fa-calendar-check"></i> Reserva';
+            let cssClass = p.tipo_pedido === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva';
+            
+            let btnAcao = '';
+            if(p.estado === 'pendente') {
+                btnAcao = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'preparacao')">Aceitar e Enviar Cozinha</button>`;
+            } else if(p.estado === 'preparacao') {
+                btnAcao = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')">Marcar Pronto</button>`;
+            } else if(p.estado === 'pronto') {
+                btnAcao = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'finalizado')"><i class="fas fa-check-double"></i> Entregue / Pago</button>`;
+            }
+
+            htmlFinal += `
+                <div class="card ${cssClass}">
+                    <div class="card-header">
+                        <div class="mesa-tag">${icon}</div>
                         <div class="time-tag"><i class="far fa-clock"></i> ${formatarHora(p.created_at)}</div>
                     </div>
                     <div class="card-body">
-                        ${estadoHtml}
-                        <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 10px 0;">
+                        <div style="font-size:0.85em; text-transform:uppercase; font-weight:bold; color:#64748b; margin-bottom:10px;">Cliente: ${p.nome_cliente}</div>
                         <ul class="itens-lista">${itensHtml}</ul>
                         <div style="margin-top: 10px; font-weight: 800; font-size: 1.1em;">Total: ${p.total.toFixed(2)}€</div>
                     </div>
@@ -262,21 +356,30 @@
                     </div>
                 </div>
             `;
-        }).join('');
+        });
+
+        div.innerHTML = htmlFinal;
     }
 
     // 5. AÇÕES DOS BOTÕES
     async function resolverChamada(id) {
         await _sb.from('chamadas_sala').update({ estado: 'resolvido' }).eq('id', id);
-        // O Realtime dispara e atualiza o ecrã sozinho!
     }
 
     async function avancarPedido(id, novoEstado) {
         await _sb.from('pedidos').update({ estado: novoEstado }).eq('id', id);
-        // O Realtime dispara e atualiza o ecrã sozinho!
     }
 
-    // EXTRA: Som suave para avisar o empregado que algo aconteceu
+    // Fecha todas as rondas de uma mesa de uma vez só!
+    async function fecharMesa(mesaNum, arrayDeIds) {
+        if(confirm(`Fechar a conta da Mesa ${mesaNum}?`)) {
+            // Atualiza todos os IDs dessa mesa para finalizado
+            for(let id of arrayDeIds) {
+                await _sb.from('pedidos').update({ estado: 'finalizado' }).eq('id', id);
+            }
+        }
+    }
+
     function tocarSomAlerta() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -291,7 +394,7 @@
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
             osc.start(ctx.currentTime);
             osc.stop(ctx.currentTime + 0.5);
-        } catch(e) {} // Ignora se o browser bloquear o som (precisa de interação prévia do utilizador)
+        } catch(e) {}
     }
 
     verificarSessao();
