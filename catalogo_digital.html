@@ -508,7 +508,7 @@ function atualizarHorariosDisponiveis(tipo) {
         const margemMinutos = tipo === 'levantamento' ? 30 : 60; 
         const agoraEmMinutos = (agora.getHours() * 60) + agora.getMinutes();
 
-        function adicionarTurno(horaInicio, horaFim) {
+function adicionarTurno(horaInicio, horaFim) {
             if(!horaInicio || !horaFim || horaInicio === horaFim) return;
             
             const [hI, mI] = horaInicio.split(':').map(Number);
@@ -517,7 +517,12 @@ function atualizarHorariosDisponiveis(tipo) {
             let minStart = (hI * 60) + mI;
             let minEnd = (hF * 60) + mF;
 
-            if (tipo === 'reserva') minEnd -= 60; // Bloqueia 1h antes do fecho
+            // A INTELIGÊNCIA DA COZINHA (CORTAR O FINAL DO TURNO):
+            if (tipo === 'reserva') {
+                minEnd -= 60; // Última reserva 1 hora antes de fechar a porta
+            } else if (tipo === 'levantamento') {
+                minEnd -= 60; // Último takeaway 30 minutos antes de fechar a porta
+            }
 
             for (let tempo = minStart; tempo <= minEnd; tempo += 15) {
                 // Inteligência em ação: Se for hoje, oculta horas que já passaram (mais a margem de tempo)
