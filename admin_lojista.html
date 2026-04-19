@@ -39,12 +39,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* Regra de Ouro para evitar ecrãs a "dançar" lateralmente nos telemóveis */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
 
         :root { 
             --p: #0f172a;      /* Azul escuro moderno (Primary) */
@@ -63,7 +61,7 @@
             margin: 0; 
             padding: 20px 10px; 
             color: #334155; 
-            -webkit-tap-highlight-color: transparent; /* Remove flash azul no Android */
+            -webkit-tap-highlight-color: transparent; 
         }
 
         .container { max-width: 900px; margin: 0 auto; }
@@ -119,6 +117,7 @@
 
         .ferias-box { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--err); }
         .config-mbway { background: #f0fdf4; padding: 16px; border-radius: 12px; border: 1px solid #bbf7d0; border-left: 4px solid var(--ok); margin-top: 15px; margin-bottom: 15px; }
+        .config-takeaway { background: #f0f9ff; padding: 16px; border-radius: 12px; border: 1px solid #bae6fd; border-left: 4px solid var(--s); margin-top: 15px; margin-bottom: 15px; }
 
         .ai-suggestion { font-size: 12px; color: var(--s); margin-bottom: 8px; font-style: italic; }
         .btn-ia-action { width: auto; background: var(--ia); padding: 8px 16px; font-size: 12px; border-radius: 20px; position: absolute; right: 10px; bottom: 15px; transition: 0.3s; box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3); }
@@ -136,27 +135,14 @@
         .termos-box label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
         .termos-box input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; cursor: pointer; }
 
-        /* Estilos Novos para Alergénios */
         .alergenios-container { background: #fffbeb; padding: 12px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 15px; }
         .alergenios-container h5 { margin: 0 0 10px 0; color: #b45309; font-size: 13px; }
 
-        /* Correção Responsiva para Ecrãs de Telemóvel */
         @media (max-width: 600px) {
-            .header-loja {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-            }
-            .logo-box {
-                margin: 0 auto;
-            }
-            .info-perfil > div {
-                grid-template-columns: 1fr !important;
-            }
-            .header-loja > div:last-child {
-                flex-direction: row !important;
-                width: 100%;
-            }
+            .header-loja { flex-direction: column; align-items: stretch; gap: 15px; }
+            .logo-box { margin: 0 auto; }
+            .info-perfil > div { grid-template-columns: 1fr !important; }
+            .header-loja > div:last-child { flex-direction: row !important; width: 100%; }
         }
     </style>
 </head>
@@ -166,7 +152,7 @@
     <div id="status-banner" class="status-banner"></div>
 
     <div id="auth-area" class="auth-card">
-        <h2 style="text-align:center; color: var(--p)">Portugal Vision</h2>
+        <h2 style="text-align:center; color: var(--p)"><i class="fas fa-gem"></i> Portugal Vision</h2>
         <div class="tabs">
             <div id="t-login" class="tab active" onclick="selTab('login')">ENTRAR</div>
             <div id="t-reg" class="tab" onclick="selTab('reg')">REGISTAR</div>
@@ -176,7 +162,7 @@
             <input type="email" id="l-email" placeholder="E-mail">
             <input type="password" id="l-pass" placeholder="Password">
             <a onclick="selTab('reset')" style="cursor:pointer; font-size:12px; display:block; text-align:right; margin-bottom:10px; color: var(--s);">Esqueceu-se da password?</a>
-            <button onclick="login()">ENTRAR</button>
+            <button onclick="login()"><i class="fas fa-sign-in-alt"></i> ENTRAR</button>
         </div>
 
         <div id="f-reg" class="hidden">
@@ -187,29 +173,30 @@
             <div class="termos-box">
                 <label>
                     <input type="checkbox" id="r-termos">
-                    <span>Declaro que li e aceito os <a href="termos.html#termos" target="_blank" style="color: var(--s); font-weight: bold;">Termos e Condições</a> de serviço e a <a href="termos.html#privacidade" target="_blank" style="color: var(--s); font-weight: bold;">Política de Privacidade (RGPD)</a>, consentindo o tratamento dos meus dados para a criação da loja.</span>
+                    <span>Declaro que li e aceito os <a href="termos.html#termos" target="_blank" style="color: var(--s); font-weight: bold;">Termos e Condições</a> e a <a href="termos.html#privacidade" target="_blank" style="color: var(--s); font-weight: bold;">Política de Privacidade</a>.</span>
                 </label>
             </div>
 
-            <button style="background:var(--ok)" onclick="registar()">CRIAR CONTA</button>
+            <button style="background:var(--ok)" onclick="registar()"><i class="fas fa-user-plus"></i> CRIAR CONTA</button>
         </div>
 
         <div id="f-reset" class="hidden">
             <input type="email" id="reset-email" placeholder="E-mail da Conta">
-            <button onclick="recuperarSenha()">ENVIAR LINK DE RECUPERAÇÃO</button>
-            <button onclick="selTab('login')" style="background:none; color:var(--s); font-size:12px; margin-top:10px; box-shadow:none;">Voltar ao Login</button>
+            <button onclick="recuperarSenha()"><i class="fas fa-envelope"></i> ENVIAR LINK DE RECUPERAÇÃO</button>
+            <button onclick="selTab('login')" style="background:none; color:var(--s); font-size:12px; margin-top:10px; box-shadow:none;"><i class="fas fa-arrow-left"></i> Voltar ao Login</button>
         </div>
     </div>
 
     <div id="dash-area" class="hidden">
+        
         <div class="card">
             <div class="header-loja">
-                <div class="logo-box">
+                <div class="logo-box" title="Clique para alterar a imagem">
                     <img id="v-logo" src="https://via.placeholder.com/80">
                     <input type="file" accept="image/*" onchange="subirLogo(this)">
                 </div>
                 <div class="info-perfil" style="flex: 1; min-width: 0;">
-                    <input type="text" id="v-nome-edit" oninput="marcarAltPerfil()" style="font-weight:bold; font-size:1.2rem; margin-top:0;" placeholder="Loja">
+                    <input type="text" id="v-nome-edit" oninput="marcarAltPerfil()" style="font-weight:bold; font-size:1.2rem; margin-top:0;" placeholder="Nome da Loja">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <input type="text" id="v-gerente-edit" oninput="marcarAltPerfil()" placeholder="Gerente">
                         <input type="text" id="v-nif-edit" oninput="marcarAltPerfil()" placeholder="NIF">
@@ -242,14 +229,14 @@
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
-                    <button onclick="carregarDados()" style="width:100%; background:var(--s); padding: 8px 12px; font-size:12px; margin:0;">🔄 Atualizar</button>
-                    <button onclick="location.reload()" style="width:100%; background:var(--err); padding: 8px 12px; font-size:12px; margin:0;">🚪 Sair</button>
+                    <button onclick="carregarDados()" style="width:100%; background:var(--s); padding: 8px 12px; font-size:12px; margin:0;"><i class="fas fa-sync-alt"></i> Atualizar</button>
+                    <button onclick="location.reload()" style="width:100%; background:var(--err); padding: 8px 12px; font-size:12px; margin:0;"><i class="fas fa-sign-out-alt"></i> Sair</button>
                 </div>
             </div>
 
             <div class="config-mbway">
                 <h4 style="margin: 0 0 10px 0; color: var(--ok); display: flex; align-items: center; gap: 5px;">
-                    📱 Pagamentos MBWay
+                    <i class="fas fa-mobile-screen-button"></i> Pagamentos MBWay
                 </h4>
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <label style="font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; cursor: pointer;">
@@ -258,10 +245,20 @@
                     </label>
                     <input type="tel" id="v-mbway-num" oninput="marcarAltPerfil()" placeholder="Nº telemóvel associado" style="margin: 0; max-width: 250px; padding: 8px 12px;">
                 </div>
-                <small style="color: #666; display: block; margin-top: 5px;">Os clientes verão este número no momento de finalizar o pedido.</small>
+                <small style="color: #666; display: block; margin-top: 5px;">Os clientes verão este número ao finalizar o pedido.</small>
             </div>
 
-            <button id="btn-save-profile" class="btn-save-main" onclick="atualizarPerfil()">Guardar Alterações do Perfil</button>
+            <div class="config-takeaway">
+                <h4 style="margin: 0 0 10px 0; color: var(--s); display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-shopping-bag"></i> Serviço de Takeaway / Levantamento
+                </h4>
+                <label style="font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                    <input type="checkbox" id="v-takeaway-ativo" onchange="marcarAltPerfil()" style="width: 18px; height: 18px; margin: 0;" checked>
+                    Aceitar encomendas para Levantamento no Local (Ativa botão no Catálogo)
+                </label>
+            </div>
+
+            <button id="btn-save-profile" class="btn-save-main" onclick="atualizarPerfil()"><i class="fas fa-save"></i> Guardar Alterações do Perfil</button>
             
             <div class="stats" style="margin-top:20px">
                 <div class="stat-card">Visitas <b id="s-views">0</b></div>
@@ -271,7 +268,7 @@
         </div>
 
         <div class="card">
-            <h3 id="form-title" style="margin-top:0">📸 Publicar Artigo</h3>
+            <h3 id="form-title" style="margin-top:0"><i class="fas fa-box-open"></i> Publicar Artigo</h3>
             <input type="hidden" id="edit-id">
             
             <div id="ai-suggestion-box" class="ai-suggestion hidden"></div>
@@ -280,23 +277,40 @@
                 <input type="text" id="p-nome" placeholder="Nome (Ex: Bacalhau à Brás)" style="grid-column: span 2">
                 <input type="number" id="p-preco" placeholder="Preço (€)">
                 
-                <div style="grid-column: span 3">
+                <div style="grid-column: span 1">
                     <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Categoria:</label>
-                    <input type="text" id="p-categoria" list="lista-categorias" autocomplete="off" placeholder="Selecione ou escreva uma categoria" style="margin-top:0">
-                    <datalist id="lista-categorias">
-                        </datalist>
+                    <input type="text" id="p-categoria" list="lista-categorias" autocomplete="off" placeholder="Escreva..." style="margin-top:0">
+                    <datalist id="lista-categorias"></datalist>
+                </div>
+                
+                <div style="grid-column: span 1">
+                    <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Stock / Doses:</label>
+                    <input type="number" id="p-stock" placeholder="Ex: 20 (Vazio = Ilimitado)" style="margin-top:0" min="0">
                 </div>
 
-                <input type="number" id="p-desc" placeholder="Desc. %" style="grid-column: span 3">
+                <div style="grid-column: span 1">
+                    <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Prato do Dia:</label>
+                    <select id="p-dia-semana" style="margin-top:0">
+                        <option value="">Fixo (Todos os dias)</option>
+                        <option value="1">Apenas Segunda</option>
+                        <option value="2">Apenas Terça</option>
+                        <option value="3">Apenas Quarta</option>
+                        <option value="4">Apenas Quinta</option>
+                        <option value="5">Apenas Sexta</option>
+                        <option value="6">Apenas Sábado</option>
+                        <option value="0">Apenas Domingo</option>
+                    </select>
+                </div>
+
+                <input type="number" id="p-desc" placeholder="Desc. Promocional %" style="grid-column: span 3">
                 
                 <div style="grid-column: span 3">
-                    <div class="tags-group" id="p-tags-container">
-                        </div>
+                    <div class="tags-group" id="p-tags-container"></div>
                 </div>
             </div>
 
             <div id="sec-alergenios" class="alergenios-container">
-                <h5>⚠️ Informação de Alergénios (Obrigatório por Lei)</h5>
+                <h5><i class="fas fa-exclamation-triangle"></i> Informação de Alergénios (Obrigatório por Lei)</h5>
                 <div class="tags-group" id="p-alergenios-container">
                     <label class="tag-item"><input type="checkbox" value="Glúten"> 🌾 Glúten</label>
                     <label class="tag-item"><input type="checkbox" value="Lactose"> 🥛 Lactose</label>
@@ -312,28 +326,40 @@
             </div>
             
             <div style="position: relative; margin-top: 10px;">
-                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição..." style="width:100%; height: 200px; resize: vertical;"></textarea>
+                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição..." style="width:100%; height: 160px; resize: vertical;"></textarea>
                 <button type="button" id="btn-ia" class="btn-ia-action" onclick="gerarDescricaoIA()">
-                    ✨ Gerar com IA
+                    <i class="fas fa-magic"></i> Gerar com IA
                 </button>
             </div>
 
             <input type="file" id="p-media" accept="image/*,video/*" capture="environment">
-            <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok); margin-top:15px">GUARDAR ARTIGO</button>
-            <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#94a3b8; margin-top: 10px;">CANCELAR EDIÇÃO</button>
+            <button id="btn-save-prod" onclick="salvarProduto()" style="background:var(--ok); margin-top:15px"><i class="fas fa-check"></i> GUARDAR ARTIGO</button>
+            <button id="btn-cancel" class="hidden" onclick="cancelarEdicao()" style="background:#94a3b8; margin-top: 10px;"><i class="fas fa-times"></i> CANCELAR EDIÇÃO</button>
         </div>
 
         <div id="grid-prods" class="grid"></div>
 
         <div class="card" style="margin-top: 25px;">
+            <h3 class="toggle-titulo" onclick="toggleStaff()" style="margin: 0;">
+                <span><i class="fas fa-users-cog"></i> Equipa & Acessos (Staff)</span>
+                <span id="seta-staff">▼</span>
+            </h3>
+            
+            <div id="config-staff" class="hidden" style="margin-top: 15px;">
+                <p style="font-size: 0.9em; color: #64748b;">Nesta área poderá, em breve, criar logins individuais para os seus empregados acederem ao <b>Painel de Sala</b> e gerarem o fecho de caixa do turno.</p>
+                <button disabled style="background: #cbd5e1; color: #64748b; cursor: not-allowed;"><i class="fas fa-plus"></i> Adicionar Empregado (Brevemente)</button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 25px;">
             <h3 class="toggle-titulo" onclick="toggleConfig()" style="margin: 0;">
-                <span>⚙️ Férias e Horários</span>
+                <span><i class="fas fa-clock"></i> Férias e Horários</span>
                 <span id="seta-config">▼</span>
             </h3>
             
             <div id="config-avancada" class="hidden" style="margin-top: 15px;">
                 <div class="ferias-box">
-                    <h4 style="margin:0 0 10px 0; color: var(--err)">📅 Período de Férias</h4>
+                    <h4 style="margin:0 0 10px 0; color: var(--err)"><i class="fas fa-calendar-alt"></i> Período de Férias</h4>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <input type="date" id="f-inicio" oninput="marcarAltPerfil()">
                         <input type="date" id="f-fim" oninput="marcarAltPerfil()">
@@ -343,16 +369,17 @@
                     </label>
                 </div>
 
-                <button onclick="replicarSegunda()" style="background:var(--s); color:white; font-size:12px; margin-bottom:15px; border:none; width: auto; display: inline-block;">📋 Copiar Segunda para todos</button>
+                <button onclick="replicarSegunda()" style="background:var(--s); color:white; font-size:12px; margin-bottom:15px; border:none; width: auto; display: inline-block;"><i class="fas fa-copy"></i> Copiar Segunda para todos</button>
                 <div id="horarios-lista"></div>
-                <button id="btn-save-config" class="btn-save-main" onclick="salvarHorarios()" style="margin-top: 15px;">ATUALIZAR HORÁRIOS</button>
+                <button id="btn-save-config" class="btn-save-main" onclick="salvarHorarios()" style="margin-top: 15px;"><i class="fas fa-save"></i> ATUALIZAR HORÁRIOS</button>
             </div>
         </div>
 
         <div class="card" style="text-align:center; display: flex; flex-direction: column; align-items: center;">
+            <h4 style="margin-top: 0;"><i class="fas fa-qrcode"></i> O seu Catálogo Digital</h4>
             <div style="display:flex; gap:10px; margin-bottom:15px; width: 100%; max-width: 400px;">
                 <input type="text" id="link-catalogo" readonly style="font-size:12px; background: #f8fafc; margin: 0;">
-                <button onclick="navigator.clipboard.writeText(document.getElementById('link-catalogo').value); alert('Copiado!')" style="width:90px; background:var(--s); margin: 0;">Copiar</button>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('link-catalogo').value); alert('Copiado!')" style="width:90px; background:var(--s); margin: 0;"><i class="fas fa-copy"></i></button>
             </div>
             <img id="img-qrcode" style="width:160px; border-radius: 10px; border: 1px solid #e2e8f0; padding: 5px; background: white;">
         </div>
@@ -367,13 +394,14 @@
     let lojaAtiva = null;
     let produtosLocais = []; 
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+    const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"}; // Mapeamento para a visualização
 
     // CONFIGURAÇÕES DINÂMICAS DE NEGÓCIO
     const configNegocios = {
         restaurante: {
             tags: [
                 { val: "normal", txt: "Padrão" }, { val: "promo", txt: "Promoção" }, { val: "novo", txt: "Novidade" },
-                { val: "destaque", txt: "Destaque" }, { val: "menu", txt: "Menu" }, { val: "prato", txt: "Prato do Dia" }, { val: "lastcall", txt: "Promo Última Hora" }
+                { val: "destaque", txt: "Destaque" }, { val: "menu", txt: "Menu" }, { val: "prato", txt: "Especialidade" }, { val: "lastcall", txt: "Promo Última Hora" }
             ],
             cats: ["Entradas", "Carne", "Peixe", "Massas/Pizzas", "Vegetariano", "Bebidas", "Sobremesas"],
             mostraAlergenios: true, placeholder: "Nome (Ex: Bacalhau à Brás)"
@@ -424,13 +452,15 @@
     function toggleConfig() {
         const div = document.getElementById('config-avancada');
         const seta = document.getElementById('seta-config');
-        if(div.classList.contains('hidden')) {
-            div.classList.remove('hidden');
-            seta.innerText = '▲';
-        } else {
-            div.classList.add('hidden');
-            seta.innerText = '▼';
-        }
+        if(div.classList.contains('hidden')) { div.classList.remove('hidden'); seta.innerText = '▲'; } 
+        else { div.classList.add('hidden'); seta.innerText = '▼'; }
+    }
+    
+    function toggleStaff() {
+        const div = document.getElementById('config-staff');
+        const seta = document.getElementById('seta-staff');
+        if(div.classList.contains('hidden')) { div.classList.remove('hidden'); seta.innerText = '▲'; } 
+        else { div.classList.add('hidden'); seta.innerText = '▼'; }
     }
 
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
@@ -485,65 +515,41 @@
         if(!nomeInput || !emailInput || !passInput) return alert("Preencha todos os campos obrigatórios (Nome, E-mail e Password).");
 
         const btn = document.querySelector('#f-reg button');
-        btn.disabled = true;
-        btn.innerText = "A CRIAR CONTA...";
+        btn.disabled = true; btn.innerText = "A CRIAR CONTA...";
 
         try {
-            const { data: authData, error: authError } = await _sb.auth.signUp({
-                email: emailInput,
-                password: passInput
-            });
-
+            const { data: authData, error: authError } = await _sb.auth.signUp({ email: emailInput, password: passInput });
             if (authError) throw new Error("Erro na Autenticação: " + authError.message);
-            if (!authData.user) throw new Error("Erro desconhecido ao criar utilizador. Verifique as credenciais.");
+            if (!authData.user) throw new Error("Erro desconhecido ao criar utilizador.");
 
             const dadosLoja = {
                 auth_id: authData.user.id,
-                nome: nomeInput,
-                email: emailInput,
-                slug: criarSlug(nomeInput),
-                plano: 'free',
-                aceitou_termos: true,
-                created_at: new Date()
+                nome: nomeInput, email: emailInput, slug: criarSlug(nomeInput),
+                plano: 'free', aceitou_termos: true, created_at: new Date(),
+                takeaway_ativo: true // Ativo por defeito
             };
 
             const { data: lojaData, error: lojaError } = await _sb.from('lojas').insert([dadosLoja]).select().single();
-            
             if (lojaError) throw new Error("Erro ao criar perfil da loja: " + lojaError.message);
 
-            lojaAtiva = lojaData;
-            abrirPainel();
+            lojaAtiva = lojaData; abrirPainel();
 
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "CRIAR CONTA";
-        }
+        } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-user-plus"></i> CRIAR CONTA`; }
     }
 
     async function login() {
         const emailInput = document.getElementById('l-email').value;
         const passInput = document.getElementById('l-pass').value;
-
         if(!emailInput || !passInput) return alert("Preencha o e-mail e a password.");
 
         const btn = document.querySelector('#f-login button');
-        btn.disabled = true;
-        btn.innerText = "A ENTRAR...";
+        btn.disabled = true; btn.innerText = "A ENTRAR...";
 
         try {
-            const { data: authData, error: authError } = await _sb.auth.signInWithPassword({
-                email: emailInput,
-                password: passInput
-            });
-
+            const { data: authData, error: authError } = await _sb.auth.signInWithPassword({ email: emailInput, password: passInput });
             if (authError) throw new Error("Credenciais inválidas. Verifique o e-mail e a password.");
 
-            const { data: lojaData, error: lojaError } = await _sb.from('lojas')
-                .select('*')
-                .eq('auth_id', authData.user.id)
-                .maybeSingle();
+            const { data: lojaData, error: lojaError } = await _sb.from('lojas').select('*').eq('auth_id', authData.user.id).maybeSingle();
 
             if (lojaError || !lojaData) {
                 const { data: lojaAntiga } = await _sb.from('lojas').select('*').eq('email', emailInput).maybeSingle();
@@ -553,18 +559,11 @@
                 } else {
                     throw new Error("Conta autenticada, mas perfil da loja não encontrado.");
                 }
-            } else {
-                lojaAtiva = lojaData;
-            }
+            } else { lojaAtiva = lojaData; }
 
             abrirPainel();
 
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "ENTRAR";
-        }
+        } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> ENTRAR`; }
     }
 
     async function abrirPainel() {
@@ -583,22 +582,13 @@
 
         if(lojaAtiva.logo_url) {
             document.getElementById('v-logo').src = lojaAtiva.logo_url;
-            
-            // INJEÇÃO DINÂMICA PARA A APP NATIVA DO LOJISTA
             document.getElementById('dynamic-favicon').href = lojaAtiva.logo_url;
             document.getElementById('dynamic-apple-icon').href = lojaAtiva.logo_url;
             document.title = "Gestão | " + (lojaAtiva.nome || "Portugal Vision");
 
             const manifestData = {
-                "name": "Gestão " + (lojaAtiva.nome || "Loja"),
-                "short_name": "Gestão",
-                "display": "standalone",
-                "background_color": "#0f172a",
-                "theme_color": "#0f172a",
-                "icons": [
-                    { "src": lojaAtiva.logo_url, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-                    { "src": lojaAtiva.logo_url, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-                ]
+                "name": "Gestão " + (lojaAtiva.nome || "Loja"), "short_name": "Gestão", "display": "standalone", "background_color": "#0f172a", "theme_color": "#0f172a",
+                "icons": [ { "src": lojaAtiva.logo_url, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" }, { "src": lojaAtiva.logo_url, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" } ]
             };
             const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
             document.getElementById('dynamic-manifest').href = URL.createObjectURL(manifestBlob);
@@ -610,6 +600,9 @@
         
         document.getElementById('v-mbway-ativo').checked = lojaAtiva.mbway_ativo || false;
         document.getElementById('v-mbway-num').value = lojaAtiva.mbway_num || "";
+        
+        // NOVIDADE: Verifica se tem takeaway_ativo na BD (se for null assume true)
+        document.getElementById('v-takeaway-ativo').checked = lojaAtiva.takeaway_ativo !== false;
 
         const h = lojaAtiva.horarios || {};
         diasSemana.forEach((_, i) => {
@@ -624,9 +617,7 @@
 
         const link = window.location.origin + "/portugal-vision/catalogo_digital.html?loja=" + lojaAtiva.slug;
         document.getElementById('link-catalogo').value = link;
-        QRCode.toDataURL(link, { width: 250, margin: 2 }, (err, url) => { 
-            if(!err) document.getElementById('img-qrcode').src = url; 
-        });
+        QRCode.toDataURL(link, { width: 250, margin: 2 }, (err, url) => { if(!err) document.getElementById('img-qrcode').src = url; });
 
         verificarPlano();
         carregarDados();
@@ -650,31 +641,14 @@
             ferias_fim: document.getElementById('f-fim').value || null,
             em_ferias: document.getElementById('f-ativa').checked,
             mbway_ativo: document.getElementById('v-mbway-ativo').checked,
-            mbway_num: document.getElementById('v-mbway-num').value
+            mbway_num: document.getElementById('v-mbway-num').value,
+            takeaway_ativo: document.getElementById('v-takeaway-ativo').checked
         };
         
         const { error } = await _sb.from('lojas').update(dados).eq('id', lojaAtiva.id);
         if(!error) { 
             lojaAtiva = {...lojaAtiva, ...dados};
             btn.classList.remove('pendente'); 
-            
-            if(lojaAtiva.logo_url) {
-                document.title = "Gestão | " + lojaAtiva.nome;
-                const manifestData = {
-                    "name": "Gestão " + lojaAtiva.nome,
-                    "short_name": "Gestão",
-                    "display": "standalone",
-                    "background_color": "#0f172a",
-                    "theme_color": "#0f172a",
-                    "icons": [
-                        { "src": lojaAtiva.logo_url, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-                        { "src": lojaAtiva.logo_url, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-                    ]
-                };
-                const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
-                document.getElementById('dynamic-manifest').href = URL.createObjectURL(manifestBlob);
-            }
-            
             alert("Perfil e configurações atualizados com sucesso!"); 
         } else {
             alert("Erro ao guardar: " + error.message);
@@ -682,8 +656,7 @@
     }
 
     async function subirLogo(input) {
-        const file = input.files[0];
-        if(!file) return;
+        const file = input.files[0]; if(!file) return;
         try {
             const compressed = await imageCompression(file, { maxSizeMB: 0.1, maxWidthOrHeight: 400 });
             const fileName = `logos/loja_${lojaAtiva.id}_${Date.now()}.webp`;
@@ -695,20 +668,6 @@
             
             document.getElementById('dynamic-favicon').href = data.publicUrl;
             document.getElementById('dynamic-apple-icon').href = data.publicUrl;
-            const manifestData = {
-                "name": "Gestão " + (lojaAtiva.nome || "Loja"),
-                "short_name": "Gestão",
-                "display": "standalone",
-                "background_color": "#0f172a",
-                "theme_color": "#0f172a",
-                "icons": [
-                    { "src": data.publicUrl, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-                    { "src": data.publicUrl, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-                ]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
-            document.getElementById('dynamic-manifest').href = URL.createObjectURL(manifestBlob);
-            
             alert("Logótipo atualizado! Reabra a app no telemóvel para ver o novo ícone.");
         } catch (e) { alert("Erro ao fazer upload do logo."); }
     }
@@ -726,11 +685,7 @@
             };
         });
         const { error } = await _sb.from('lojas').update({ horarios }).eq('id', lojaAtiva.id);
-        if(!error) { 
-            lojaAtiva.horarios = horarios;
-            btn.classList.remove('pendente'); 
-            alert("Horários guardados!"); 
-        }
+        if(!error) { lojaAtiva.horarios = horarios; btn.classList.remove('pendente'); alert("Horários guardados!"); }
     }
 
     function replicarSegunda() {
@@ -742,39 +697,21 @@
         marcarAltHoras();
     }
 
-    function calcularPrecoFinal(preco, desconto) {
-        const p = parseFloat(preco) || 0;
-        const d = parseInt(desconto) || 0;
-        return d > 0 ? (p * (1 - d / 100)) : p;
-    }
+    function calcularPrecoFinal(preco, desconto) { const p = parseFloat(preco) || 0; const d = parseInt(desconto) || 0; return d > 0 ? (p * (1 - d / 100)) : p; }
 
     async function carregarDados() {
         if(!lojaAtiva) return;
-
         const btnAtualizar = document.querySelector('button[onclick="carregarDados()"]');
-        if(btnAtualizar) {
-            btnAtualizar.innerText = "⏳ A carregar...";
-            btnAtualizar.disabled = true;
-        }
+        if(btnAtualizar) { btnAtualizar.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A carregar...`; btnAtualizar.disabled = true; }
 
         try {
-            const { data: infoLoja } = await _sb
-                .from('lojas')
-                .select('views_total, whatsapp_total')
-                .eq('id', lojaAtiva.id)
-                .single();
-
+            const { data: infoLoja } = await _sb.from('lojas').select('views_total, whatsapp_total').eq('id', lojaAtiva.id).single();
             if(infoLoja) {
                 document.getElementById('s-views').innerText = infoLoja.views_total || 0;
                 document.getElementById('s-waps').innerText = infoLoja.whatsapp_total || 0;
             }
 
-            const { data: prods } = await _sb
-                .from('produtos')
-                .select('*')
-                .eq('loja_id', lojaAtiva.id)
-                .order('created_at', {ascending: false});
-
+            const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
             produtosLocais = prods || [];
             let totalBytes = 0;
             const grid = document.getElementById('grid-prods');
@@ -785,10 +722,20 @@
                 
                 let alergeniosHtml = "";
                 if(p.alergenios && p.alergenios.length > 0) {
-                    alergeniosHtml = `<div style="margin-top: 4px; font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; display: inline-block;">⚠️ ${p.alergenios.join(', ')}</div>`;
+                    alergeniosHtml = `<div style="margin-top: 4px; font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; display: inline-block;"><i class="fas fa-exclamation-triangle"></i> ${p.alergenios.join(', ')}</div>`;
                 }
 
-                // CÁLCULO DE DESCONTO E IVA PARA PRÉ-VISUALIZAÇÃO
+                // VISUALIZAÇÃO DO STOCK E DIA DA SEMANA
+                let infoExtraHtml = "";
+                if (p.stock !== null && p.stock !== undefined && p.stock !== "") {
+                    const corStock = p.stock <= 0 ? 'color: var(--err);' : 'color: #475569;';
+                    const iconeStock = p.stock <= 0 ? '<i class="fas fa-times-circle"></i> Esgotado' : `<i class="fas fa-boxes"></i> Doses: ${p.stock}`;
+                    infoExtraHtml += `<div style="font-size: 11px; margin-top: 4px; font-weight: bold; ${corStock}">${iconeStock}</div>`;
+                }
+                if (p.dia_semana !== null && p.dia_semana !== undefined && p.dia_semana !== "") {
+                    infoExtraHtml += `<div style="font-size: 11px; color: var(--s); margin-top: 2px; font-weight: 600;"><i class="fas fa-calendar-day"></i> Exclusivo: ${nomeDiasInt[p.dia_semana]}</div>`;
+                }
+
                 const precoFixo = parseFloat(p.preco) || 0;
                 const desc = parseInt(p.desconto_percent) || 0;
                 const precoCalculado = calcularPrecoFinal(precoFixo, desc).toFixed(2);
@@ -803,16 +750,17 @@
                 <div class="prod-card ${p.oculto ? 'oculto' : ''}">
                     <div class="prod-actions">
                         <button class="btn-circle" style="background: ${p.oculto ? 'var(--ok)' : '#64748b'}" onclick="alternarOculto(${p.id}, ${p.oculto})" title="Ocultar/Mostrar Artigo">
-                            ${p.oculto ? '👁️' : '🙈'}
+                            ${p.oculto ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>'}
                         </button>
-                        <button class="btn-circle" style="background:var(--warn)" onclick="prepararEdicao(${p.id})">✏️</button>
-                        <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})">🗑️</button>
+                        <button class="btn-circle" style="background:var(--warn)" onclick="prepararEdicao(${p.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn-circle" style="background:var(--err)" onclick="apagarProd(${p.id})"><i class="fas fa-trash"></i></button>
                     </div>
                     <img src="${p.imagem_url || ''}" class="prod-img">
                     <div style="padding:12px">
                         <small style="color: #64748b; font-weight: 600;">${p.categoria || 'Sem categoria'}</small><br>
                         <span style="font-weight: 600; font-size: 14px; display: block; margin: 4px 0;">${p.nome}</span>
                         ${htmlPreco}
+                        ${infoExtraHtml}
                         <br><span style="font-size: 11px; color: #94a3b8; font-weight: 500;">IVA incluído</span>
                         <br>${alergeniosHtml}
                     </div>
@@ -822,13 +770,8 @@
             const kb = totalBytes / 1024;
             document.getElementById('s-storage').innerText = kb > 1000 ? (kb/1024).toFixed(2) + " MB" : kb.toFixed(1) + " KB";
             
-        } catch (err) {
-            console.error(err);
-        } finally {
-            if(btnAtualizar) {
-                btnAtualizar.innerText = "🔄 Atualizar";
-                btnAtualizar.disabled = false;
-            }
+        } catch (err) { console.error(err); } finally {
+            if(btnAtualizar) { btnAtualizar.innerHTML = `<i class="fas fa-sync-alt"></i> Atualizar`; btnAtualizar.disabled = false; }
         }
     }
 
@@ -850,29 +793,14 @@
         const btn = document.getElementById('btn-ia');
         if (!nomeProd) return alert("Escreve o nome do produto.");
         
-        btn.innerText = "A gerar..."; btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A gerar...`; btn.disabled = true;
         try {
-            const { data, error } = await _sb.functions.invoke('gerar-descricao', {
-                body: { nomeProduto: nomeProd }
-            });
-
-            if (error) {
-                throw new Error("Erro na IA: " + error.message);
-            }
-
-            if (data && data.descricao) {
-                document.getElementById('p-ingredientes').value = data.descricao;
-                lojaAtiva.creditos_ia = data.creditosRestantes;
-            } else if (data && data.error) {
-                throw new Error(data.error);
-            } else {
-                throw new Error("Resposta inválida do servidor.");
-            }
-        } catch (e) { 
-            alert(e.message); 
-        } finally {
-            btn.innerText = "✨ Gerar com IA"; btn.disabled = false;
-        }
+            const { data, error } = await _sb.functions.invoke('gerar-descricao', { body: { nomeProduto: nomeProd } });
+            if (error) throw new Error("Erro na IA: " + error.message);
+            if (data && data.descricao) { document.getElementById('p-ingredientes').value = data.descricao; lojaAtiva.creditos_ia = data.creditosRestantes; } 
+            else if (data && data.error) { throw new Error(data.error); } 
+            else { throw new Error("Resposta inválida do servidor."); }
+        } catch (e) { alert(e.message); } finally { btn.innerHTML = `<i class="fas fa-magic"></i> Gerar com IA`; btn.disabled = false; }
     }
 
     async function salvarProduto() {
@@ -887,6 +815,13 @@
         const precoVal = parseFloat(document.getElementById('p-preco').value);
         if(!document.getElementById('p-nome').value || isNaN(precoVal)) return alert("Nome e preço são obrigatórios.");
 
+        // CAPTURA DO NOVO STOCK E DIA DA SEMANA
+        let stockVal = document.getElementById('p-stock').value;
+        stockVal = (stockVal !== "" && stockVal !== null) ? parseInt(stockVal) : null;
+        
+        let diaVal = document.getElementById('p-dia-semana').value;
+        diaVal = (diaVal !== "") ? parseInt(diaVal) : null;
+
         const dados = {
             nome: document.getElementById('p-nome').value,
             preco: precoVal,
@@ -895,11 +830,12 @@
             tipo_tag: tags,
             alergenios: alergenios, 
             descricao: document.getElementById('p-ingredientes').value,
-            loja_id: lojaAtiva.id
+            loja_id: lojaAtiva.id,
+            stock: stockVal,             // NOVO
+            dia_semana: diaVal           // NOVO
         };
 
-        btn.disabled = true;
-        btn.innerText = "A GUARDAR...";
+        btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A GUARDAR...`;
 
         try {
             if (file) {
@@ -915,59 +851,37 @@
             }
             
             let res;
-            if (id) {
-                res = await _sb.from('produtos').update(dados).eq('id', id);
-            } else {
-                res = await _sb.from('produtos').insert([dados]);
-            }
+            if (id) { res = await _sb.from('produtos').update(dados).eq('id', id); } 
+            else { res = await _sb.from('produtos').insert([dados]); }
 
             if(res.error) throw res.error;
 
             cancelarEdicao(); 
             carregarDados();
             alert("Artigo guardado com sucesso!");
-        } catch (err) { 
-            alert("Erro ao guardar: " + err.message); 
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "GUARDAR ARTIGO";
-        }
+        } catch (err) { alert("Erro ao guardar: " + err.message); } finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-check"></i> GUARDAR ARTIGO`; }
     }
 
     async function alternarOculto(id, estadoAtual) {
         const novoEstado = !estadoAtual;
         const { error } = await _sb.from('produtos').update({ oculto: novoEstado }).eq('id', id);
-        
-        if (!error) {
-            carregarDados();
-        } else {
-            alert("Erro ao alterar visibilidade: " + error.message);
-        }
+        if (!error) { carregarDados(); } else { alert("Erro ao alterar visibilidade: " + error.message); }
     }
 
     function marcarAltPerfil() { document.getElementById('btn-save-profile').classList.add('pendente'); }
     function marcarAltHoras() { document.getElementById('btn-save-config').classList.add('pendente'); }
-    function atualizarEstiloDia(i) { 
-        const card = document.getElementById(`card-${i}`);
-        const status = document.getElementById(`h-${i}-status`).value;
-        if(card) card.classList.toggle('aberto', status === 'aberto'); 
-    }
+    function atualizarEstiloDia(i) { const card = document.getElementById(`card-${i}`); const status = document.getElementById(`h-${i}-status`).value; if(card) card.classList.toggle('aberto', status === 'aberto'); }
     
-    async function apagarProd(id) { 
-        if(confirm("Tem a certeza que deseja apagar este artigo?")) { 
-            const { error } = await _sb.from('produtos').delete().eq('id', id); 
-            if(!error) carregarDados(); 
-        } 
-    }
+    async function apagarProd(id) { if(confirm("Tem a certeza que deseja apagar este artigo?")) { const { error } = await _sb.from('produtos').delete().eq('id', id); if(!error) carregarDados(); } }
     
     function cancelarEdicao() {
-        ['edit-id', 'p-nome', 'p-preco', 'p-desc', 'p-categoria', 'p-ingredientes', 'p-media'].forEach(id => {
+        ['edit-id', 'p-nome', 'p-preco', 'p-desc', 'p-categoria', 'p-ingredientes', 'p-media', 'p-stock', 'p-dia-semana'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = "";
         });
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = false);
         document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = false);
-        document.getElementById('form-title').innerText = "📸 Publicar Artigo";
+        document.getElementById('form-title').innerHTML = `<i class="fas fa-box-open"></i> Publicar Artigo`;
         document.getElementById('btn-cancel').classList.add('hidden');
     }
 
@@ -982,13 +896,16 @@
         document.getElementById('p-categoria').value = p.categoria || "";
         document.getElementById('p-ingredientes').value = p.descricao || "";
         
+        document.getElementById('p-stock').value = p.stock !== null ? p.stock : "";
+        document.getElementById('p-dia-semana').value = p.dia_semana !== null ? p.dia_semana : "";
+        
         const tags = p.tipo_tag || [];
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = tags.includes(c.value));
         
         const alergenios = p.alergenios || [];
         document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = alergenios.includes(c.value));
 
-        document.getElementById('form-title').innerText = "✏️ Editar Artigo";
+        document.getElementById('form-title').innerHTML = `<i class="fas fa-edit"></i> Editar Artigo`;
         document.getElementById('btn-cancel').classList.remove('hidden');
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
