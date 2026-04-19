@@ -472,7 +472,7 @@
         if(inputRes) { inputRes.min = hojeIso; inputRes.value = hojeIso; }
     }
 
-    function atualizarHorariosDisponiveis(tipo) {
+function atualizarHorariosDisponiveis(tipo) {
         if (!lojaAtual) return;
         
         const inputId = tipo === 'levantamento' ? 'cli-data-lev' : 'cli-data-res';
@@ -483,16 +483,18 @@
         
         if(!dataStr) return;
 
-        const dataSelecionada = new Date(dataStr);
+        // Evitar bugs de fuso horário separando os números
+        const [ano, mes, dia] = dataStr.split('-');
+        const dataSelecionada = new Date(ano, mes - 1, dia);
         const agora = new Date();
-        const hojeStr = agora.toLocaleDateString('en-CA').split('/').join('-');
-        const isHoje = dataStr === hojeStr;
+        
+        const hojeIso = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
+        const isHoje = dataStr === hojeIso;
 
-        // Dia da semana para base de dados (0 a 6, ajustado se necessário)
         const diaSemanaDb = (dataSelecionada.getDay() + 6) % 7; 
         
         const horariosLoja = lojaAtual.horarios || [];
-        const horarioHoje = horariosLoja[diaSemanaDb];
+        let horarioHoje = horariosLoja[diaSemanaDb];
 
         selectEl.innerHTML = ''; 
         
@@ -503,7 +505,6 @@
         }
 
         let optionsHtml = '';
-        // Margens de segurança: 30m Takeaway, 60m Reserva
         const margemMinutos = tipo === 'levantamento' ? 30 : 60; 
         const agoraEmMinutos = (agora.getHours() * 60) + agora.getMinutes();
 
@@ -516,11 +517,10 @@
             let minStart = (hI * 60) + mI;
             let minEnd = (hF * 60) + mF;
 
-            // Bloqueio de segurança 1 hora antes do fecho para reservas
-            if (tipo === 'reserva') minEnd -= 60; 
+            if (tipo === 'reserva') minEnd -= 60; // Bloqueia 1h antes do fecho
 
             for (let tempo = minStart; tempo <= minEnd; tempo += 15) {
-                // Se for hoje, oculta horas passadas + a margem
+                // Inteligência em ação: Se for hoje, oculta horas que já passaram (mais a margem de tempo)
                 if (isHoje && tempo <= (agoraEmMinutos + margemMinutos)) continue;
                 
                 const h = Math.floor(tempo / 60).toString().padStart(2, '0');
@@ -529,11 +529,24 @@
             }
         }
 
-        adicionarTurno(horarioHoje.m1, horarioHoje.m2);
-        adicionarTurno(horarioHoje.t1, horarioHoje.t2);
+        // A MÁGICA CORRIGIDA PARA LER HORÁRIOS:
+        const m1 = horarioHoje.m1 || "";
+        const m2 = horarioHoje.m2 || "";
+        const t1 = horarioHoje.t1 || "";
+        const t2 = horarioHoje.t2 || "";
+
+        // Cenário 1: Horário Contínuo (Ex: 08:00 às 22:00 direto)
+        if (m1 && !m2 && !t1 && t2) {
+            adicionarTurno(m1, t2);
+        } 
+        // Cenário 2: Horário Repartido (Ex: 08:00 às 15:00 e 19:00 às 22:00)
+        else {
+            if (m1 && m2) adicionarTurno(m1, m2);
+            if (t1 && t2) adicionarTurno(t1, t2);
+        }
 
         if (optionsHtml === '') {
-            selectEl.innerHTML = '<option value="" disabled selected>Sem horários disponíveis hoje</option>';
+            selectEl.innerHTML = '<option value="" disabled selected>Sem horários disponíveis</option>';
             document.getElementById('btn-checkout-final').disabled = true;
         } else {
             selectEl.innerHTML = '<option value="" disabled selected>Escolha a hora...</option>' + optionsHtml;
