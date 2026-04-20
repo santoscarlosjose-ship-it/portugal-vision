@@ -72,7 +72,7 @@
         .tab:hover { color: var(--s); }
         .tab.active { color: var(--s); border-bottom: 3px solid var(--s); }
 
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 25px; border: 1px solid #f1f5f9; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 25px; border: 1px solid #f1f5f9; position: relative; }
 
         .status-banner { padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-weight: 600; font-size: 14px; display: none; }
         .status-free { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
@@ -85,6 +85,14 @@
         .logo-box img { width: 100%; height: 100%; object-fit: cover; }
         .logo-box input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
 
+        /* NOVA ÁREA DE MÉTRICAS FINANCEIRAS */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: var(--p); color: white; padding: 15px; border-radius: 14px; text-align: center; box-shadow: var(--card-shadow); }
+        .metric-card i { font-size: 1.2rem; opacity: 0.7; margin-bottom: 5px; display: block; }
+        .metric-card b { font-size: 1.3rem; display: block; font-weight: 700; margin: 5px 0; }
+        .metric-card span { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* ANTIGA ÁREA DE ESTATÍSTICAS */
         .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .stat-card { background: var(--p); color: white; padding: 16px; border-radius: 14px; text-align: center; box-shadow: var(--card-shadow); }
         .stat-card b { display: block; font-size: 1.4rem; margin-top: 5px; font-weight: 700; }
@@ -106,7 +114,7 @@
         input, select, textarea { width: 100%; padding: 12px 14px; margin: 6px 0 12px; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; font-size: 14px; background: #fff; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--s); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
 
-        button { background: var(--p); color: white; border: none; font-weight: 600; cursor: pointer; padding: 12px 16px; border-radius: 10px; transition: 0.3s; display: block; width: 100%; font-size: 14px; }
+        button { background: var(--p); color: white; border: none; font-weight: 600; cursor: pointer; padding: 12px 16px; border-radius: 10px; transition: 0.3s; display: block; width: 100%; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;}
         button:hover:not(:disabled) { background: #1e293b; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         button:disabled { background: #94a3b8 !important; cursor: not-allowed; transform: none; box-shadow: none; }
 
@@ -138,6 +146,28 @@
         .alergenios-container { background: #fffbeb; padding: 12px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 15px; }
         .alergenios-container h5 { margin: 0 0 10px 0; color: #b45309; font-size: 13px; }
 
+        /* NOVA ÁREA DA TABELA DE STAFF */
+        .staff-list { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .staff-list th { text-align: left; padding: 12px; font-size: 0.85rem; color: #64748b; border-bottom: 2px solid #f1f5f9; }
+        .staff-list td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;}
+        .btn-del-staff { color: var(--err); background: none; border: none; cursor: pointer; font-size: 1.1rem; width: auto; padding: 5px;}
+        .btn-del-staff:hover { background: #fee2e2; transform: none; box-shadow: none;}
+
+        /* CSS DE IMPRESSÃO CEGA E SEGURA (RESOLVE O CORTE DO PDF) */
+        @media print {
+            body { background: white; padding: 0; color: black; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .no-print, button, .prod-actions, .logo-box input, .auth-card { display: none !important; }
+            .card { box-shadow: none; border: none; padding: 0; margin: 0; }
+            #print-area { display: block !important; padding: 2cm !important; width: 100%; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;}
+            .print-table th, .print-table td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+            .print-table td.money { text-align: right; font-weight: bold; }
+            @page { margin: 1.5cm; size: A4 portrait; }
+        }
+
+        #print-area { display: none; }
+
         @media (max-width: 600px) {
             .header-loja { flex-direction: column; align-items: stretch; gap: 15px; }
             .logo-box { margin: 0 auto; }
@@ -148,7 +178,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container no-print">
     <div id="status-banner" class="status-banner"></div>
 
     <div id="auth-area" class="auth-card">
@@ -234,6 +264,36 @@
                 </div>
             </div>
 
+            <h4 style="margin: 0 0 10px 0; color: var(--p);"><i class="fas fa-chart-line"></i> Tesouraria e Vendas de Hoje</h4>
+            <div class="metrics-grid">
+                <div class="metric-card" style="background: var(--p);">
+                    <i class="fas fa-receipt"></i>
+                    <b id="m-pedidos-hoje">0</b>
+                    <span>Pedidos</span>
+                </div>
+                <div class="metric-card" style="background: var(--ok);">
+                    <i class="fas fa-coins"></i>
+                    <b id="m-dinheiro">0.00€</b>
+                    <span>Dinheiro</span>
+                </div>
+                <div class="metric-card" style="background: var(--s);">
+                    <i class="fas fa-credit-card"></i>
+                    <b id="m-multibanco">0.00€</b>
+                    <span>Multibanco</span>
+                </div>
+                <div class="metric-card" style="background: #8b5cf6;">
+                    <i class="fas fa-mobile-screen-button"></i>
+                    <b id="m-mbway">0.00€</b>
+                    <span>MBWay</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <button style="background: #475569;" onclick="gerarRelatorioPDF()"><i class="fas fa-file-pdf"></i> Exportar Fecho de Caixa</button>
+                <button style="background: #475569;" onclick="gerarMenuFisico()"><i class="fas fa-print"></i> Imprimir Menu de Sala</button>
+            </div>
+            <hr style="border: 0; border-bottom: 1px dashed #e2e8f0; margin-bottom: 20px;">
+
             <div class="config-mbway">
                 <h4 style="margin: 0 0 10px 0; color: var(--ok); display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-mobile-screen-button"></i> Pagamentos MBWay
@@ -245,7 +305,7 @@
                     </label>
                     <input type="tel" id="v-mbway-num" oninput="marcarAltPerfil()" placeholder="Nº telemóvel associado" style="margin: 0; max-width: 250px; padding: 8px 12px;">
                 </div>
-                <small style="color: #666; display: block; margin-top: 5px;">Os clientes verão este número ao finalizar o pedido.</small>
+                <small style="color: #666; display: block; margin-top: 5px;">Os clientes verão este número ao finalizar o pedido de Takeaway.</small>
             </div>
 
             <div class="config-takeaway">
@@ -254,16 +314,16 @@
                 </h4>
                 <label style="font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; cursor: pointer;">
                     <input type="checkbox" id="v-takeaway-ativo" onchange="marcarAltPerfil()" style="width: 18px; height: 18px; margin: 0;" checked>
-                    Aceitar encomendas para Levantamento no Local (Ativa botão no Catálogo)
+                    Aceitar encomendas para Levantamento no Local (Mostra o botão no Catálogo)
                 </label>
             </div>
 
             <button id="btn-save-profile" class="btn-save-main" onclick="atualizarPerfil()"><i class="fas fa-save"></i> Guardar Alterações do Perfil</button>
             
             <div class="stats" style="margin-top:20px">
-                <div class="stat-card">Visitas <b id="s-views">0</b></div>
-                <div class="stat-card">WhatsApp <b id="s-waps">0</b></div>
-                <div class="stat-card" style="background:#334155">Espaço <b id="s-storage">0 KB</b></div>
+                <div class="stat-card">Visitas do Catálogo <b id="s-views">0</b></div>
+                <div class="stat-card">Cliques de WhatsApp <b id="s-waps">0</b></div>
+                <div class="stat-card" style="background:#334155">Espaço da Loja <b id="s-storage">0 KB</b></div>
             </div>
         </div>
 
@@ -285,20 +345,20 @@
                 
                 <div style="grid-column: span 1">
                     <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Stock / Doses:</label>
-                    <input type="number" id="p-stock" placeholder="Ex: 20 (Vazio = Ilimitado)" style="margin-top:0" min="0">
+                    <input type="number" id="p-stock" placeholder="Ex: 20 (Vazio=Ilimitado)" style="margin-top:0" min="0">
                 </div>
 
                 <div style="grid-column: span 1">
-                    <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Prato do Dia:</label>
+                    <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Prato do Dia (Exclusivo):</label>
                     <select id="p-dia-semana" style="margin-top:0">
-                        <option value="">Fixo (Todos os dias)</option>
-                        <option value="1">Apenas Segunda</option>
-                        <option value="2">Apenas Terça</option>
-                        <option value="3">Apenas Quarta</option>
-                        <option value="4">Apenas Quinta</option>
-                        <option value="5">Apenas Sexta</option>
-                        <option value="6">Apenas Sábado</option>
-                        <option value="0">Apenas Domingo</option>
+                        <option value="">Fixo (Sempre)</option>
+                        <option value="1">Segunda-feira</option>
+                        <option value="2">Terça-feira</option>
+                        <option value="3">Quarta-feira</option>
+                        <option value="4">Quinta-feira</option>
+                        <option value="5">Sexta-feira</option>
+                        <option value="6">Sábado</option>
+                        <option value="0">Domingo</option>
                     </select>
                 </div>
 
@@ -326,7 +386,7 @@
             </div>
             
             <div style="position: relative; margin-top: 10px;">
-                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição..." style="width:100%; height: 160px; resize: vertical;"></textarea>
+                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição detalhada..." style="width:100%; height: 160px; resize: vertical;"></textarea>
                 <button type="button" id="btn-ia" class="btn-ia-action" onclick="gerarDescricaoIA()">
                     <i class="fas fa-magic"></i> Gerar com IA
                 </button>
@@ -341,13 +401,23 @@
 
         <div class="card" style="margin-top: 25px;">
             <h3 class="toggle-titulo" onclick="toggleStaff()" style="margin: 0;">
-                <span><i class="fas fa-users-cog"></i> Equipa & Acessos (Staff)</span>
+                <span><i class="fas fa-users-cog"></i> Equipa & Acessos (Sala)</span>
                 <span id="seta-staff">▼</span>
             </h3>
             
             <div id="config-staff" class="hidden" style="margin-top: 15px;">
-                <p style="font-size: 0.9em; color: #64748b;">Nesta área poderá, em breve, criar logins individuais para os seus empregados acederem ao <b>Painel de Sala</b> e gerarem o fecho de caixa do turno.</p>
-                <button disabled style="background: #cbd5e1; color: #64748b; cursor: not-allowed;"><i class="fas fa-plus"></i> Adicionar Empregado (Brevemente)</button>
+                <p style="font-size: 0.9em; color: #64748b;">Crie códigos de acesso (PIN) para os seus empregados operarem o tablet de sala e fazerem a gestão dos pedidos e mesas.</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
+                    <input type="text" id="staff-nome" placeholder="Nome do Empregado" style="margin:0; flex: 1;">
+                    <input type="password" id="staff-pin" placeholder="PIN (ex: 1234)" maxlength="6" style="margin:0; width: 120px;">
+                    <button style="background: var(--ok); width: auto;" onclick="adicionarEmpregado()"><i class="fas fa-user-plus"></i></button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="staff-list" id="tabela-staff">
+                        <thead><tr><th>Nome da Equipa</th><th>PIN</th><th>Remover</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -379,13 +449,20 @@
             <h4 style="margin-top: 0;"><i class="fas fa-qrcode"></i> O seu Catálogo Digital</h4>
             <div style="display:flex; gap:10px; margin-bottom:15px; width: 100%; max-width: 400px;">
                 <input type="text" id="link-catalogo" readonly style="font-size:12px; background: #f8fafc; margin: 0;">
-                <button onclick="navigator.clipboard.writeText(document.getElementById('link-catalogo').value); alert('Copiado!')" style="width:90px; background:var(--s); margin: 0;"><i class="fas fa-copy"></i></button>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('link-catalogo').value); alert('Link copiado para a área de transferência!')" style="width:90px; background:var(--s); margin: 0;"><i class="fas fa-copy"></i></button>
             </div>
             <img id="img-qrcode" style="width:160px; border-radius: 10px; border: 1px solid #e2e8f0; padding: 5px; background: white;">
         </div>
     </div>
 </div>
 
+<div id="print-area">
+    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px;">
+        <h1 id="print-header-nome" style="margin: 0 0 10px 0;">Restaurante</h1>
+        <p id="print-data-info" style="margin: 0; font-size: 16px; font-weight: bold;"></p>
+    </div>
+    <div id="print-content"></div>
+</div>
 <script>
     const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
     const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
@@ -394,7 +471,7 @@
     let lojaAtiva = null;
     let produtosLocais = []; 
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-    const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"}; // Mapeamento para a visualização
+    const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"};
 
     // CONFIGURAÇÕES DINÂMICAS DE NEGÓCIO
     const configNegocios = {
@@ -585,6 +662,7 @@
             document.getElementById('dynamic-favicon').href = lojaAtiva.logo_url;
             document.getElementById('dynamic-apple-icon').href = lojaAtiva.logo_url;
             document.title = "Gestão | " + (lojaAtiva.nome || "Portugal Vision");
+            document.getElementById('print-header-nome').innerText = lojaAtiva.nome;
 
             const manifestData = {
                 "name": "Gestão " + (lojaAtiva.nome || "Loja"), "short_name": "Gestão", "display": "standalone", "background_color": "#0f172a", "theme_color": "#0f172a",
@@ -601,7 +679,6 @@
         document.getElementById('v-mbway-ativo').checked = lojaAtiva.mbway_ativo || false;
         document.getElementById('v-mbway-num').value = lojaAtiva.mbway_num || "";
         
-        // NOVIDADE: Verifica se tem takeaway_ativo na BD (se for null assume true)
         document.getElementById('v-takeaway-ativo').checked = lojaAtiva.takeaway_ativo !== false;
 
         const h = lojaAtiva.horarios || {};
@@ -621,6 +698,168 @@
 
         verificarPlano();
         carregarDados();
+        carregarMetricasHoje(); // NOVA FUNÇÃO DE TESOURARIA
+        carregarStaff(); // NOVA FUNÇÃO DE EQUIPA
+    }
+
+    // ==========================================
+    // NOVA FUNÇÃO: MÉTRICAS E TESOURARIA
+    // ==========================================
+    async function carregarMetricasHoje() {
+        const hoje = new Date().toISOString().split('T')[0];
+        const { data: pedidos } = await _sb.from('pedidos')
+            .select('*')
+            .eq('loja_id', lojaAtiva.id)
+            .eq('estado', 'finalizado')
+            .gte('created_at', hoje + 'T00:00:00');
+
+        let totalPedidos = 0, din = 0, multi = 0, mbw = 0;
+        
+        if(pedidos) {
+            pedidos.forEach(p => {
+                totalPedidos++;
+                if(p.metodo_pagamento === 'Dinheiro') din += p.total;
+                else if(p.metodo_pagamento === 'Multibanco') multi += p.total;
+                else if(p.metodo_pagamento === 'MBWay') mbw += p.total;
+            });
+        }
+        
+        document.getElementById('m-pedidos-hoje').innerText = totalPedidos;
+        document.getElementById('m-dinheiro').innerText = din.toFixed(2) + "€";
+        document.getElementById('m-multibanco').innerText = multi.toFixed(2) + "€";
+        document.getElementById('m-mbway').innerText = mbw.toFixed(2) + "€";
+    }
+
+    // ==========================================
+    // NOVA FUNÇÃO: GESTÃO DE EQUIPA DE SALA
+    // ==========================================
+    async function carregarStaff() {
+        const { data } = await _sb.from('empregados').select('*').eq('loja_id', lojaAtiva.id);
+        const tbody = document.querySelector('#tabela-staff tbody');
+        
+        if(!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Nenhum empregado registado.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(s => `
+            <tr>
+                <td><i class="fas fa-user-circle" style="color:var(--s); margin-right:8px;"></i> ${s.nome}</td>
+                <td>****</td>
+                <td><button class="btn-del-staff" onclick="removerStaff('${s.id}')"><i class="fas fa-trash-alt"></i></button></td>
+            </tr>
+        `).join('');
+    }
+
+    async function adicionarEmpregado() {
+        const nome = document.getElementById('staff-nome').value;
+        const pin = document.getElementById('staff-pin').value;
+        
+        if(!nome || pin.length < 4) return alert("Preencha o Nome e um PIN de acesso (mínimo 4 dígitos).");
+        
+        const { error } = await _sb.from('empregados').insert([{ loja_id: lojaAtiva.id, nome: nome, pin_acesso: pin }]);
+        if(error) return alert("Erro ao criar empregado: " + error.message);
+
+        document.getElementById('staff-nome').value = '';
+        document.getElementById('staff-pin').value = '';
+        carregarStaff();
+        alert("Empregado adicionado com sucesso!");
+    }
+
+    async function removerStaff(id) {
+        if(confirm("Tem a certeza que deseja remover o acesso a este empregado?")) {
+            await _sb.from('empregados').delete().eq('id', id);
+            carregarStaff();
+        }
+    }
+
+    // ==========================================
+    // NOVAS FUNÇÕES: GERAÇÃO DE PDF E IMPRESSÃO
+    // ==========================================
+    async function gerarRelatorioPDF() {
+        const hoje = new Date().toLocaleDateString('pt-PT');
+        document.getElementById('print-data-info').innerText = "Relatório de Fecho de Caixa - " + hoje;
+        
+        const { data: pedidos } = await _sb.from('pedidos')
+            .select('*')
+            .eq('loja_id', lojaAtiva.id)
+            .eq('estado', 'finalizado')
+            .gte('created_at', new Date().toISOString().split('T')[0])
+            .order('created_at', { ascending: true });
+
+        if(!pedidos || pedidos.length === 0) {
+            alert("Não existem pedidos finalizados hoje para gerar relatório.");
+            return;
+        }
+
+        let html = `<table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Hora</th>
+                    <th style="width: 40%;">Pedido/Mesa</th>
+                    <th style="width: 20%;">Pagamento</th>
+                    <th style="width: 25%; text-align:right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        let totalTurno = 0;
+        pedidos.forEach(p => {
+            totalTurno += p.total;
+            const hora = new Date(p.created_at).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+            const nomeOuMesa = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `${p.tipo_pedido.toUpperCase()} - ${p.nome_cliente}`;
+            
+            html += `<tr>
+                <td>${hora}</td>
+                <td>${nomeOuMesa}</td>
+                <td>${p.metodo_pagamento || 'N/A'}</td>
+                <td class="money">${p.total.toFixed(2)}€</td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table>
+        <div style="margin-top:30px; text-align:right; font-size:18px; border-top: 2px dashed #000; padding-top: 15px;">
+            Total Faturado no Turno: <b>${totalTurno.toFixed(2)}€</b>
+        </div>`;
+        
+        document.getElementById('print-content').innerHTML = html;
+        window.print();
+    }
+
+    function gerarMenuFisico() {
+        document.getElementById('print-data-info').innerText = "Catálogo de Sala";
+        
+        let html = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-top:20px;">`;
+        
+        // Agrupar por categorias
+        const categorias = [...new Set(produtosLocais.filter(p => !p.oculto).map(p => p.categoria))];
+        
+        categorias.forEach(cat => {
+            html += `<div style="grid-column: span 2; margin-top: 20px; border-bottom: 2px solid #000; padding-bottom: 5px;">
+                        <h3 style="margin:0; font-size:18px; text-transform:uppercase;">${cat}</h3>
+                     </div>`;
+            
+            produtosLocais.filter(p => !p.oculto && p.categoria === cat).forEach(p => {
+                const descPromo = parseInt(p.desconto_percent) || 0;
+                const precoFinal = calcularPrecoFinal(p.preco, descPromo);
+                
+                html += `
+                    <div style="border-bottom: 1px dashed #ccc; padding-bottom: 10px; display:flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1; padding-right: 15px;">
+                            <h4 style="margin:0 0 4px 0; font-size: 14px;">${p.nome}</h4>
+                            <p style="font-size: 11px; margin: 0; color: #555; line-height: 1.3;">${p.descricao || ''}</p>
+                        </div>
+                        <div style="font-weight: bold; font-size: 14px; white-space: nowrap;">
+                            ${precoFinal.toFixed(2)}€
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        
+        html += `</div>`;
+        document.getElementById('print-content').innerHTML = html;
+        window.print();
     }
 
     async function atualizarPerfil() {
@@ -815,7 +1054,6 @@
         const precoVal = parseFloat(document.getElementById('p-preco').value);
         if(!document.getElementById('p-nome').value || isNaN(precoVal)) return alert("Nome e preço são obrigatórios.");
 
-        // CAPTURA DO NOVO STOCK E DIA DA SEMANA
         let stockVal = document.getElementById('p-stock').value;
         stockVal = (stockVal !== "" && stockVal !== null) ? parseInt(stockVal) : null;
         
@@ -831,8 +1069,8 @@
             alergenios: alergenios, 
             descricao: document.getElementById('p-ingredientes').value,
             loja_id: lojaAtiva.id,
-            stock: stockVal,             // NOVO
-            dia_semana: diaVal           // NOVO
+            stock: stockVal,             
+            dia_semana: diaVal           
         };
 
         btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A GUARDAR...`;
