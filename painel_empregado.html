@@ -11,29 +11,52 @@
         :root { --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --primary: #3b82f6; --danger: #ef4444; --warning: #f59e0b; --success: #10b981; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
+        /* 1. TELA DE LOGIN DO EMPREGADO */
         #login-screen { position: fixed; inset: 0; background: var(--text); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        .input-form { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 16px; }
-        .btn-login { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        
+        .input-form { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 16px; font-family: inherit; box-sizing: border-box;}
+        .input-form:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .btn-login { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .btn-login:hover { background: #2563eb; }
+
+        /* CABEÇALHO DO PAINEL */
         header { background: var(--card); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0; }
         .logo-area h1 { margin: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; }
         .status-dot { width: 12px; height: 12px; background: var(--success); border-radius: 50%; display: inline-block; box-shadow: 0 0 10px var(--success); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
         
         .header-actions { display: flex; gap: 15px; align-items: center; }
-        .btn-header { background: #e2e8f0; color: var(--text); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-header { background: #e2e8f0; color: var(--text); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 8px;}
         .btn-header:hover { background: #cbd5e1; }
 
-        /* A CORREÇÃO DO SCROLL */
-        .main-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; padding: 20px; flex-grow: 1; overflow: hidden; height: calc(100vh - 70px); }
-        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; overflow-y: auto; } }
-        .coluna { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 5px; padding-bottom: 80px; }
-        .coluna::-webkit-scrollbar { width: 6px; } .coluna::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .coluna-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        /* 2. A CORREÇÃO DE SCROLL DA ÁREA PRINCIPAL */
+        .main-content { 
+            display: grid; 
+            grid-template-columns: 1fr 1.5fr; 
+            gap: 20px; 
+            padding: 20px; 
+            flex-grow: 1; 
+            height: calc(100vh - 80px); /* Ajuste de altura dinâmico */
+            overflow: hidden; 
+        }
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
         
+        .coluna { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            overflow-y: auto; /* Scroll ativado apenas nas colunas */
+            padding-right: 10px; 
+            padding-bottom: 100px; 
+        }
+        .coluna::-webkit-scrollbar { width: 8px; } 
+        .coluna::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .coluna-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
         .badge { background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* CARTÕES DE PEDIDO E CHAMADA */
+        .card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;}
         .card.chamada-empregado { border-left-color: var(--warning); } .card.chamada-conta { border-left-color: var(--danger); }
         .card.pedido-mesa { border-left-color: var(--primary); } .card.pedido-takeaway { border-left-color: #8b5cf6; } .card.pedido-reserva { border-left-color: #14b8a6; }
         .card.aguarda-confirmacao { border-left-color: var(--warning); background: #fffbeb; }
@@ -43,57 +66,68 @@
         .time-tag { color: #64748b; font-size: 0.9em; }
         .card-body { font-size: 1.1em; color: #475569; }
         .itens-lista { list-style: none; padding: 0; margin: 0; font-size: 0.95em; } .itens-lista li { padding: 5px 0; border-bottom: 1px solid #f1f5f9; }
+        
         .ronda-box { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #e2e8f0;}
         .ronda-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 5px; display: flex; justify-content: space-between;}
+        
+        /* 3. AVISOS DENTRO DO CARTÃO (NIF/MBWay) */
+        .aviso-pagamento { background: #fef2f2; color: #991b1b; padding: 12px; border-radius: 8px; font-size: 0.9em; margin-top: 10px; border: 1px solid #fecaca; display: flex; flex-direction: column; gap: 5px;}
+        .aviso-pagamento strong { font-size: 1em; display: flex; align-items: center; gap: 5px;}
         
         .card-footer { display: flex; gap: 10px; margin-top: auto; }
         .btn-action { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 1em; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .btn-resolve { background: #f1f5f9; color: var(--text); } .btn-resolve:hover { background: #e2e8f0; }
         .btn-success { background: var(--success); color: white; } .btn-warning { background: var(--warning); color: white; }
+        
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; } .empty-state i { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
 
-        /* O BOTÃO FLUTUANTE POS */
+        /* 4. O BOTÃO FLUTUANTE POS */
         .fab-pos { position: fixed; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5); cursor: pointer; z-index: 100; transition: 0.3s; border: none;}
         .fab-pos:hover { transform: scale(1.1); }
 
-        /* MODAIS */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; padding: 20px; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 100%; max-width: 800px; max-height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        /* MODAIS E IFRAME */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; padding: 20px; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 100%; max-width: 1000px; height: 95vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-        .modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .modal-body { padding: 0; overflow: hidden; flex-grow: 1; background: #fdfbf7;}
+        .close-modal { width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #475569; font-size: 1.2em; transition: 0.2s;}
+        .close-modal:hover { background: var(--danger); color: white; }
         
-        /* POS Grid */
-        .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        .pos-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; cursor: pointer; text-align: center; transition: 0.2s; user-select: none; }
-        .pos-item:active { background: #e2e8f0; transform: scale(0.95); }
-        .pos-cart { background: #f8fafc; padding: 15px; border-radius: 10px; margin-top: 20px; border: 2px dashed #cbd5e1; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; }
-            .no-print { display: none !important; }
-        }
+        #iframe-catalogo { width: 100%; height: 100%; border: none; }
+        
+        /* 5. ESTILO DO FECHO DE TURNO (CEGO) */
+        .hist-item { display:flex; justify-content:space-between; align-items: center; border-bottom:1px solid #f1f5f9; padding:15px 10px; color: #475569;}
+        .hist-item span { font-weight: bold; color: var(--text); font-size: 1.1em;}
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 style="margin-top:0;"><i class="fas fa-tablet-alt"></i> Painel de Sala</h2>
-        <p style="color: #64748b; margin-bottom: 25px;">Faça login para iniciar o turno.</p>
-        <input type="email" id="email" class="input-form" placeholder="Email do Lojista">
-        <input type="password" id="password" class="input-form" placeholder="Password">
-        <button onclick="fazerLogin()" class="btn-login" id="btn-login-text"><i class="fas fa-sign-in-alt"></i> Entrar no Turno</button>
+        <h2 style="margin-top:0; color: var(--text);"><i class="fas fa-tablet-alt"></i> Painel de Sala</h2>
+        <p style="color: #64748b; margin-bottom: 25px; font-size: 14px;">Identifique o seu estabelecimento e insira o PIN de Operador para iniciar o turno.</p>
+        
+        <input type="text" id="slug-loja" class="input-form" placeholder="Identificador da Loja (ex: meu-restaurante)" oninput="procurarLoja()">
+        
+        <select id="select-empregado" class="input-form" style="display: none;">
+            <option value="">A procurar equipa...</option>
+        </select>
+        
+        <input type="password" id="pin-empregado" class="input-form" placeholder="O seu PIN de Acesso" maxlength="6" style="display: none; text-align: center; letter-spacing: 8px; font-size: 24px; font-weight: bold;">
+        
+        <button onclick="fazerLoginEmpregado()" class="btn-login" id="btn-login-text" style="display: none;"><i class="fas fa-sign-in-alt"></i> Iniciar Turno</button>
     </div>
 </div>
 
 <div id="dashboard-screen" style="display: none; height: 100%; flex-direction: column;">
     <header>
-        <div class="logo-area"><h1><span class="status-dot"></span> <span id="nome-restaurante">A carregar...</span></h1></div>
+        <div class="logo-area">
+            <h1><span class="status-dot"></span> <span id="nome-restaurante">A carregar...</span></h1>
+            <span style="font-size: 12px; color: #64748b; margin-left: 20px; border-left: 2px solid #e2e8f0; padding-left: 15px;" id="nome-operador"></span>
+        </div>
         <div class="header-actions">
-            <button class="btn-header" onclick="abrirHistorico()"><i class="fas fa-file-invoice"></i> Histórico & Fecho</button>
-            <button onclick="logout()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1.5em;"><i class="fas fa-power-off"></i></button>
+            <button class="btn-header" onclick="abrirFechoTurno()"><i class="fas fa-lock"></i> Fim de Turno</button>
+            <button onclick="logout()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1.5em;" title="Sair do Turno"><i class="fas fa-power-off"></i></button>
         </div>
     </header>
 
@@ -103,104 +137,176 @@
             <div id="lista-chamadas"><div class="empty-state"><i class="fas fa-check-circle"></i><p>A sala está tranquila.</p></div></div>
         </div>
         <div class="coluna">
-            <div class="coluna-header"><span><i class="fas fa-receipt"></i> Gestão de Pedidos</span><span class="badge" id="count-pedidos">0</span></div>
+            <div class="coluna-header"><span><i class="fas fa-receipt"></i> Gestão de Pedidos e Cozinha</span><span class="badge" id="count-pedidos">0</span></div>
             <div id="lista-pedidos"><div class="empty-state"><i class="fas fa-utensils"></i><p>Nenhum pedido em curso.</p></div></div>
         </div>
     </div>
     
-    <button class="fab-pos" onclick="abrirPOS()" title="Novo Pedido Manual"><i class="fas fa-plus"></i></button>
+    <button class="fab-pos" onclick="abrirCatalogoPOS()" title="Abrir Catálogo Digital (Modo POS)"><i class="fas fa-plus"></i></button>
 </div>
 
 <div id="modal-pos" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 style="margin:0;"><i class="fas fa-cash-register"></i> Novo Pedido Manual</h3>
+            <h3 style="margin:0;"><i class="fas fa-book-open"></i> Catálogo de Loja (Modo Operador)</h3>
             <span class="close-modal" onclick="fecharModal('modal-pos')"><i class="fas fa-times"></i></span>
         </div>
-        <div class="modal-body" style="display: flex; flex-direction: column; gap: 15px;">
-            <input type="text" id="pos-mesa" class="input-form" placeholder="Nº da Mesa ou Nome do Cliente (Takeaway)" style="margin:0;">
-            
-            <div class="pos-grid" id="pos-produtos"></div>
-            
-            <div class="pos-cart">
-                <h4 style="margin:0 0 10px 0;">Resumo do Pedido</h4>
-                <ul id="pos-cart-list" class="itens-lista" style="margin-bottom: 10px;"></ul>
-                <strong style="font-size: 1.2em;">Total: <span id="pos-total">0.00</span>€</strong>
-            </div>
-            <button class="btn-login" onclick="enviarPedidoPOS()"><i class="fas fa-fire"></i> Enviar Direto para a Cozinha</button>
+        <div class="modal-body">
+            <iframe id="iframe-catalogo" src=""></iframe>
         </div>
     </div>
 </div>
 
-<div id="modal-historico" class="modal">
-    <div class="modal-content">
-        <div class="modal-header no-print">
-            <h3 style="margin:0;"><i class="fas fa-archive"></i> Fecho de Caixa (Hoje)</h3>
-            <span class="close-modal" onclick="fecharModal('modal-historico')"><i class="fas fa-times"></i></span>
+<div id="modal-fecho" class="modal">
+    <div class="modal-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+        <div class="modal-header">
+            <h3 style="margin:0;"><i class="fas fa-archive"></i> Resumo do Fim de Turno</h3>
+            <span class="close-modal" onclick="fecharModal('modal-fecho')"><i class="fas fa-times"></i></span>
         </div>
-        <div class="modal-body" id="print-area">
-            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #ccc; padding-bottom: 10px;">
-                <h2 id="print-loja-nome" style="margin: 0;">Restaurante</h2>
-                <p style="margin: 5px 0;">Relatório Diário de Vendas</p>
-                <p style="margin: 0;" id="print-data"></p>
+        <div class="modal-body" style="padding: 20px;">
+            <div style="background: #e0f2fe; color: #0369a1; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9em; border: 1px solid #bae6fd;">
+                <i class="fas fa-info-circle"></i> Abaixo estão os pedidos que já foram entregues e pagos. Ao clicar em <b>"Enviar Dados para o Lojista"</b>, estes pedidos serão arquivados do painel de sala e a gestão financeira será consolidada pela gerência.
             </div>
             
-            <div id="historico-lista" style="margin-bottom: 20px;"></div>
-            
-            <div style="border-top: 2px dashed #ccc; padding-top: 15px; font-size: 1.3em;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Qtd Pedidos:</span><strong id="hist-qtd">0</strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Faturação Total:</span><strong id="hist-total">0.00€</strong></div>
-            </div>
+            <div style="font-weight: bold; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #cbd5e1;">Pedidos Processados Hoje:</div>
+            <div id="lista-fecho-cego" style="margin-bottom: 20px;"></div>
         </div>
-        <div style="padding: 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display:flex; gap:10px;" class="no-print">
-            <button class="btn-action btn-resolve" onclick="fecharModal('modal-historico')">Fechar</button>
-            <button class="btn-action btn-success" onclick="window.print()"><i class="fas fa-print"></i> Imprimir Fecho (PDF)</button>
+        <div style="padding: 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+            <button class="btn-action btn-success" style="flex: none; width: auto; padding: 15px 25px;" onclick="enviarTurnoLojista()"><i class="fas fa-paper-plane"></i> Enviar Dados para o Lojista</button>
         </div>
     </div>
 </div>
 
 <script>
     const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
-    let minhaLojaId = null; let lojaNome = "";
-    let produtosCatalogo = []; let posCarrinho = []; let posTotal = 0;
+    
+    let minhaLojaId = null; 
+    let lojaSlugAtual = "";
+    let nomeOperadorAtual = "";
 
-    async function verificarSessao() { const { data: { session } } = await _sb.auth.getSession(); if (session) iniciarDashboard(session.user.id); }
-    async function fazerLogin() {
-        const btn = document.getElementById('btn-login-text'); btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A autenticar...`;
-        const { data, error } = await _sb.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('password').value });
-        if (error) { alert("Erro: " + error.message); btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Entrar no Turno`; } else iniciarDashboard(data.user.id);
+    // ==========================================
+    // 1. SISTEMA DE LOGIN DE EQUIPA (RLS SAFE)
+    // ==========================================
+    async function procurarLoja() {
+        const inputSlug = document.getElementById('slug-loja').value.toLowerCase().trim();
+        const selectEmp = document.getElementById('select-empregado');
+        const inputPin = document.getElementById('pin-empregado');
+        const btnLogin = document.getElementById('btn-login-text');
+
+        if(inputSlug.length < 3) {
+            selectEmp.style.display = 'none'; inputPin.style.display = 'none'; btnLogin.style.display = 'none'; return;
+        }
+
+        const { data: loja } = await _sb.from('lojas').select('id, slug').eq('slug', inputSlug).maybeSingle();
+        
+        if (loja) {
+            minhaLojaId = loja.id;
+            lojaSlugAtual = loja.slug;
+            
+            const { data: equipa } = await _sb.from('empregados').select('id, nome').eq('loja_id', minhaLojaId);
+            
+            if (equipa && equipa.length > 0) {
+                selectEmp.innerHTML = '<option value="" disabled selected>Quem está a operar o tablet?</option>' + 
+                                      equipa.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
+                selectEmp.style.display = 'block';
+                inputPin.style.display = 'block';
+                btnLogin.style.display = 'flex';
+            } else {
+                selectEmp.innerHTML = '<option value="" disabled selected>Nenhum empregado configurado.</option>';
+                selectEmp.style.display = 'block';
+                inputPin.style.display = 'none';
+                btnLogin.style.display = 'none';
+            }
+        } else {
+            selectEmp.style.display = 'none'; inputPin.style.display = 'none'; btnLogin.style.display = 'none';
+        }
     }
-    async function logout() { await _sb.auth.signOut(); window.location.reload(); }
 
-    async function iniciarDashboard(userId) {
-        document.getElementById('login-screen').style.display = 'none'; document.getElementById('dashboard-screen').style.display = 'flex';
-        const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', userId).single();
-        if (!loja) return alert("Não tem nenhuma loja registada.");
+    async function fazerLoginEmpregado() {
+        const empId = document.getElementById('select-empregado').value;
+        const pinDigitado = document.getElementById('pin-empregado').value;
+
+        if (!empId || !pinDigitado) return alert("Selecione o seu nome e insira o PIN.");
+
+        const btn = document.getElementById('btn-login-text');
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A validar...`; btn.disabled = true;
+
+        // Verifica o PIN na tabela empregados
+        const { data: empregado } = await _sb.from('empregados')
+                                           .select('nome')
+                                           .eq('id', empId)
+                                           .eq('pin_acesso', pinDigitado)
+                                           .maybeSingle();
+
+        if (empregado) {
+            nomeOperadorAtual = empregado.nome;
+            sessionStorage.setItem('pv_sala_loja_id', minhaLojaId);
+            sessionStorage.setItem('pv_sala_loja_slug', lojaSlugAtual);
+            sessionStorage.setItem('pv_sala_operador', nomeOperadorAtual);
+            iniciarDashboard();
+        } else {
+            alert("❌ PIN incorreto. Tente novamente.");
+            document.getElementById('pin-empregado').value = "";
+            btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Iniciar Turno`; btn.disabled = false;
+        }
+    }
+
+    function verificarSessao() {
+        const id = sessionStorage.getItem('pv_sala_loja_id');
+        const op = sessionStorage.getItem('pv_sala_operador');
+        const slug = sessionStorage.getItem('pv_sala_loja_slug');
+        if (id && op && slug) {
+            minhaLojaId = id;
+            nomeOperadorAtual = op;
+            lojaSlugAtual = slug;
+            iniciarDashboard();
+        }
+    }
+
+    function logout() { 
+        sessionStorage.removeItem('pv_sala_loja_id');
+        sessionStorage.removeItem('pv_sala_operador');
+        sessionStorage.removeItem('pv_sala_loja_slug');
+        window.location.reload(); 
+    }
+
+    // ==========================================
+    // INICIAÇÃO DO DASHBOARD E WEBSOCKETS
+    // ==========================================
+    async function iniciarDashboard() {
+        document.getElementById('login-screen').style.display = 'none'; 
+        document.getElementById('dashboard-screen').style.display = 'flex';
         
-        minhaLojaId = loja.id; lojaNome = loja.nome;
-        document.getElementById('nome-restaurante').innerText = loja.nome + " - Operação";
-        document.getElementById('print-loja-nome').innerText = loja.nome;
-        
-        // Carrega produtos para o POS
-        const { data: prods } = await _sb.from('produtos').select('id, nome, preco, desconto_percent').eq('loja_id', minhaLojaId).eq('oculto', false);
-        if(prods) produtosCatalogo = prods;
+        const { data: loja } = await _sb.from('lojas').select('nome').eq('id', minhaLojaId).single();
+        document.getElementById('nome-restaurante').innerText = loja.nome + " - Sala";
+        document.getElementById('nome-operador').innerHTML = `<i class="fas fa-user-circle"></i> Op: ${nomeOperadorAtual}`;
 
         carregarDados();
-        _sb.channel('sala-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta(); carregarDados(); })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta(); carregarDados(); }).subscribe();
+        
+        // Escuta os pedidos em tempo real
+        _sb.channel('sala-updates')
+           .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta(); carregarDados(); })
+           .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta(); carregarDados(); })
+           .subscribe();
     }
 
     async function carregarDados() {
         const { data: chamadas } = await _sb.from('chamadas_sala').select('*').eq('loja_id', minhaLojaId).eq('estado', 'pendente').order('created_at', { ascending: true });
         const { data: pedidos } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).neq('estado', 'finalizado').order('created_at', { ascending: true });
-        renderizarChamadas(chamadas || []); renderizarPedidos(pedidos || []);
+        
+        renderizarChamadas(chamadas || []); 
+        renderizarPedidos(pedidos || []);
     }
 
     function formatarHora(iso) { const d = new Date(iso); return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0'); }
 
+    // ==========================================
+    // RENDERIZAÇÃO DE SALA E PEDIDOS
+    // ==========================================
     function renderizarChamadas(lista) {
         document.getElementById('count-chamadas').innerText = lista.length; const div = document.getElementById('lista-chamadas');
         if (lista.length === 0) { div.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>A sala está tranquila.</p></div>'; return; }
+        
         div.innerHTML = lista.map(c => {
             const isC = c.tipo_chamada === 'conta'; const icon = isC ? '<i class="fas fa-file-invoice-dollar" style="color:var(--danger);"></i>' : '<i class="fas fa-bell" style="color:var(--warning);"></i>';
             return `<div class="card ${isC ? 'chamada-conta' : 'chamada-empregado'}"><div class="card-header"><div class="mesa-tag">${icon} Mesa ${c.mesa}</div><div class="time-tag">${formatarHora(c.created_at)}</div></div><div class="card-body"><strong>Aviso:</strong> ${isC ? 'Pediu a Conta' : 'Chamou o Empregado'}</div><div class="card-footer"><button class="btn-action btn-resolve" onclick="resolverChamada(${c.id})"><i class="fas fa-check"></i> Resolvido</button></div></div>`;
@@ -211,16 +317,24 @@
         const div = document.getElementById('lista-pedidos');
         if (listaBruta.length === 0) { div.innerHTML = '<div class="empty-state"><i class="fas fa-utensils"></i><p>Nenhum pedido em curso.</p></div>'; document.getElementById('count-pedidos').innerText = "0"; return; }
 
-        const externos = listaBruta.filter(p => p.tipo_pedido !== 'mesa'); const pedidosMesa = listaBruta.filter(p => p.tipo_pedido === 'mesa');
+        const externos = listaBruta.filter(p => p.tipo_pedido !== 'mesa'); 
+        const pedidosMesa = listaBruta.filter(p => p.tipo_pedido === 'mesa');
+        
+        // AGRUPAMENTO DE MESAS
         const mesasAgrupadas = {};
         pedidosMesa.forEach(p => {
             if (!mesasAgrupadas[p.mesa]) mesasAgrupadas[p.mesa] = { mesa: p.mesa, rondas: [], totalAcumulado: 0, temParaConfirmar: false, tudoPronto: true, hora: p.created_at };
-            mesasAgrupadas[p.mesa].rondas.push(p); mesasAgrupadas[p.mesa].totalAcumulado += p.total;
-            if (p.estado === 'aguarda_confirmacao') mesasAgrupadas[p.mesa].temParaConfirmar = true; if (p.estado !== 'pronto') mesasAgrupadas[p.mesa].tudoPronto = false;
+            mesasAgrupadas[p.mesa].rondas.push(p); 
+            // Total cego: a lógica soma, mas o Empregado não vai ver os preços. Mantemos para a BD.
+            mesasAgrupadas[p.mesa].totalAcumulado += p.total;
+            if (p.estado === 'aguarda_confirmacao') mesasAgrupadas[p.mesa].temParaConfirmar = true; 
+            if (p.estado !== 'pronto') mesasAgrupadas[p.mesa].tudoPronto = false;
         });
 
-        document.getElementById('count-pedidos').innerText = Object.keys(mesasAgrupadas).length + externos.length; let html = '';
+        document.getElementById('count-pedidos').innerText = Object.keys(mesasAgrupadas).length + externos.length; 
+        let html = '';
 
+        // RENDERIZA MESAS (INTERNO)
         Object.values(mesasAgrupadas).forEach(m => {
             let rondasHtml = ''; let idConf = null;
             m.rondas.forEach((r, i) => {
@@ -232,67 +346,126 @@
                 rondasHtml += `<div class="ronda-box"><div class="ronda-title">Ronda ${i + 1} <span>${badge}</span></div><ul class="itens-lista">${itens}</ul></div>`;
             });
             let cl = 'pedido-mesa'; let btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">A aguardar...</button>`;
-            if (m.temParaConfirmar) { cl += ' aguarda-confirmacao'; btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>`; } 
-            else if (m.tudoPronto) { btn = `<button class="btn-action btn-success" onclick="fecharMesa('${m.mesa}', ${JSON.stringify(m.rondas.map(r=>r.id))})"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; }
-            html += `<div class="card ${cl}"><div class="card-header"><div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div><div class="time-tag">${formatarHora(m.hora)}</div></div><div class="card-body">${rondasHtml}<div style="margin-top: 15px; font-weight: 800; font-size: 1.1em; text-align:right;">Total: ${m.totalAcumulado.toFixed(2)}€</div></div><div class="card-footer">${btn}</div></div>`;
+            
+            if (m.temParaConfirmar) { 
+                cl += ' aguarda-confirmacao'; 
+                btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar Ronda p/ Cozinha</button>`; 
+            } else if (m.tudoPronto) { 
+                // Botão de pagar e fechar cego
+                btn = `<button class="btn-action btn-success" onclick="fecharMesa('${m.mesa}', ${JSON.stringify(m.rondas.map(r=>r.id))})"><i class="fas fa-check-double"></i> Limpar e Marcar Entregue</button>`; 
+            }
+
+            html += `<div class="card ${cl}"><div class="card-header"><div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div><div class="time-tag">${formatarHora(m.hora)}</div></div><div class="card-body">${rondasHtml}</div><div class="card-footer">${btn}</div></div>`;
         });
 
+        // RENDERIZA TAKEAWAY E RESERVAS (EXTERNO) - COM VALIDAÇÃO NIF E MBWAY
         externos.forEach(p => {
             let itens = p.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join('');
             let icon = p.tipo_pedido === 'levantamento' ? '<i class="fas fa-shopping-bag" style="color:#8b5cf6;"></i>' : '<i class="far fa-calendar-check" style="color:#14b8a6;"></i>';
-            let cClass = p.tipo_pedido === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva'; let estHtml = ''; let btn = '';
+            let cClass = p.tipo_pedido === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva'; 
+            let estHtml = ''; let btn = '';
             
-            if(p.estado === 'aguarda_confirmacao') { cClass += ' aguarda-confirmacao'; estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Pedido</span>`; btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${p.id}, 'pendente')"><i class="fas fa-check"></i> Enviar Cozinha</button> <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; } 
+            // 3. A LÓGICA RIGOROSA DO NIF NO TAKEAWAY
+            if(p.estado === 'aguarda_confirmacao') { 
+                cClass += ' aguarda-confirmacao'; 
+                
+                if(p.tipo_pedido === 'levantamento') {
+                    const txtNif = p.quer_nif ? `<strong><i class="fas fa-file-invoice"></i> Cliente quer NIF:</strong> ${p.nif_cliente}` : `<strong><i class="fas fa-ban"></i> Cliente NÃO pediu NIF.</strong>`;
+                    estHtml = `<div class="aviso-pagamento">
+                                  <span><i class="fas fa-exclamation-triangle"></i> Atenção à Faturação e MBWay!</span>
+                                  ${txtNif}
+                               </div>`;
+                    
+                    btn = `<button class="btn-action btn-warning" onclick="avancarTakeawayValidado(${p.id}, 'pendente')"><i class="fas fa-check"></i> Validar Pagamento e Enviar Cozinha</button> 
+                           <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Apagar Pedido Falso"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
+                } else {
+                    estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Reserva (Mesa)</span>`; 
+                    btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${p.id}, 'pendente')"><i class="fas fa-check"></i> Tudo Ok</button> <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
+                }
+            } 
             else if(p.estado === 'pendente') { estHtml = `<span style="color: var(--danger); font-weight:bold;">Aguardar fogão</span>`; btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Na fila...</button>`; } 
             else if(p.estado === 'preparacao') { estHtml = `<span style="color: var(--primary); font-weight:bold;">Na Cozinha 🍳</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')">Marcar Pronto</button>`; } 
-            else if(p.estado === 'pronto') { estHtml = `<span style="color: var(--success); font-weight:bold;">Pronto! 🔔</span>`; btn = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'finalizado')"><i class="fas fa-check-double"></i> Entregue/Pago</button>`; }
+            else if(p.estado === 'pronto') { estHtml = `<span style="color: var(--success); font-weight:bold;">Pronto! 🔔</span>`; btn = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'finalizado')"><i class="fas fa-check-double"></i> Cliente Levou/Entregue</button>`; }
             
             const tel = p.telefone ? `<a href="tel:${p.telefone}" style="color:var(--primary); text-decoration:none;">📞 ${p.telefone}</a>` : '';
-            html += `<div class="card ${cClass}"><div class="card-header"><div class="mesa-tag">${icon} ${p.tipo_pedido}</div><div class="time-tag">${formatarHora(p.created_at)}</div></div><div class="card-body"><div style="font-size:0.85em; text-transform:uppercase; font-weight:bold; color:#64748b; margin-bottom:10px; display:flex; justify-content:space-between;"><span>${p.nome_cliente || 'Anónimo'}</span><span>${tel}</span></div>${estHtml}<hr style="border-top:1px dashed #cbd5e1; margin:10px 0;"><ul class="itens-lista">${itens}</ul><div style="margin-top: 10px; font-weight: 800; font-size: 1.1em; text-align:right;">Total: ${p.total.toFixed(2)}€</div></div><div class="card-footer">${btn}</div></div>`;
+            html += `<div class="card ${cClass}"><div class="card-header"><div class="mesa-tag">${icon} ${p.tipo_pedido}</div><div class="time-tag">${formatarHora(p.created_at)}</div></div><div class="card-body"><div style="font-size:0.85em; text-transform:uppercase; font-weight:bold; color:#64748b; margin-bottom:10px; display:flex; justify-content:space-between;"><span>${p.nome_cliente || 'Anónimo'}</span><span>${tel}</span></div>${estHtml}<hr style="border-top:1px dashed #cbd5e1; margin:10px 0;"><ul class="itens-lista">${itens}</ul></div><div class="card-footer">${btn}</div></div>`;
         });
         div.innerHTML = html;
     }
 
+    // --- FUNÇÕES DE ESTADO ---
     async function resolverChamada(id) { await _sb.from('chamadas_sala').update({ estado: 'resolvido' }).eq('id', id); }
+    
     async function avancarPedido(id, est) { await _sb.from('pedidos').update({ estado: est }).eq('id', id); }
-    async function apagarPedido(id) { if(confirm("Apagar este pedido falso?")) await _sb.from('pedidos').delete().eq('id', id); }
-    async function fecharMesa(m, ids) { if(confirm(`Limpar e receber pagamento da Mesa ${m}?`)) for(let id of ids) await _sb.from('pedidos').update({ estado: 'finalizado' }).eq('id', id); }
+    
+    // Função Especial para Forçar a Responsabilidade no Takeaway (Obriga à confirmação do NIF/MBWay)
+    async function avancarTakeawayValidado(id, est) { 
+        if(confirm("Confirma que o pagamento MBWay já caiu na conta E a fatura com o NIF já foi emitida?\n\n(Se sim, o pedido avança agora para a cozinha).")) {
+            await _sb.from('pedidos').update({ estado: est }).eq('id', id); 
+        }
+    }
+
+    async function apagarPedido(id) { if(confirm("Apagar este pedido (Falso ou Cancelado) permanentemente?")) await _sb.from('pedidos').delete().eq('id', id); }
+    
+    async function fecharMesa(m, ids) { 
+        if(confirm(`A Mesa ${m} está fechada e o cliente já pagou?`)) {
+            for(let id of ids) { await _sb.from('pedidos').update({ estado: 'finalizado' }).eq('id', id); }
+        }
+    }
 
     function tocarSomAlerta() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.setValueAtTime(600, ctx.currentTime); gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5); } catch(e) {} }
 
-    // --- POS MANUAL (NOVO PEDIDO) ---
-    function abrirPOS() {
-        document.getElementById('pos-produtos').innerHTML = produtosCatalogo.map(p => {
-            const final = p.desconto_percent > 0 ? p.preco * (1 - p.desconto_percent/100) : p.preco;
-            return `<div class="pos-item" onclick="addPOS(${p.id}, '${p.nome.replace(/'/g, "\\'")}', ${final})"><strong>${p.nome}</strong><br><span style="color:var(--ok)">${final.toFixed(2)}€</span></div>`;
-        }).join('');
-        posCarrinho = []; atualizaPOSCart(); document.getElementById('pos-mesa').value = '';
+    // ==========================================
+    // 4. MODO POS "INCEPTION": O CATÁLOGO IFRAME
+    // ==========================================
+    function abrirCatalogoPOS() {
+        const iframe = document.getElementById('iframe-catalogo');
+        // Usamos o Catálogo original. Como já está configurado para ler o ?loja=slug, vai carregar a loja perfeita.
+        iframe.src = `catalogo_digital.html?loja=${lojaSlugAtual}`;
         document.getElementById('modal-pos').style.display = 'flex';
     }
-    function addPOS(id, n, p) { const it = posCarrinho.find(i=>i.id===id); if(it) it.qtde++; else posCarrinho.push({id, nome:n, preco:p, qtde:1}); atualizaPOSCart(); }
-    function atualizaPOSCart() {
-        posTotal = 0; document.getElementById('pos-cart-list').innerHTML = posCarrinho.map(i => { posTotal += (i.preco*i.qtde); return `<li>${i.qtde}x ${i.nome} - ${(i.preco*i.qtde).toFixed(2)}€</li>`; }).join('');
-        document.getElementById('pos-total').innerText = posTotal.toFixed(2);
-    }
-    async function enviarPedidoPOS() {
-        const mesaStr = document.getElementById('pos-mesa').value; if(!mesaStr) return alert("Insira o Nº da mesa ou Nome."); if(posCarrinho.length === 0) return alert("Carrinho vazio.");
-        // Vai direto para pendente (cozinha) porque foi o empregado que inseriu!
-        await _sb.from('pedidos').insert([{ loja_id: minhaLojaId, tipo_pedido: isNaN(mesaStr) ? 'levantamento' : 'mesa', mesa: isNaN(mesaStr) ? null : mesaStr, nome_cliente: isNaN(mesaStr) ? mesaStr : null, itens: posCarrinho, total: posTotal, estado: 'pendente' }]);
-        fecharModal('modal-pos');
-    }
 
-    // --- HISTÓRICO E FECHO ---
-    async function abrirHistorico() {
+    // ==========================================
+    // 5. FECHO DE TURNO CEGO
+    // ==========================================
+    async function abrirFechoTurno() {
         const hoje = new Date().toISOString().split('T')[0];
-        document.getElementById('print-data').innerText = new Date().toLocaleDateString('pt-PT') + " - Turno Atual";
-        const { data: fechados } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).eq('estado', 'finalizado').gte('created_at', hoje + 'T00:00:00').lte('created_at', hoje + 'T23:59:59');
-        let tDia = 0;
-        document.getElementById('historico-lista').innerHTML = (fechados || []).map(p => { tDia += p.total; return `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px 0;"><span>${p.tipo_pedido === 'mesa' ? 'Mesa '+p.mesa : p.nome_cliente}</span><strong>${p.total.toFixed(2)}€</strong></div>`; }).join('');
-        document.getElementById('hist-qtd').innerText = (fechados||[]).length; document.getElementById('hist-total').innerText = tDia.toFixed(2) + '€';
-        document.getElementById('modal-historico').style.display = 'flex';
+        
+        const { data: fechados } = await _sb.from('pedidos')
+            .select('tipo_pedido, mesa, nome_cliente, created_at')
+            .eq('loja_id', minhaLojaId)
+            .eq('estado', 'finalizado')
+            .gte('created_at', hoje + 'T00:00:00');
+        
+        const divLista = document.getElementById('lista-fecho-cego');
+        
+        if(!fechados || fechados.length === 0) {
+            divLista.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fas fa-folder-open"></i><p>Nenhum pedido finalizado neste turno.</p></div>`;
+        } else {
+            divLista.innerHTML = fechados.map(p => {
+                const desc = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `${p.tipo_pedido.toUpperCase()} - ${p.nome_cliente || 'Anónimo'}`;
+                const h = formatarHora(p.created_at);
+                // NOTA IMPORTANTE: Fica CEGO. O Empregado só vê o NOME, não vê preços.
+                return `<div class="hist-item"><span>${desc}</span><small><i class="fas fa-check-circle" style="color:var(--success);"></i> Fechado às ${h}</small></div>`;
+            }).join('');
+        }
+
+        document.getElementById('modal-fecho').style.display = 'flex';
     }
 
-    function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+    function enviarTurnoLojista() {
+        // Como a base de dados centraliza tudo no estado 'finalizado', o Lojista já tem acesso à sua tesouraria.
+        // Este botão funciona como um "Acordo Psicológico" de fim de turno para a equipa.
+        alert("✅ Turno arquivado. Os dados foram enviados e consolidados no painel de gerência do Lojista.");
+        fecharModal('modal-fecho');
+        logout(); // Desloga o empregado e volta à tela de login
+    }
+
+    function fecharModal(id) { 
+        document.getElementById(id).style.display = 'none'; 
+        if(id === 'modal-pos') document.getElementById('iframe-catalogo').src = ""; // Limpa a memória do iframe
+    }
+    
     verificarSessao();
 </script>
 </body>
