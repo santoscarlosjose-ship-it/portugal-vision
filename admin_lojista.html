@@ -153,8 +153,9 @@
         .btn-del-staff { color: var(--err); background: none; border: none; cursor: pointer; font-size: 1.1rem; width: auto; padding: 5px;}
         .btn-del-staff:hover { background: #fee2e2; transform: none; box-shadow: none;}
 
-        /* CSS DE IMPRESSÃO CEGA E SEGURA (RESOLVE O CORTE DO PDF) */
+        /* CSS DE IMPRESSÃO CEGA E SEGURA (RESOLVE O CORTE DO PDF E IMAGENS) */
         @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: white; padding: 0; color: black; }
             .container { max-width: 100%; margin: 0; padding: 0; }
             .no-print, button, .prod-actions, .logo-box input, .auth-card { display: none !important; }
@@ -473,7 +474,6 @@
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
     const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"};
 
-    // CONFIGURAÇÕES DINÂMICAS DE NEGÓCIO
     const configNegocios = {
         restaurante: {
             tags: [
@@ -603,7 +603,7 @@
                 auth_id: authData.user.id,
                 nome: nomeInput, email: emailInput, slug: criarSlug(nomeInput),
                 plano: 'free', aceitou_termos: true, created_at: new Date(),
-                takeaway_ativo: true // Ativo por defeito
+                takeaway_ativo: true
             };
 
             const { data: lojaData, error: lojaError } = await _sb.from('lojas').insert([dadosLoja]).select().single();
@@ -698,13 +698,10 @@
 
         verificarPlano();
         carregarDados();
-        carregarMetricasHoje(); // NOVA FUNÇÃO DE TESOURARIA
-        carregarStaff(); // NOVA FUNÇÃO DE EQUIPA
+        carregarMetricasHoje(); 
+        carregarStaff(); 
     }
 
-    // ==========================================
-    // NOVA FUNÇÃO: MÉTRICAS E TESOURARIA
-    // ==========================================
     async function carregarMetricasHoje() {
         const hoje = new Date().toISOString().split('T')[0];
         const { data: pedidos } = await _sb.from('pedidos')
@@ -730,9 +727,6 @@
         document.getElementById('m-mbway').innerText = mbw.toFixed(2) + "€";
     }
 
-    // ==========================================
-    // NOVA FUNÇÃO: GESTÃO DE EQUIPA DE SALA
-    // ==========================================
     async function carregarStaff() {
         const { data } = await _sb.from('empregados').select('*').eq('loja_id', lojaAtiva.id);
         const tbody = document.querySelector('#tabela-staff tbody');
@@ -773,9 +767,6 @@
         }
     }
 
-    // ==========================================
-    // NOVAS FUNÇÕES: GERAÇÃO DE PDF E IMPRESSÃO
-    // ==========================================
     async function gerarRelatorioPDF() {
         const hoje = new Date().toLocaleDateString('pt-PT');
         document.getElementById('print-data-info').innerText = "Relatório de Fecho de Caixa - " + hoje;
@@ -826,35 +817,49 @@
         window.print();
     }
 
+    // ========================================================
+    // O NOVO GERADOR DE MENU DE SALA EM PDF COM IMAGENS
+    // ========================================================
     function gerarMenuFisico() {
         document.getElementById('print-data-info').innerText = "Catálogo de Sala";
         
-        let html = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-top:20px;">`;
+        let html = `<div style="display:flex; flex-direction: column; gap: 30px; margin-top: 20px;">`;
         
         // Agrupar por categorias
         const categorias = [...new Set(produtosLocais.filter(p => !p.oculto).map(p => p.categoria))];
         
         categorias.forEach(cat => {
-            html += `<div style="grid-column: span 2; margin-top: 20px; border-bottom: 2px solid #000; padding-bottom: 5px;">
-                        <h3 style="margin:0; font-size:18px; text-transform:uppercase;">${cat}</h3>
-                     </div>`;
+            html += `
+            <div style="page-break-inside: avoid;">
+                <h3 style="margin: 0 0 15px 0; font-size: 22px; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 5px; color: #0f172a;">${cat}</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            `;
             
             produtosLocais.filter(p => !p.oculto && p.categoria === cat).forEach(p => {
                 const descPromo = parseInt(p.desconto_percent) || 0;
                 const precoFinal = calcularPrecoFinal(p.preco, descPromo);
                 
+                let alergeniosHtml = "";
+                if(p.alergenios && p.alergenios.length > 0) {
+                    alergeniosHtml = `<p style="font-size: 10px; color: #b45309; margin: 5px 0 0 0;"><strong>Alergénios:</strong> ${p.alergenios.join(', ')}</p>`;
+                }
+
+                let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">` : '';
+
                 html += `
-                    <div style="border-bottom: 1px dashed #ccc; padding-bottom: 10px; display:flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex: 1; padding-right: 15px;">
-                            <h4 style="margin:0 0 4px 0; font-size: 14px;">${p.nome}</h4>
-                            <p style="font-size: 11px; margin: 0; color: #555; line-height: 1.3;">${p.descricao || ''}</p>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; page-break-inside: avoid; display: flex; flex-direction: column;">
+                        ${imgHtml}
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <h4 style="margin:0 0 5px 0; font-size: 16px; color: #0f172a;">${p.nome}</h4>
+                            <strong style="font-size: 16px; color: #10b981; white-space: nowrap;">${precoFinal.toFixed(2)}€</strong>
                         </div>
-                        <div style="font-weight: bold; font-size: 14px; white-space: nowrap;">
-                            ${precoFinal.toFixed(2)}€
-                        </div>
+                        <p style="font-size: 12px; margin: 0; color: #475569; line-height: 1.4; flex-grow: 1;">${p.descricao || ''}</p>
+                        ${alergeniosHtml}
                     </div>
                 `;
             });
+            
+            html += `</div></div>`;
         });
         
         html += `</div>`;
@@ -964,7 +969,6 @@
                     alergeniosHtml = `<div style="margin-top: 4px; font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; display: inline-block;"><i class="fas fa-exclamation-triangle"></i> ${p.alergenios.join(', ')}</div>`;
                 }
 
-                // VISUALIZAÇÃO DO STOCK E DIA DA SEMANA
                 let infoExtraHtml = "";
                 if (p.stock !== null && p.stock !== undefined && p.stock !== "") {
                     const corStock = p.stock <= 0 ? 'color: var(--err);' : 'color: #475569;';
