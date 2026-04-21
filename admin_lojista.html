@@ -92,8 +92,8 @@
         .metric-card b { font-size: 1.3rem; display: block; font-weight: 700; margin: 5px 0; }
         .metric-card span { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;}
 
-        /* ANTIGA ÁREA DE ESTATÍSTICAS */
-        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        /* ÁREA DE ESTATÍSTICAS (Atualizada - Sem WhatsApp) */
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .stat-card { background: var(--p); color: white; padding: 16px; border-radius: 14px; text-align: center; box-shadow: var(--card-shadow); }
         .stat-card b { display: block; font-size: 1.4rem; margin-top: 5px; font-weight: 700; }
 
@@ -146,14 +146,34 @@
         .alergenios-container { background: #fffbeb; padding: 12px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 15px; }
         .alergenios-container h5 { margin: 0 0 10px 0; color: #b45309; font-size: 13px; }
 
-        /* NOVA ÁREA DA TABELA DE STAFF */
         .staff-list { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .staff-list th { text-align: left; padding: 12px; font-size: 0.85rem; color: #64748b; border-bottom: 2px solid #f1f5f9; }
         .staff-list td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;}
         .btn-del-staff { color: var(--err); background: none; border: none; cursor: pointer; font-size: 1.1rem; width: auto; padding: 5px;}
         .btn-del-staff:hover { background: #fee2e2; transform: none; box-shadow: none;}
 
-        /* CSS DE IMPRESSÃO CEGA E SEGURA (RESOLVE O CORTE DO PDF E IMAGENS) */
+        /* --- NOVO: SISTEMA DE NOTIFICAÇÕES TOAST (REALTIME) --- */
+        .notificacao-toast {
+            position: fixed;
+            bottom: -100px;
+            right: 20px;
+            background: var(--err);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 9999;
+            transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 350px;
+        }
+        .notificacao-toast.mostrar { bottom: 20px; }
+        .notificacao-icon { font-size: 24px; animation: pulse-ring 2s infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* CSS DE IMPRESSÃO */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: white; padding: 0; color: black; }
@@ -231,7 +251,7 @@
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <input type="text" id="v-gerente-edit" oninput="marcarAltPerfil()" placeholder="Gerente">
                         <input type="text" id="v-nif-edit" oninput="marcarAltPerfil()" placeholder="NIF">
-                        <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" placeholder="Telefone / WhatsApp">
+                        <input type="text" id="v-tel-edit" oninput="marcarAltPerfil()" placeholder="Telefone de Contacto">
                         <input type="text" id="v-morada-edit" oninput="marcarAltPerfil()" placeholder="Morada / Código Postal">
                         
                         <div>
@@ -323,7 +343,6 @@
             
             <div class="stats" style="margin-top:20px">
                 <div class="stat-card">Visitas do Catálogo <b id="s-views">0</b></div>
-                <div class="stat-card">Cliques de WhatsApp <b id="s-waps">0</b></div>
                 <div class="stat-card" style="background:#334155">Espaço da Loja <b id="s-storage">0 KB</b></div>
             </div>
         </div>
@@ -473,6 +492,9 @@
     let produtosLocais = []; 
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
     const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"};
+
+    // --- VARIÁVEL GLOBAL PARA O CANAL REALTIME ---
+    let canalNotificacoes = null;
 
     const configNegocios = {
         restaurante: {
@@ -700,6 +722,67 @@
         carregarDados();
         carregarMetricasHoje(); 
         carregarStaff(); 
+        
+        // INICIA O MOTOR DE NOTIFICAÇÕES APÓS O LOGIN (NOVO)
+        iniciarEscutaRealtime();
+    }
+
+    // --- NOVA FUNÇÃO DE ESCUTA DE NOTIFICAÇÕES ---
+    function iniciarEscutaRealtime() {
+        if (!lojaAtiva || !lojaAtiva.id) return;
+        
+        // Se houver um canal aberto, fecha primeiro (para evitar duplicados)
+        if (canalNotificacoes) _sb.removeChannel(canalNotificacoes);
+
+        canalNotificacoes = _sb.channel('alertas-loja')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notificacoes',
+                    filter: 'loja_id=eq.' + lojaAtiva.id // Só ouve as da sua loja!
+                },
+                (payload) => {
+                    console.log("NOTIFICAÇÃO RECEBIDA VIA REALTIME:", payload.new);
+                    dispararAlertaVisual(payload.new.mensagem);
+                }
+            )
+            .subscribe();
+    }
+
+    // --- NOVA FUNÇÃO DO ALERTA VISUAL E SONORO ---
+    function dispararAlertaVisual(mensagem) {
+        // Tentar tocar som
+        try {
+            const audio = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'); 
+            audio.play().catch(e => console.warn("Browser bloqueou som automático."));
+        } catch(e) {}
+
+        // Criar Toast
+        const toast = document.createElement('div');
+        toast.className = 'notificacao-toast no-print';
+        toast.innerHTML = `
+            <i class="fas fa-bell notificacao-icon"></i>
+            <div style="flex: 1;">
+                <b style="display:block; font-size:14px; margin-bottom:4px;">Atenção!</b>
+                <span style="font-size:13px; line-height:1.4;">${mensagem}</span>
+            </div>
+            <button onclick="this.parentElement.classList.remove('mostrar'); setTimeout(() => this.parentElement.remove(), 500);" style="background:transparent; color:white; border:none; width:auto; padding:5px; font-size:18px; cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('mostrar'), 100);
+
+        // Auto remover ao fim de 8 segundos
+        setTimeout(() => {
+            if(document.body.contains(toast)) {
+                toast.classList.remove('mostrar');
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 8000);
     }
 
     async function carregarMetricasHoje() {
@@ -817,9 +900,6 @@
         window.print();
     }
 
-    // ========================================================
-    // O NOVO GERADOR DE MENU DE SALA EM PDF COM IMAGENS
-    // ========================================================
     function gerarMenuFisico() {
         document.getElementById('print-data-info').innerText = "Catálogo de Sala";
         
@@ -877,7 +957,7 @@
             gerente: document.getElementById('v-gerente-edit').value,
             nif: document.getElementById('v-nif-edit').value,
             telefone: telFormatado,
-            whatsapp: telFormatado, 
+            // (REMOVIDO WHATSAPP DAQUI)
             morada: document.getElementById('v-morada-edit').value,
             tipo_negocio: document.getElementById('v-tipo-negocio').value, 
             tema_sazonal: document.getElementById('v-tema-sazonal').value, 
@@ -949,10 +1029,10 @@
         if(btnAtualizar) { btnAtualizar.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A carregar...`; btnAtualizar.disabled = true; }
 
         try {
-            const { data: infoLoja } = await _sb.from('lojas').select('views_total, whatsapp_total').eq('id', lojaAtiva.id).single();
+            const { data: infoLoja } = await _sb.from('lojas').select('views_total').eq('id', lojaAtiva.id).single();
             if(infoLoja) {
                 document.getElementById('s-views').innerText = infoLoja.views_total || 0;
-                document.getElementById('s-waps').innerText = infoLoja.whatsapp_total || 0;
+                // (REMOVIDO AS ATRIBUIÇÕES DO WAPS)
             }
 
             const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
