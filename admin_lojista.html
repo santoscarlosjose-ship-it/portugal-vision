@@ -92,7 +92,7 @@
         .metric-card b { font-size: 1.3rem; display: block; font-weight: 700; margin: 5px 0; }
         .metric-card span { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;}
 
-        /* ÁREA DE ESTATÍSTICAS (Atualizada - Sem WhatsApp) */
+        /* ÁREA DE ESTATÍSTICAS */
         .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .stat-card { background: var(--p); color: white; padding: 16px; border-radius: 14px; text-align: center; box-shadow: var(--card-shadow); }
         .stat-card b { display: block; font-size: 1.4rem; margin-top: 5px; font-weight: 700; }
@@ -100,7 +100,6 @@
         .dia-config { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid #cbd5e1; transition: 0.3s; }
         .dia-config.aberto { border-left-color: var(--ok); background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .dia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .inputs-tempo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
 
         .prod-card { background: white; border-radius: 14px; overflow: hidden; position: relative; border: 1px solid #e2e8f0; transition: transform 0.2s, box-shadow 0.2s; }
@@ -561,7 +560,7 @@
         else { div.classList.add('hidden'); seta.innerText = '▼'; }
     }
 
-    // --- NOVA INTERFACE DOS HORÁRIOS PARA O LOJISTA (ALMOÇO E JANTAR) ---
+    // --- NOVA INTERFACE DE HORÁRIOS: LOJA VS COZINHA ---
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
@@ -572,23 +571,32 @@
                 </select>
             </div>
             
-            <p style="font-size: 11px; color: #64748b; margin: 5px 0 10px 0;">
-                <i class="fas fa-info-circle"></i> Defina abaixo apenas as horas em que a <b>cozinha aceita encomendas</b> (Takeaway/Reservas). Deixe em branco se não servir nesse turno.
-            </p>
-            
-            <div id="inputs-${i}" class="inputs-tempo">
-                <div style="background: #e2e8f0; padding: 8px; border-radius: 8px;">
-                    <small style="display:block; color:#475569; font-weight:800; margin-bottom:5px; text-transform: uppercase;">☀️ Turno Almoço</small>
-                    <div style="display:flex; gap:5px;">
-                        <input type="time" id="h-${i}-m1" oninput="marcarAltHoras()" title="Abertura da Cozinha">
-                        <input type="time" id="h-${i}-m2" oninput="marcarAltHoras()" title="Fecho da Cozinha">
+            <div id="inputs-${i}" style="display:flex; flex-direction:column; gap:10px;">
+                <div style="background: #f1f5f9; padding: 10px; border-radius: 8px;">
+                    <small style="display:block; color:#475569; font-weight:800; margin-bottom:5px;"><i class="fas fa-store"></i> Horário da Loja (Portas Abertas)</small>
+                    <div style="display:flex; gap:10px;">
+                        <input type="time" id="h-${i}-abertura" oninput="marcarAltHoras()" title="Abre às...">
+                        <input type="time" id="h-${i}-fecho" oninput="marcarAltHoras()" title="Fecha às...">
                     </div>
                 </div>
-                <div style="background: #e2e8f0; padding: 8px; border-radius: 8px;">
-                    <small style="display:block; color:#475569; font-weight:800; margin-bottom:5px; text-transform: uppercase;">🌙 Turno Jantar</small>
-                    <div style="display:flex; gap:5px;">
-                        <input type="time" id="h-${i}-t1" oninput="marcarAltHoras()" title="Abertura da Cozinha">
-                        <input type="time" id="h-${i}-t2" oninput="marcarAltHoras()" title="Fecho da Cozinha">
+
+                <div style="background: #e2e8f0; padding: 10px; border-radius: 8px;">
+                    <small style="display:block; color:#475569; font-weight:800; margin-bottom:5px;"><i class="fas fa-utensils"></i> Horários da Cozinha (Takeaway / Reservas)</small>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <small style="font-size:10px; color:#64748b; font-weight:bold;">☀️ ALMOÇO</small>
+                            <div style="display:flex; gap:5px;">
+                                <input type="time" id="h-${i}-m1" oninput="marcarAltHoras()" title="Início">
+                                <input type="time" id="h-${i}-m2" oninput="marcarAltHoras()" title="Fim">
+                            </div>
+                        </div>
+                        <div>
+                            <small style="font-size:10px; color:#64748b; font-weight:bold;">🌙 JANTAR</small>
+                            <div style="display:flex; gap:5px;">
+                                <input type="time" id="h-${i}-t1" oninput="marcarAltHoras()" title="Início">
+                                <input type="time" id="h-${i}-t2" oninput="marcarAltHoras()" title="Fim">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -722,6 +730,8 @@
         diasSemana.forEach((_, i) => {
             const diaH = h[i] || { status: 'fechado' };
             document.getElementById(`h-${i}-status`).value = diaH.status;
+            document.getElementById(`h-${i}-abertura`).value = diaH.abertura || "";
+            document.getElementById(`h-${i}-fecho`).value = diaH.fecho || "";
             document.getElementById(`h-${i}-m1`).value = diaH.m1 || "";
             document.getElementById(`h-${i}-m2`).value = diaH.m2 || "";
             document.getElementById(`h-${i}-t1`).value = diaH.t1 || "";
@@ -738,43 +748,26 @@
         carregarMetricasHoje(); 
         carregarStaff(); 
         
-        // INICIA O MOTOR DE NOTIFICAÇÕES APÓS O LOGIN (NOVO)
         iniciarEscutaRealtime();
     }
 
-    // --- NOVA FUNÇÃO DE ESCUTA DE NOTIFICAÇÕES ---
     function iniciarEscutaRealtime() {
         if (!lojaAtiva || !lojaAtiva.id) return;
         
-        // Se houver um canal aberto, fecha primeiro (para evitar duplicados)
         if (canalNotificacoes) _sb.removeChannel(canalNotificacoes);
 
         canalNotificacoes = _sb.channel('alertas-loja')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'notificacoes',
-                    filter: 'loja_id=eq.' + lojaAtiva.id // Só ouve as da sua loja!
-                },
-                (payload) => {
-                    console.log("NOTIFICAÇÃO RECEBIDA VIA REALTIME:", payload.new);
-                    dispararAlertaVisual(payload.new.mensagem);
-                }
-            )
-            .subscribe();
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificacoes', filter: 'loja_id=eq.' + lojaAtiva.id },
+                (payload) => { dispararAlertaVisual(payload.new.mensagem); }
+            ).subscribe();
     }
 
-    // --- NOVA FUNÇÃO DO ALERTA VISUAL E SONORO ---
     function dispararAlertaVisual(mensagem) {
-        // Tentar tocar som
         try {
             const audio = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'); 
-            audio.play().catch(e => console.warn("Browser bloqueou som automático."));
+            audio.play().catch(e => console.warn("Browser bloqueou som."));
         } catch(e) {}
 
-        // Criar Toast
         const toast = document.createElement('div');
         toast.className = 'notificacao-toast no-print';
         toast.innerHTML = `
@@ -791,7 +784,6 @@
         document.body.appendChild(toast);
         setTimeout(() => toast.classList.add('mostrar'), 100);
 
-        // Auto remover ao fim de 8 segundos
         setTimeout(() => {
             if(document.body.contains(toast)) {
                 toast.classList.remove('mostrar');
@@ -920,7 +912,6 @@
         
         let html = `<div style="display:flex; flex-direction: column; gap: 30px; margin-top: 20px;">`;
         
-        // Agrupar por categorias
         const categorias = [...new Set(produtosLocais.filter(p => !p.oculto).map(p => p.categoria))];
         
         categorias.forEach(cat => {
@@ -972,7 +963,6 @@
             gerente: document.getElementById('v-gerente-edit').value,
             nif: document.getElementById('v-nif-edit').value,
             telefone: telFormatado,
-            // (REMOVIDO WHATSAPP DAQUI)
             morada: document.getElementById('v-morada-edit').value,
             tipo_negocio: document.getElementById('v-tipo-negocio').value, 
             tema_sazonal: document.getElementById('v-tema-sazonal').value, 
@@ -1011,12 +1001,15 @@
         } catch (e) { alert("Erro ao fazer upload do logo."); }
     }
 
+    // --- NOVA LÓGICA DE GRAVAÇÃO DOS TURNOS GERAIS E COZINHA ---
     async function salvarHorarios() {
         const btn = document.getElementById('btn-save-config');
         const horarios = {};
         diasSemana.forEach((_, i) => {
             horarios[i] = {
                 status: document.getElementById(`h-${i}-status`).value,
+                abertura: document.getElementById(`h-${i}-abertura`).value,
+                fecho: document.getElementById(`h-${i}-fecho`).value,
                 m1: document.getElementById(`h-${i}-m1`).value,
                 m2: document.getElementById(`h-${i}-m2`).value,
                 t1: document.getElementById(`h-${i}-t1`).value,
@@ -1028,9 +1021,9 @@
     }
 
     function replicarSegunda() {
-        const base = ['status', 'm1', 'm2', 't1', 't2'].map(k => document.getElementById(`h-0-${k}`).value);
+        const base = ['status', 'abertura', 'fecho', 'm1', 'm2', 't1', 't2'].map(k => document.getElementById(`h-0-${k}`).value);
         for(let i = 1; i < 7; i++) {
-            ['status', 'm1', 'm2', 't1', 't2'].forEach((k, idx) => document.getElementById(`h-${i}-${k}`).value = base[idx]);
+            ['status', 'abertura', 'fecho', 'm1', 'm2', 't1', 't2'].forEach((k, idx) => document.getElementById(`h-${i}-${k}`).value = base[idx]);
             atualizarEstiloDia(i);
         }
         marcarAltHoras();
@@ -1047,7 +1040,6 @@
             const { data: infoLoja } = await _sb.from('lojas').select('views_total').eq('id', lojaAtiva.id).single();
             if(infoLoja) {
                 document.getElementById('s-views').innerText = infoLoja.views_total || 0;
-                // (REMOVIDO AS ATRIBUIÇÕES DO WAPS)
             }
 
             const { data: prods } = await _sb.from('produtos').select('*').eq('loja_id', lojaAtiva.id).order('created_at', {ascending: false});
