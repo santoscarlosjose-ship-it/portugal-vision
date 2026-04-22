@@ -629,9 +629,10 @@
             }).subscribe();
     }
 
-    // --- NOVA LÓGICA DE HORÁRIOS INTELIGENTES (TIME SLOTS 30 MIN) ---
+    // --- NOVA LÓGICA DE HORÁRIOS INTELIGENTES (ALMOÇO E JANTAR) ---
     function configurarDatasIniciais() {
-        const hojeIso = new Date().toLocaleDateString('en-CA').split('/').join('-'); 
+        const agora = new Date();
+        const hojeIso = agora.toLocaleDateString('en-CA').split('/').join('-'); // Garante o fuso horário correto YYYY-MM-DD
         const inputData = document.getElementById('cli-data');
         if(inputData) { inputData.min = hojeIso; inputData.value = hojeIso; }
     }
@@ -649,13 +650,15 @@
         const dataSelecionada = new Date(ano, mes - 1, dia);
         const agora = new Date();
         
-        const hojeIso = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
+        const hojeIso = agora.toLocaleDateString('en-CA').split('/').join('-');
         const isHoje = dataStr === hojeIso;
 
         const diaSemanaDb = (dataSelecionada.getDay() + 6) % 7; 
         
-        const horariosLoja = lojaAtual.horarios || [];
-        let horarioHoje = horariosLoja[diaSemanaDb] || { status: 'aberto', m1: '11:00', m2: '23:00', t1: '', t2: '' };
+        const horariosLoja = lojaAtual.horarios || {};
+        
+        // REDE DE SEGURANÇA: Se o lojista ainda não configurou horários no painel, assume este padrão de restaurante
+        let horarioHoje = horariosLoja[diaSemanaDb] || { status: 'aberto', m1: '12:00', m2: '15:00', t1: '19:00', t2: '23:00' };
 
         selectEl.innerHTML = ''; 
         
@@ -666,10 +669,10 @@
         }
 
         let optionsHtml = '';
-        const margemMinutos = tipo === 'levantamento' ? 30 : 60; 
+        const margemMinutos = tipo === 'levantamento' ? 30 : 60; // Dá margem à cozinha
         const agoraEmMinutos = (agora.getHours() * 60) + agora.getMinutes();
 
-        function adicionarTurno(horaInicio, horaFim) {
+        function adicionarTurno(horaInicio, horaFim, nomeTurno) {
             if(!horaInicio || !horaFim || horaInicio === horaFim) return;
             
             const [hI, mI] = horaInicio.split(':').map(Number);
@@ -678,25 +681,36 @@
             let minStart = (hI * 60) + mI;
             let minEnd = (hF * 60) + mF;
 
-            if (tipo === 'reserva') { minEnd -= 60; } else if (tipo === 'levantamento') { minEnd -= 60; }
+            // CORTA O FIM DO TURNO: Para a cozinha não receber pedidos 5 min antes de fechar
+            if (tipo === 'reserva') { minEnd -= 60; } 
+            else if (tipo === 'levantamento') { minEnd -= 45; } 
+
+            let turnoTemSlots = false;
+            let slotsHtml = '';
 
             for (let tempo = minStart; tempo <= minEnd; tempo += 30) {
+                // Inteligência: Se o cliente escolher "Hoje", o sistema oculta as horas que já passaram + a margem de confeção
                 if (isHoje && tempo <= (agoraEmMinutos + margemMinutos)) continue;
                 
                 const h = Math.floor(tempo / 60).toString().padStart(2, '0');
                 const m = (tempo % 60).toString().padStart(2, '0');
-                optionsHtml += `<option value="${h}:${m}">${h}:${m}</option>`;
+                slotsHtml += `<option value="${h}:${m}">${h}:${m}</option>`;
+                turnoTemSlots = true;
+            }
+
+            if(turnoTemSlots) {
+                optionsHtml += `<optgroup label="--- ${nomeTurno} ---">${slotsHtml}</optgroup>`;
             }
         }
 
-        const m1 = horarioHoje.m1 || ""; const m2 = horarioHoje.m2 || "";
-        const t1 = horarioHoje.t1 || ""; const t2 = horarioHoje.t2 || "";
+        // Lê os turnos configurados (m = morning/almoço, t = tarde/jantar)
+        const m1 = horarioHoje.m1; const m2 = horarioHoje.m2;
+        const t1 = horarioHoje.t1; const t2 = horarioHoje.t2;
 
-        if (m1 && !m2 && !t1 && t2) { adicionarTurno(m1, t2); } 
-        else {
-            if (m1 && m2) adicionarTurno(m1, m2);
-            if (t1 && t2) adicionarTurno(t1, t2);
-        }
+        // Processa o Almoço
+        if (m1 && m2) adicionarTurno(m1, m2, "Almoço");
+        // Processa o Jantar
+        if (t1 && t2) adicionarTurno(t1, t2, "Jantar");
 
         if (optionsHtml === '') {
             selectEl.innerHTML = '<option value="" disabled selected>Sem horários disponíveis</option>';
