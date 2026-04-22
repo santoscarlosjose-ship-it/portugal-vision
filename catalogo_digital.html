@@ -40,53 +40,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* --- TEMAS SAZONAIS --- */
-        body.tema-natal { --p: #c0392b; --ok: #1e6b3e; background-color: transparent; }
-        body.tema-namorados { --p: #d63031; --ok: #e84393; background-color: #fff5f5; }
-        body.tema-bruxas { --p: #e67e22; --ok: #8e44ad; background-color: #1a1a1a; color: #ecf0f1; }
-        body.tema-bruxas .card-front, body.tema-bruxas .card-back { background: #2c3e50; color: white; border-color: #444; }
-        body.tema-pascoa { --p: #6c5ce7; --ok: #fab1a0; background-color: #f9f7ff; }
-        body.tema-anonovo { --p: #d4af37; --ok: #b8860b; background-color: transparent; color: #fdfbf7; }
-        body.tema-anonovo .card-front, body.tema-anonovo .card-back { background: rgba(26,26,26,0.95); color: white; border-color: #d4af37; }
-        body.tema-carnaval { --p: #8e44ad; --ok: #f39c12; background-color: transparent; }
-        body.tema-pai { --p: #2980b9; --ok: #34495e; background-color: transparent; }
-        body.tema-mae { --p: #e84393; --ok: #fd79a8; background-color: transparent; }
-
-        body.video-mode { --p: #fdfbf7; --ok: #27ae60; background-color: #000; color: #fdfbf7; }
-        body.video-mode .card-front, body.video-mode .card-back { background: rgba(15, 15, 15, 0.85); color: white; border-color: #333; }
-        body.video-mode .cat-btn { background: rgba(30,30,30,0.8); color: #ccc; border-color: #444; }
-        body.video-mode .cat-btn.active { background: var(--ok); color: white; border-color: var(--ok); }
-        body.video-mode #search-input { background: rgba(30,30,30,0.8); color: white; border-color: #444; }
-        body.video-mode .card-desc { color: #cbd5e1; }
-        body.video-mode .btn-flip { background: #333; color: #f8fcfb; }
-
-        /* --- O VÍDEO DE FUNDO --- */
-        #seasonal-frame-video { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; 
-            pointer-events: none; z-index: 0; display: none; mix-blend-mode: screen; 
-            opacity: 0.5; transform: scale(1.05); 
-        }
-        @media (min-width: 768px) {
-            #seasonal-frame-video { object-fit: contain; opacity: 0.3; }
-        }
-
-        #seasonal-frame { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; transition: 0.5s; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; transform: translateZ(0); }
-        body.tema-natal #seasonal-frame { background-image: url('URL_DA_IMAGEM_NATAL.png'); } 
-        body.tema-namorados #seasonal-frame { background-image: url('URL_DA_IMAGEM_NAMORADOS.png'); }
-        body.tema-bruxas #seasonal-frame { background-image: url('URL_DA_IMAGEM_HALLOWEEN.png'); }
-        body.tema-pascoa #seasonal-frame { background-image: url('URL_DA_IMAGEM_PASCOA.png'); }
-        body.tema-anonovo #seasonal-frame { background-image: url('URL_DA_IMAGEM_ANONOVO.png'); }
-        body.tema-carnaval #seasonal-frame { background-image: url('URL_DA_IMAGEM_CARNAVAL.png'); }
-        body.tema-pai #seasonal-frame { background-image: url('URL_DA_IMAGEM_PAI.png'); }
-        body.tema-mae #seasonal-frame { background-image: url('URL_DA_IMAGEM_MAE.png'); }
-
-        #seasonal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
-        .particle { position: absolute; pointer-events: none; will-change: transform, opacity; }
-        
-        @keyframes fallOrganic { 0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; } 10% { opacity: var(--max-opacity, 0.8); } 90% { opacity: var(--max-opacity, 0.8); } 100% { transform: translate3d(var(--sway-end, 100px), 110vh, 0) rotate(var(--rot-end, 360deg)); opacity: 0; } }
-        @keyframes floatUpOrganic { 0% { transform: translate3d(0, 110vh, 0) rotate(0deg) scale(0.5); opacity: 0; } 20% { opacity: var(--max-opacity, 0.9); transform: translate3d(var(--sway-mid, -30px), 80vh, 0) rotate(15deg) scale(1); } 80% { opacity: var(--max-opacity, 0.9); transform: translate3d(var(--sway-end, 40px), 20vh, 0) rotate(-15deg) scale(1.1); } 100% { transform: translate3d(0, -10vh, 0) rotate(0deg) scale(1.2); opacity: 0; } }
-        @keyframes pulseSpark { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(var(--scale-max, 1.5)) rotate(var(--rot-end, 180deg)); opacity: var(--max-opacity, 1); } 100% { transform: scale(0) rotate(var(--rot-end, 360deg)); opacity: 0; } }
-
         #block-screen { position: fixed; inset: 0; background: white; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
 
         .header { background: transparent; padding: 60px 20px 20px; text-align: center; position: relative; z-index: 2; border: none; }
@@ -225,11 +178,6 @@
 
 <div id="cliente-alert"><i class="fas fa-bell fa-shake"></i> <span id="cliente-alert-msg"></span></div>
 
-<video id="seasonal-frame-video" autoplay loop muted playsinline src=""></video>
-
-<div id="seasonal-frame"></div>
-<div id="seasonal-overlay"></div>
-
 <div id="block-screen">
     <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
     <h1 style="font-family: 'Playfair Display'; margin-bottom: 10px;">Acesso Indisponível</h1>
@@ -347,8 +295,26 @@
     </div>
 </div>
 
+<div id="pedirContaModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <span class="close-modal" onclick="fecharModal('pedirContaModal')">×</span>
+        <h3><i class="fas fa-file-invoice-dollar"></i> Pedir a Conta</h3>
+        <p style="color: #64748b; font-size: 14px;">Deseja fatura com número de contribuinte?</p>
+        
+        <div class="order-type-box" style="margin-bottom: 15px;">
+            <label><input type="radio" name="conta_nif" value="sim" onchange="document.getElementById('input-conta-nif').style.display='block'"> Sim</label>
+            <label><input type="radio" name="conta_nif" value="nao" checked onchange="document.getElementById('input-conta-nif').style.display='none'"> Não</label>
+        </div>
+        
+        <input type="text" id="input-conta-nif" class="input-form" placeholder="O seu NIF" style="display: none; margin-bottom: 20px;">
+        
+        <button class="btn-checkout" onclick="confirmarPedidoConta()" style="width: 100%; margin-top: 10px;">
+            <i class="fas fa-paper-plane"></i> Enviar Pedido
+        </button>
+    </div>
+</div>
+
 <div class="header">
-    <div id="theme-icon" style="font-size: 2.5em; margin-bottom: 10px;"></div>
     <img id="v-logo" class="logo" src="" style="display:none;">
     <h2 id="v-nome">A carregar...</h2>
     <div id="mesa-badge" style="display:none; background: var(--ok); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; display: inline-block;"></div>
@@ -422,98 +388,70 @@
         document.getElementById('modalText').innerHTML = legalTexts[type];
         document.getElementById('legalModal').style.display = 'block';
     }
+    
+    // Função auxiliar para fechar modais
+    function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+    
     function closeLegalModal() { document.getElementById('legalModal').style.display = 'none'; }
 
     async function registarVisita(lojaId, currentViews) {
         try { await _sb.from('lojas').update({ views_total: currentViews + 1 }).eq('id', lojaId); } catch (e) {}
     }
 
-    // --- MODIFICADO: ADICIONADO LOG DE ERRO ---
+    // NOVA FUNÇÃO: Chamar Mesa Atualizada
     async function chamarMesa(tipo) {
         if (!lojaAtual || !mesaAtual) return;
+        
+        // Se for para pedir a conta, abre primeiro o modal do NIF
+        if (tipo === 'conta') {
+            document.getElementById('pedirContaModal').style.display = 'flex';
+            return;
+        }
+
+        // Se for para chamar o empregado, envia direto
+        enviarChamadaSala(tipo, false, null);
+    }
+
+    // NOVA FUNÇÃO: Confirma o Pedido da Conta com o NIF
+    function confirmarPedidoConta() {
+        const querNif = document.querySelector('input[name="conta_nif"]:checked').value === 'sim';
+        const nif = document.getElementById('input-conta-nif').value;
+        
+        if (querNif && !nif) {
+            alert("Por favor, insira o seu NIF.");
+            return;
+        }
+
+        enviarChamadaSala('conta', querNif, nif);
+        fecharModal('pedirContaModal');
+    }
+
+    // FUNÇÃO INTERNA: Envia os dados para a Base de Dados
+    async function enviarChamadaSala(tipo, querNif, nifCliente) {
         try {
-            const { error } = await _sb.from('chamadas_sala').insert([
-                { loja_id: lojaAtual.id, mesa: mesaAtual, tipo_chamada: tipo }
-            ]);
-            if (error) throw error; // Lança o erro real do Supabase
+            const dados = { 
+                loja_id: lojaAtual.id, 
+                mesa: mesaAtual, 
+                tipo_chamada: tipo 
+            };
+
+            // Se for pedido de conta, adiciona os campos do NIF
+            if (tipo === 'conta') {
+                dados.quer_nif = querNif;
+                dados.nif_cliente = querNif ? nifCliente : null;
+                // Como não sabemos o método de pagamento da mesa pelo catálogo, podemos enviar nulo ou "Na Mesa"
+                dados.metodo_pagamento = "Na Mesa"; 
+            }
+
+            const { error } = await _sb.from('chamadas_sala').insert([dados]);
+            if (error) throw error; 
             
             alert(tipo === 'empregado' ? 'O empregado foi chamado à sua mesa.' : 'A sua conta foi solicitada. Aguarde um momento.');
         } catch (e) { 
-            // AGORA MOSTRA O ERRO EXATO DA BASE DE DADOS
             alert("ERRO DO SUPABASE:\n" + (e.message || JSON.stringify(e))); 
         }
     }
 
-    // --- TEMAS SAZONAIS ---
-    const videosSazonais = {
-        'natal': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Natal.mp4',
-        'namorados': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Dia%20dos%20Namorados.mp4', 
-        'bruxas': '',
-        'pascoa': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Feliz%20Pascoa.mp4',
-        'anonovo': 'https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/molduras/Feliz%20Ano%20Novo.mp4',
-        'carnaval': '', 'pai': '', 'mae': ''
-    };
-
-    function activarEfeitosSazonais(tema) {
-        const overlay = document.getElementById('seasonal-overlay');
-        const iconBox = document.getElementById('theme-icon');
-        const videoEl = document.getElementById('seasonal-frame-video');
-        
-        overlay.innerHTML = ''; 
-        let emoji = "", anima = "", total = 0, isBorderOnly = false;
-
-        const urlVideo = videosSazonais[tema];
-
-        if (urlVideo && urlVideo !== '') {
-            videoEl.src = urlVideo;
-            videoEl.style.display = 'block';
-            document.body.classList.add('video-mode');
-            iconBox.innerText = ""; 
-            return; 
-        } else {
-            videoEl.style.display = 'none';
-            videoEl.src = '';
-            document.body.classList.remove('video-mode');
-        }
-
-        if(tema === 'namorados') { emoji = "💖"; anima = "floatUpOrganic"; total = 30; iconBox.innerText = "💘"; }
-        else if(tema === 'bruxas') { emoji = "🎃"; anima = "floatUpOrganic"; total = 25; iconBox.innerText = "👻"; }
-        else if(tema === 'pascoa') { emoji = "🌸"; anima = "fallOrganic"; total = 30; iconBox.innerText = "🐰"; }
-        else if(tema === 'carnaval') { emoji = "🎊"; anima = "fallOrganic"; total = 40; iconBox.innerText = "🎭"; }
-        else if(tema === 'anonovo') { emoji = "✨"; anima = "pulseSpark"; total = 40; isBorderOnly = true; iconBox.innerText = "🥂"; }
-        else if(tema === 'pai') { emoji = "👔"; anima = "pulseSpark"; total = 20; isBorderOnly = true; iconBox.innerText = "👨‍👧‍👦"; }
-        else if(tema === 'mae') { emoji = "🌷"; anima = "pulseSpark"; total = 25; isBorderOnly = true; iconBox.innerText = "👩‍👧‍👦"; }
-        else { return; }
-
-        for(let i=0; i<total; i++) {
-            let p = document.createElement('div');
-            p.className = 'particle'; p.innerText = emoji;
-            const size = Math.random() * 1.5 + 0.5; p.style.fontSize = size + 'em';
-            
-            if(size < 1) { p.style.filter = 'blur(2px)'; p.style.setProperty('--max-opacity', '0.4'); } 
-            else { p.style.filter = 'none'; p.style.setProperty('--max-opacity', '0.85'); }
-
-            const sway = (Math.random() - 0.5) * 150;
-            p.style.setProperty('--sway-end', sway + 'px');
-            p.style.setProperty('--sway-mid', (sway / 2) + 'px');
-            p.style.setProperty('--rot-end', (Math.random() * 720 - 360) + 'deg');
-            p.style.setProperty('--scale-max', Math.random() * 0.8 + 0.7);
-            
-            if (isBorderOnly) {
-                p.style.left = (i % 2 === 0) ? (Math.random() * 10 + 2 + "vw") : (Math.random() * 10 + 80 + "vw");
-                p.style.top = Math.random() * 95 + "vh";
-                p.style.animationDuration = (Math.random() * 3 + 2) + "s";
-                p.style.animationDelay = Math.random() * 5 + "s";
-            } else {
-                p.style.left = Math.random() * 100 + "vw";
-                p.style.animationDuration = (Math.random() * 6 + 4) + "s";
-                p.style.animationDelay = Math.random() * 10 + "s";
-            }
-            
-            p.style.animationName = anima; p.style.animationTimingFunction = "ease-in-out"; p.style.animationIterationCount = "infinite";
-            overlay.appendChild(p);
-        }
-    }
 
     // --- AUTENTICAÇÃO E SESSÃO CLIENTE ---
     async function verificarSessaoCliente() {
@@ -776,11 +714,6 @@
             document.getElementById('btn-user-account').style.display = 'none'; 
         }
 
-        if(loja.tema_sazonal && loja.tema_sazonal !== 'padrao') { 
-            document.body.classList.add(`tema-${loja.tema_sazonal}`); 
-            activarEfeitosSazonais(loja.tema_sazonal);
-        }
-
         document.getElementById('v-nome').innerText = loja.nome;
         if(loja.morada) document.getElementById('footer-morada').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${loja.morada}`;
         
@@ -933,7 +866,6 @@
         }
     }
 
-    // --- MODIFICADO: ADICIONADO LOG DE ERRO ---
     async function validarEEnviarPedido() {
         if(carrinho.length === 0) return;
         
@@ -960,7 +892,7 @@
                     estado: 'aguarda_confirmacao'
                 }]);
 
-                if (error) throw error; // Lança o erro real do Supabase
+                if (error) throw error; 
                 alert(`Pedido registado!\nO empregado irá à sua mesa num instante para confirmar.`);
             } else {
                 const tipoPedido = document.querySelector('input[name="tipo_pedido"]:checked').value;
@@ -996,7 +928,7 @@
                     data_agendada: dataAgendada.toISOString(), 
                     estado: 'aguarda_confirmacao'
                 }]);
-                if (error) throw error; // Lança o erro real do Supabase
+                if (error) throw error; 
 
                 alert("Pedido confirmado e enviado para o restaurante!\nPode acompanhar o estado na área 'Os Meus Pedidos'.");
             }
@@ -1005,7 +937,6 @@
 
         } catch (e) {
             console.error(e);
-            // AGORA MOSTRA O ERRO EXATO DA BASE DE DADOS
             alert("ERRO DO SUPABASE:\n" + (e.message || JSON.stringify(e))); 
         } finally {
             btnFinal.innerHTML = `<i class="fas fa-check"></i> Confirmar e Enviar Pedido`;
