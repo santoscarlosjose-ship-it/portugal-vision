@@ -386,17 +386,33 @@
         Object.values(mesasAgrupadas).forEach(m => {
             let rondasHtml = ''; let idConf = null;
             m.rondas.forEach((r, i) => {
-                let itens = r.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join(''); let badge = '';
+                let itens = r.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join(''); 
+                let badge = '';
+                
                 if (r.estado === 'aguarda_confirmacao') { badge = `<span style="color:var(--warning);">⚠️ Confirmar</span>`; idConf = r.id; } 
-                else if (r.estado === 'pendente') badge = `<span style="color:var(--danger);">Na Fila</span>`; 
+                else if (r.estado === 'pendente') { 
+                    // NOVO: Adicionado botão de Forçar Pronto (Bebidas) e Remover na Fila
+                    badge = `<span style="color:var(--danger);">Na Fila</span> 
+                             <button onclick="avancarPedido(${r.id}, 'pronto')" style="margin-left:10px; cursor:pointer; font-size:10px; padding:4px 8px; background:var(--success); color:white; border:none; border-radius:4px;"><i class="fas fa-check"></i> Pronto</button>
+                             <button onclick="apagarPedido(${r.id})" style="margin-left:5px; cursor:pointer; font-size:10px; padding:4px 8px; background:var(--danger); color:white; border:none; border-radius:4px;"><i class="fas fa-trash"></i></button>`; 
+                } 
                 else if (r.estado === 'preparacao') badge = `<span style="color:var(--primary);">Na Cozinha 🍳</span>`; 
                 else if (r.estado === 'pronto') badge = `<span style="color:var(--success);">Pronto 🔔</span>`;
+                
                 rondasHtml += `<div class="ronda-box"><div class="ronda-title">Ronda ${i + 1} <span>${badge}</span></div><ul class="itens-lista">${itens}</ul></div>`;
             });
-            let cl = 'pedido-mesa'; let btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">A aguardar...</button>`;
-            if (m.temParaConfirmar) { cl += ' aguarda-confirmacao'; btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>`; } 
-            else if (m.tudoPronto) { btn = `<button class="btn-action btn-success" onclick="fecharMesa('${m.mesa}', ${JSON.stringify(m.rondas.map(r=>r.id))})"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; }
-            html += `<div class="card ${cl}"><div class="card-header"><div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div><div class="time-tag">${formatarHora(m.hora)}</div></div><div class="card-body">${rondasHtml}<div style="margin-top: 15px; font-weight: 800; font-size: 1.1em; text-align:right;">Total: ${m.totalAcumulado.toFixed(2)}€</div></div><div class="card-footer">${btn}</div></div>`;
+            
+            let cl = 'pedido-mesa'; let btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo...</button>`;
+            
+            if (m.temParaConfirmar) { 
+                cl += ' aguarda-confirmacao'; 
+                btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Aceitar Pedido</button>
+                       <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${idConf})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
+            } 
+            else if (m.tudoPronto) { 
+                btn = `<button class="btn-action btn-success" onclick="fecharMesa('${m.mesa}', ${JSON.stringify(m.rondas.map(r=>r.id))})"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
+            }
+            html += `<div class="card ${cl}"><div class="card-header"><div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div><div class="time-tag">${formatarHora(m.hora)}</div></div><div class="card-body">${rondasHtml}<div style="margin-top: 15px; font-weight: 800; font-size: 1.1em; text-align:right;">Total Acumulado: ${m.totalAcumulado.toFixed(2)}€</div></div><div class="card-footer">${btn}</div></div>`;
         });
 
         externos.forEach(p => {
@@ -413,14 +429,21 @@
                                 <span><i class="fas fa-mobile-screen-button"></i> Aguarda comprovativo MBWay.</span>
                                 ${infoNif}
                                </div>`;
-                    btn = `<button class="btn-action btn-warning" onclick="confirmarTakeaway(${p.id})"><i class="fas fa-check"></i> Validar e Enviar Cozinha</button> <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`;
+                    btn = `<button class="btn-action btn-warning" onclick="confirmarTakeaway(${p.id})"><i class="fas fa-check"></i> Aceitar Takeaway</button> <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`;
                 } else {
-                    estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Reserva</span>`; 
-                    btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${p.id}, 'pendente')"><i class="fas fa-check"></i> Enviar Cozinha</button> <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`;
+                    // SE FOR RESERVA, MOSTRA O NÚMERO DE PESSOAS
+                    const infoPessoas = p.numero_pessoas ? `<strong>👥 Para ${p.numero_pessoas} pessoas.</strong>` : '';
+                    estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Reserva<br>${infoPessoas}</span>`; 
+                    btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${p.id}, 'pendente')"><i class="fas fa-check"></i> Aceitar Reserva</button> <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`;
                 }
 
             } 
-            else if(p.estado === 'pendente') { estHtml = `<span style="color: var(--danger); font-weight:bold;">Aguardar fogão</span>`; btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Na fila...</button>`; } 
+            else if(p.estado === 'pendente') { 
+                // NOVO: Adicionado botão de Forçar Pronto para Takeaways (Bebidas) e Remover
+                estHtml = `<span style="color: var(--danger); font-weight:bold;">Aguardar fogão</span>`; 
+                btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')"><i class="fas fa-bell"></i> Marcar Pronto (Balcão)</button>
+                       <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
+            } 
             else if(p.estado === 'preparacao') { estHtml = `<span style="color: var(--primary); font-weight:bold;">Na Cozinha 🍳</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')">Marcar Pronto</button>`; } 
             else if(p.estado === 'pronto') { estHtml = `<span style="color: var(--success); font-weight:bold;">Pronto! 🔔</span>`; btn = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'finalizado')"><i class="fas fa-check-double"></i> Entregue/Pago</button>`; }
             
@@ -439,7 +462,12 @@
         }
     }
 
-    async function apagarPedido(id) { if(confirm("Apagar este pedido falso?")) await _sb.from('pedidos').delete().eq('id', id); }
+    async function apagarPedido(id) { 
+        if(confirm("Tem a certeza que deseja cancelar/remover este pedido definitivamente?")) {
+            await _sb.from('pedidos').delete().eq('id', id); 
+        }
+    }
+    
     async function fecharMesa(m, ids) { if(confirm(`Limpar e receber pagamento da Mesa ${m}?`)) for(let id of ids) await _sb.from('pedidos').update({ estado: 'finalizado' }).eq('id', id); }
 
     function tocarSomAlerta(tipo) { 
