@@ -428,15 +428,20 @@
         try { await _sb.from('lojas').update({ views_total: currentViews + 1 }).eq('id', lojaId); } catch (e) {}
     }
 
+    // --- MODIFICADO: ADICIONADO LOG DE ERRO ---
     async function chamarMesa(tipo) {
         if (!lojaAtual || !mesaAtual) return;
         try {
             const { error } = await _sb.from('chamadas_sala').insert([
                 { loja_id: lojaAtual.id, mesa: mesaAtual, tipo_chamada: tipo }
             ]);
-            if (error) throw error;
+            if (error) throw error; // Lança o erro real do Supabase
+            
             alert(tipo === 'empregado' ? 'O empregado foi chamado à sua mesa.' : 'A sua conta foi solicitada. Aguarde um momento.');
-        } catch (e) { alert("Não foi possível enviar o pedido. Por favor, acene a um empregado."); }
+        } catch (e) { 
+            // AGORA MOSTRA O ERRO EXATO DA BASE DE DADOS
+            alert("ERRO DO SUPABASE:\n" + (e.message || JSON.stringify(e))); 
+        }
     }
 
     // --- TEMAS SAZONAIS ---
@@ -928,7 +933,7 @@
         }
     }
 
-    // --- CHECKOUT SEGURO COM INTEGRAÇÃO DE CLIENTE ---
+    // --- MODIFICADO: ADICIONADO LOG DE ERRO ---
     async function validarEEnviarPedido() {
         if(carrinho.length === 0) return;
         
@@ -955,7 +960,7 @@
                     estado: 'aguarda_confirmacao'
                 }]);
 
-                if (error) throw error;
+                if (error) throw error; // Lança o erro real do Supabase
                 alert(`Pedido registado!\nO empregado irá à sua mesa num instante para confirmar.`);
             } else {
                 const tipoPedido = document.querySelector('input[name="tipo_pedido"]:checked').value;
@@ -977,7 +982,7 @@
                     }
                 }
 
-                await _sb.from('pedidos').insert([{
+                const { error } = await _sb.from('pedidos').insert([{
                     loja_id: lojaAtual.id,
                     cliente_id: clienteAtual.id, 
                     nome_cliente: clienteAtual.nome,
@@ -991,6 +996,7 @@
                     data_agendada: dataAgendada.toISOString(), 
                     estado: 'aguarda_confirmacao'
                 }]);
+                if (error) throw error; // Lança o erro real do Supabase
 
                 alert("Pedido confirmado e enviado para o restaurante!\nPode acompanhar o estado na área 'Os Meus Pedidos'.");
             }
@@ -999,7 +1005,8 @@
 
         } catch (e) {
             console.error(e);
-            alert(e.message || "Erro ao processar. Verifique a sua ligação.");
+            // AGORA MOSTRA O ERRO EXATO DA BASE DE DADOS
+            alert("ERRO DO SUPABASE:\n" + (e.message || JSON.stringify(e))); 
         } finally {
             btnFinal.innerHTML = `<i class="fas fa-check"></i> Confirmar e Enviar Pedido`;
             btnFinal.disabled = false;
