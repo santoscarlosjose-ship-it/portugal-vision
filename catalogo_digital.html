@@ -389,7 +389,6 @@
         document.getElementById('legalModal').style.display = 'block';
     }
     
-    // Função auxiliar para fechar modais
     function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
     
     function closeLegalModal() { document.getElementById('legalModal').style.display = 'none'; }
@@ -398,21 +397,17 @@
         try { await _sb.from('lojas').update({ views_total: currentViews + 1 }).eq('id', lojaId); } catch (e) {}
     }
 
-    // NOVA FUNÇÃO: Chamar Mesa Atualizada
     async function chamarMesa(tipo) {
         if (!lojaAtual || !mesaAtual) return;
         
-        // Se for para pedir a conta, abre primeiro o modal do NIF
         if (tipo === 'conta') {
             document.getElementById('pedirContaModal').style.display = 'flex';
             return;
         }
 
-        // Se for para chamar o empregado, envia direto
         enviarChamadaSala(tipo, false, null);
     }
 
-    // NOVA FUNÇÃO: Confirma o Pedido da Conta com o NIF
     function confirmarPedidoConta() {
         const querNif = document.querySelector('input[name="conta_nif"]:checked').value === 'sim';
         const nif = document.getElementById('input-conta-nif').value;
@@ -426,7 +421,6 @@
         fecharModal('pedirContaModal');
     }
 
-    // FUNÇÃO INTERNA: Envia os dados para a Base de Dados
     async function enviarChamadaSala(tipo, querNif, nifCliente) {
         try {
             const dados = { 
@@ -435,11 +429,9 @@
                 tipo_chamada: tipo 
             };
 
-            // Se for pedido de conta, adiciona os campos do NIF
             if (tipo === 'conta') {
                 dados.quer_nif = querNif;
                 dados.nif_cliente = querNif ? nifCliente : null;
-                // Como não sabemos o método de pagamento da mesa pelo catálogo, podemos enviar nulo ou "Na Mesa"
                 dados.metodo_pagamento = "Na Mesa"; 
             }
 
@@ -453,7 +445,6 @@
     }
 
 
-    // --- AUTENTICAÇÃO E SESSÃO CLIENTE ---
     async function verificarSessaoCliente() {
         const { data: { session } } = await _sb.auth.getSession();
         if(session) {
@@ -515,7 +506,6 @@
     }
     async function clienteLogout() { await _sb.auth.signOut(); window.location.reload(); }
 
-    // --- OS MEUS PEDIDOS & REGRAS DE TEMPO (30 MIN / 1 HORA) ---
     async function abrirConta() {
         document.getElementById('contaModal').style.display = 'block';
         const container = document.getElementById('lista-meus-pedidos');
@@ -536,11 +526,9 @@
             if(p.estado === 'finalizado') { corBadge = 'bg-pronto'; textoBadge = 'Concluído'; }
             
             let btnAcoes = '';
-            // REGRA 1 HORA: Bloqueia Cancelamento
             if(diffMinutos > 60 && p.estado === 'aguarda_confirmacao') {
                 btnAcoes += `<button onclick="cancelarMeuPedido(${p.id})" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px;">Cancelar</button>`;
             }
-            // REGRA "JÁ CHEGUEI" (Para Reservas)
             if(p.tipo_pedido === 'reserva' && diffMinutos <= 120 && diffMinutos >= -30 && p.estado !== 'cancelado' && p.estado !== 'finalizado') {
                 btnAcoes += `<button onclick="sinalizarChegada(${p.id})" style="background:var(--ok); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;">Já Cheguei!</button>`;
             }
@@ -573,24 +561,51 @@
         alert("O restaurante foi notificado da sua chegada!");
     }
 
-    // --- OUVINTE REALTIME (CLIENTE) ---
+    // --- OUVINTE REALTIME (CLIENTE) CORRIGIDO ---
     function iniciarOuvinteCliente() {
-        if(!lojaAtual || !clienteAtual) return;
+        if(!lojaAtual) return;
+        
+        // Só iniciamos a escuta se houver um cliente logado (Takeaway/Reserva) ou se estiver na Mesa
+        if(!clienteAtual && !mesaAtual) return;
+
         if(realtimeCanal) _sb.removeChannel(realtimeCanal);
         
+        // Define o filtro: se tiver login, escuta os pedidos dele. Se estiver na mesa, escuta a mesa.
+        let filtroStr = clienteAtual ? `cliente_id=eq.${clienteAtual.id}` : `mesa=eq.${mesaAtual}`;
+
         realtimeCanal = _sb.channel('cliente-notifs')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos', filter: `cliente_id=eq.${clienteAtual.id}` }, payload => {
-                if(payload.new.estado === 'pronto') {
-                    if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                    const alerta = document.getElementById('cliente-alert');
-                    document.getElementById('cliente-alert-msg').innerText = "O seu pedido já está Pronto!";
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos', filter: filtroStr }, payload => {
+                
+                const novoEstado = payload.new.estado;
+                const alerta = document.getElementById('cliente-alert');
+                const msgEl = document.getElementById('cliente-alert-msg');
+                
+                // 1. Alerta: Pedido foi Aceite (passou para Pendente)
+                if(novoEstado === 'pendente') {
+                    if(navigator.vibrate) navigator.vibrate([100, 50, 100]); // Vibração curta dupla
+                    msgEl.innerText = "O restaurante confirmou o seu pedido! Vai para a cozinha.";
+                    alerta.style.background = "var(--primary)"; // Fica azul para "Aceite"
+                    alerta.classList.add('show');
+                    setTimeout(() => alerta.classList.remove('show'), 6000);
+                } 
+                // 2. Alerta: Pedido Pronto
+                else if(novoEstado === 'pronto') {
+                    if(navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]); // Vibração longa
+                    msgEl.innerText = "O seu pedido já está Pronto!";
+                    alerta.style.background = "var(--success)"; // Fica verde para "Pronto"
                     alerta.classList.add('show');
                     setTimeout(() => alerta.classList.remove('show'), 8000);
                 }
+
+                // 3. Atualização Silenciosa: Se a janela "Os Meus Pedidos" estiver aberta, atualiza a lista sozinha!
+                const modalConta = document.getElementById('contaModal');
+                if (modalConta && modalConta.style.display === 'block') {
+                    abrirConta();
+                }
+
             }).subscribe();
     }
 
-    // --- LÓGICA DE HORÁRIOS: LEITURA DOS TURNOS DA COZINHA ---
     function configurarDatasIniciais() {
         const agora = new Date();
         const hojeIso = agora.toLocaleDateString('en-CA').split('/').join('-'); 
@@ -708,7 +723,7 @@
 
         configurarDatasIniciais();
         atualizarHorariosDisponiveis();
-        verificarSessaoCliente(); 
+        await verificarSessaoCliente(); 
 
         if (lojaAtual.takeaway_ativo === false) {
             const lblLev = document.getElementById('lbl-levantamento');
@@ -730,6 +745,9 @@
             document.getElementById('btn-pedir-conta').style.display = 'flex';
             document.getElementById('cart-text-btn').innerText = ''; 
             document.getElementById('btn-user-account').style.display = 'none'; 
+            
+            // NOVO: Obriga o sistema a ligar as notificações também para clientes da mesa!
+            iniciarOuvinteCliente();
         }
 
         document.getElementById('v-nome').innerText = loja.nome;
@@ -746,27 +764,6 @@
             document.getElementById('dynamic-favicon').href = loja.logo_url;
             document.getElementById('dynamic-apple-icon').href = loja.logo_url;
             document.title = loja.nome + " | Menu";
-
-            const oldManifest = document.getElementById('dynamic-manifest');
-            if (oldManifest) oldManifest.remove();
-
-            const manifestData = {
-                "name": loja.nome,
-                "short_name": loja.nome.substring(0, 12),
-                "display": "standalone",
-                "background_color": "#000000",
-                "theme_color": "#000000",
-                "icons": [
-                    { "src": loja.logo_url, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-                    { "src": loja.logo_url, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-                ]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
-            const linkManifest = document.createElement('link');
-            linkManifest.id = 'dynamic-manifest';
-            linkManifest.rel = 'manifest';
-            linkManifest.href = URL.createObjectURL(manifestBlob);
-            document.head.appendChild(linkManifest);
         }
 
         if (loja.mbway_num && !mesaAtual) {
@@ -796,7 +793,6 @@
     function adicionarAoCarrinho(idProduto, nome, precoRaw, desconto, event) {
         event.stopPropagation();
 
-        // --- LÓGICA DE BLOQUEIO DE LOGIN (TAKEAWAY/RESERVA) ---
         if (!mesaAtual && !clienteAtual) {
             document.getElementById('authModal').style.display = 'block';
             alert("Para fazer encomendas de Takeaway ou Reservas, por favor inicie sessão ou crie conta primeiro.");
@@ -931,6 +927,7 @@
 
                 let querNif = false;
                 let nifCliente = null;
+                let numPessoas = null;
                 
                 if (tipoPedido === 'levantamento') {
                     if(document.querySelector('input[name="opcao_nif"]:checked').value === 'sim') {
@@ -938,6 +935,9 @@
                         querNif = true;
                         if(!nifCliente) throw new Error("Selecionou NIF. Por favor insira o número.");
                     }
+                } else if (tipoPedido === 'reserva') {
+                    numPessoas = document.getElementById('cli-pessoas').value;
+                    if(!numPessoas || numPessoas < 1) throw new Error("Por favor, indique o número de pessoas para a reserva.");
                 }
 
                 const { error } = await _sb.from('pedidos').insert([{
@@ -946,6 +946,7 @@
                     nome_cliente: clienteAtual.nome,
                     telefone: clienteAtual.telefone,
                     tipo_pedido: tipoPedido,
+                    numero_pessoas: numPessoas, 
                     itens: carrinho,
                     total: totalPreco,
                     metodo_pagamento: tipoPedido === 'levantamento' ? 'MBWay' : 'No Local',
@@ -959,11 +960,17 @@
                 alert("Pedido confirmado e enviado para o restaurante!\nPode acompanhar o estado na área 'Os Meus Pedidos'.");
             }
 
-            carrinho = []; atualizarFloater(); fecharCarrinho();
+            carrinho = []; 
+            atualizarFloater(); 
+            fecharCarrinho();
+            
+            if(!mesaAtual) {
+                abrirConta();
+            }
 
         } catch (e) {
-            console.error(e);
-            alert("ERRO DO SUPABASE:\n" + (e.message || JSON.stringify(e))); 
+            console.error("ERRO COMPLETO:", e);
+            alert("ERRO: " + (e.message || "Falha ao ligar à base de dados.")); 
         } finally {
             btnFinal.innerHTML = `<i class="fas fa-check"></i> Confirmar e Enviar Pedido`;
             btnFinal.disabled = false;
