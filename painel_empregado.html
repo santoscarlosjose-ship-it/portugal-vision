@@ -193,6 +193,28 @@
     </div>
 </div>
 
+<div id="modal-pagar-mesa" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div class="modal-header">
+            <h3 style="margin:0;">Fechar Mesa <span id="pagar-mesa-num"></span></h3>
+            <span class="close-modal" onclick="fecharModal('modal-pagar-mesa')"><i class="fas fa-times"></i></span>
+        </div>
+        <div class="modal-body">
+            <h2 style="color: var(--primary); font-size: 2.5em; margin: 10px 0;"><span id="pagar-mesa-total">0.00</span>€</h2>
+            <p style="color:#475569; margin-bottom: 15px;">Confirme o método de pagamento efetuado pelo cliente:</p>
+            <select id="pagar-mesa-metodo" class="input-form">
+                <option value="Dinheiro">💵 Dinheiro</option>
+                <option value="Multibanco">💳 Multibanco</option>
+                <option value="MBWay">📱 MBWay</option>
+            </select>
+            <input type="hidden" id="pagar-mesa-ids">
+            <button class="btn-login btn-success" style="background: var(--success); margin-top: 15px;" onclick="confirmarFechoMesa()">
+                <i class="fas fa-check-double"></i> Confirmar Pagamento
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="modal-edicao" class="modal">
     <div class="modal-content" style="max-width: 700px;">
         <div class="modal-header">
@@ -219,11 +241,11 @@
             
             <h4 style="margin:0; color:#1e293b;">Produtos Associados a este Pedido</h4>
             <div id="edit-lista-produtos" style="background: #ffffff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; max-height: 250px; overflow-y: auto;">
-            </div>
+                </div>
             
             <div style="display: flex; gap: 10px; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 10px;">
                 <select id="edit-add-produto-select" class="input-form" style="margin:0; flex: 1;">
-                </select>
+                    </select>
                 <button class="btn-login" style="width:auto; margin:0;" onclick="adicionarProdutoEdicao()"><i class="fas fa-plus"></i> Inserir</button>
             </div>
 
@@ -423,7 +445,6 @@
 
     function formatarHora(iso) { const d = new Date(iso); return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0'); }
 
-    // NOVA FUNÇÃO DE RENDERIZAÇÃO: 3 COLUNAS COM ALERTAS INTEGRADOS
     function renderizarInterface(pedidos, chamadas) {
         // Agrupar chamadas por mesa
         const chamadasAtivas = {};
@@ -490,6 +511,11 @@
                                             </div>
                                             <div style="margin-top:5px;"><strong>Paga c/:</strong> ${metodo} ${nif}</div>
                                         </div>`;
+                    } else if (c.tipo_chamada === 'chegada_reserva') {
+                        chamadasHtml += `<div style="background:#ecfdf5; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; color:#b45309; display:flex; justify-content:space-between; align-items:center;">
+                                            <strong><i class="fas fa-walking"></i> O Cliente Chegou!</strong>
+                                            <button onclick="resolverChamada(${c.id})" class="btn-mini-edit" style="background:var(--warning); padding:6px 12px;"><i class="fas fa-check"></i> Ok</button>
+                                        </div>`;
                     } else {
                         chamadasHtml += `<div style="background:#fffbeb; border:1px solid #fde68a; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; color:#b45309; display:flex; justify-content:space-between; align-items:center;">
                                             <strong><i class="fas fa-bell"></i> Chamou Empregado</strong>
@@ -523,7 +549,7 @@
                     btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>
                            <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${idConf})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
                 } else if (m.tudoPronto) { 
-                    btn = `<button class="btn-action btn-success" onclick="fecharMesa('${m.mesa}', ${JSON.stringify(m.rondas.map(r=>r.id))})"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
+                    btn = `<button class="btn-action btn-success" onclick="prepararFechoMesa('${m.mesa}', ${m.totalAcumulado}, '${JSON.stringify(m.rondas.map(r=>r.id))}')"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
                 } else {
                     btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo...</button>`;
                 }
@@ -629,7 +655,34 @@
 
     async function confirmarTakeaway(id) { if(confirm("ATENÇÃO:\nO pagamento MBWay já caiu na conta?\nA fatura foi emitida com os dados corretos?\n\n(Se sim, o pedido avança para a cozinha).")) { await _sb.from('pedidos').update({ estado: 'pendente' }).eq('id', id); } }
     async function apagarPedido(id) { if(confirm("Tem a certeza absoluta que deseja CANCELAR e APAGAR este pedido do sistema?")) { await _sb.from('pedidos').delete().eq('id', id); } }
-    async function fecharMesa(m, ids) { if(confirm(`Limpar e receber pagamento da Mesa ${m}?`)) for(let id of ids) await _sb.from('pedidos').update({ estado: 'finalizado' }).eq('id', id); }
+    
+    function prepararFechoMesa(mesa, total, idsStr) {
+        document.getElementById('pagar-mesa-num').innerText = mesa;
+        document.getElementById('pagar-mesa-total').innerText = total.toFixed(2);
+        document.getElementById('pagar-mesa-ids').value = idsStr;
+        document.getElementById('modal-pagar-mesa').style.display = 'flex';
+    }
+
+    async function confirmarFechoMesa() {
+        const idsStr = document.getElementById('pagar-mesa-ids').value;
+        const ids = JSON.parse(idsStr);
+        const metodo = document.getElementById('pagar-mesa-metodo').value;
+        
+        const btn = document.querySelector('#modal-pagar-mesa .btn-success');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...'; btn.disabled = true;
+
+        try {
+            for(let id of ids) {
+                await _sb.from('pedidos').update({ estado: 'finalizado', metodo_pagamento: metodo }).eq('id', id);
+            }
+            fecharModal('modal-pagar-mesa');
+            carregarDados();
+        } catch(e) {
+            alert("Erro ao fechar mesa.");
+        } finally {
+            btn.innerHTML = '<i class="fas fa-check-double"></i> Confirmar Pagamento'; btn.disabled = false;
+        }
+    }
 
     function tocarSomAlerta(tipo) { 
         try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); if(tipo === 'campainha') { osc.frequency.setValueAtTime(800, ctx.currentTime); osc.type = 'sine'; } else { osc.frequency.setValueAtTime(400, ctx.currentTime); osc.type = 'square'; } gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5); } catch(e) {} 
@@ -647,9 +700,18 @@
     }
 
     async function abrirFechoTurno() {
-        const hoje = new Date().toISOString().split('T')[0]; const { data: fechados } = await _sb.from('pedidos').select('tipo_pedido, mesa, nome_cliente, created_at').eq('loja_id', minhaLojaId).eq('estado', 'finalizado').gte('created_at', hoje + 'T00:00:00').lte('created_at', hoje + 'T23:59:59');
+        const hoje = new Date().toISOString().split('T')[0];
+        const { data: fechados } = await _sb.from('pedidos').select('tipo_pedido, mesa, nome_cliente, created_at, metodo_pagamento, total').eq('loja_id', minhaLojaId).eq('estado', 'finalizado').gte('created_at', hoje + 'T00:00:00').lte('created_at', hoje + 'T23:59:59');
         const divLista = document.getElementById('lista-fecho-cego');
-        if(!fechados || fechados.length === 0) { divLista.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fas fa-folder-open"></i><p>Nenhum pedido finalizado neste turno.</p></div>`; } else { divLista.innerHTML = fechados.map(p => { const desc = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `Takeaway/Reserva (${p.nome_cliente || 'Anónimo'})`; return `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0; color:#475569;"><span style="font-weight:bold; color:var(--text);">${desc}</span><small><i class="fas fa-check-circle" style="color:var(--success);"></i> Fechado às ${formatarHora(p.created_at)}</small></div>`; }).join(''); }
+        if(!fechados || fechados.length === 0) { divLista.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fas fa-folder-open"></i><p>Nenhum pedido finalizado neste turno.</p></div>`; } 
+        else { divLista.innerHTML = fechados.map(p => { 
+            const desc = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `Takeaway/Reserva (${p.nome_cliente || 'Anónimo'})`; 
+            return `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0; color:#475569;">
+                        <span style="font-weight:bold; color:var(--text);">${desc} <small>(${p.metodo_pagamento || '-'})</small></span>
+                        <small><i class="fas fa-check-circle" style="color:var(--success);"></i> Fechado às ${formatarHora(p.created_at)}</small>
+                    </div>`; 
+            }).join(''); 
+        }
         document.getElementById('modal-fecho').style.display = 'flex';
     }
 
