@@ -81,7 +81,7 @@
         .btn-add-cart:hover { opacity: 0.9; transform: scale(0.98); }
         .btn-add-cart:disabled { background: #94a3b8; cursor: not-allowed; transform: none; opacity: 1; }
 
-        /* --- BOTÕES FLUTUANTES (CARRINHO E MESA E UTILIZADOR) --- */
+        /* --- BOTÕES FLUTUANTES --- */
         .floater-container {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 10px; z-index: 1000; align-items: center;
@@ -156,7 +156,6 @@
         .legal-links a, .complaints-book a { color: inherit; opacity: 0.8; text-decoration: none; font-size: 0.85em; transition: 0.3s; cursor: pointer; font-weight: 600; }
         .legal-links a:hover, .complaints-book a:hover { opacity: 1; text-decoration: underline;}
 
-        /* --- NOVOS ESTILOS: AUTENTICAÇÃO E MEUS PEDIDOS --- */
         .auth-tab { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; }
         .auth-tab div { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: bold; color: #94a3b8; }
         .auth-tab div.active { color: var(--ok); border-bottom: 3px solid var(--ok); }
@@ -168,14 +167,34 @@
         .bg-preparacao { background: #e0f2fe; color: #0369a1; }
         .bg-danger { background: #fee2e2; color: #991b1b; }
         
-        /* ALERTA CLIENTE REALTIME */
-        #cliente-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--ok); color: white; padding: 15px 25px; border-radius: 30px; font-weight: bold; z-index: 99999; box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4); display: flex; align-items: center; gap: 10px; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #cliente-alert.show { top: 20px; }
+        /* ALERTA CLIENTE REALTIME CORRIGIDO E MELHORADO */
+        #cliente-alert { 
+            position: fixed; 
+            bottom: -150px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #1e293b; /* Fundo escuro e de alto contraste */
+            color: white; 
+            padding: 16px 25px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            z-index: 2147483647; /* Absolutamente acima de qualquer janela modal */
+            box-shadow: 0 15px 35px rgba(0,0,0, 0.4); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            transition: bottom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 90%;
+            max-width: 350px;
+            justify-content: center;
+            text-align: center;
+        }
+        #cliente-alert.show { bottom: 100px; } /* Aparece acima do botão do carrinho */
     </style>
 </head>
 <body>
 
-<div id="cliente-alert"><i class="fas fa-bell fa-shake"></i> <span id="cliente-alert-msg"></span></div>
+<div id="cliente-alert"><i class="fas fa-bell fa-shake" style="font-size: 1.2em;"></i> <span id="cliente-alert-msg" style="font-size: 0.95em;"></span></div>
 
 <div id="block-screen">
     <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
@@ -536,7 +555,7 @@
         const pedidosOcultos = JSON.parse(localStorage.getItem('pedidos_ocultos') || '[]');
         const pedidosVisiveis = pedidos.filter(p => !pedidosOcultos.includes(p.id));
 
-        if(pedidosVisiveis.length === 0) { container.innerHTML = "<p>Ainda não tem pedidos.</p>"; return; }
+        if(pedidosVisiveis.length === 0) { container.innerHTML = "<p>Ainda não tem pedidos visíveis.</p>"; return; }
 
         const agora = new Date();
         container.innerHTML = pedidosVisiveis.map(p => {
@@ -592,7 +611,6 @@
     function iniciarOuvinteCliente() {
         if(!lojaAtual) return;
         
-        // Só iniciamos a escuta se houver um cliente logado ou se estiver na Mesa
         if(!clienteAtual && !mesaAtual) return;
 
         if(realtimeCanal) _sb.removeChannel(realtimeCanal);
@@ -618,14 +636,14 @@
                         msgEl.innerText = "O restaurante confirmou o seu pedido! Vai para a cozinha.";
                     }
 
-                    alerta.style.background = "var(--primary)"; 
+                    alerta.style.background = "var(--p)"; 
                     alerta.classList.add('show');
                     setTimeout(() => alerta.classList.remove('show'), 6000);
                 } 
                 else if(novoEstado === 'pronto') {
                     if(navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]); 
                     msgEl.innerText = "O seu pedido já está Pronto!";
-                    alerta.style.background = "var(--success)"; 
+                    alerta.style.background = "var(--ok)"; 
                     alerta.classList.add('show');
                     setTimeout(() => alerta.classList.remove('show'), 8000);
                 }
@@ -861,14 +879,12 @@
     function toggleOrderFields() {
         const isReserva = document.querySelector('input[name="tipo_pedido"]:checked').value === 'reserva';
         
-        // 1. Mostrar/Esconder e Limpar 'Nº Pessoas'
         const cliPessoas = document.getElementById('cli-pessoas');
         if (cliPessoas) {
             cliPessoas.style.display = isReserva ? 'block' : 'none';
             if (!isReserva) cliPessoas.value = ''; 
         }
         
-        // 2. Mostrar/Esconder Pagamento e NIF
         const paymentSection = document.getElementById('payment-section');
         const nifSection = document.getElementById('nif-section');
         
