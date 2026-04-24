@@ -829,10 +829,25 @@
 
     function toggleOrderFields() {
         const isReserva = document.querySelector('input[name="tipo_pedido"]:checked').value === 'reserva';
-        document.getElementById('cli-pessoas').style.display = isReserva ? 'block' : 'none';
-        document.getElementById('payment-section').style.display = isReserva ? 'none' : 'block';
-        document.getElementById('nif-section').style.display = isReserva ? 'none' : 'block';
-        atualizarHorariosDisponiveis();
+        
+        // 1. Mostrar/Esconder e Limpar 'Nº Pessoas'
+        const cliPessoas = document.getElementById('cli-pessoas');
+        if (cliPessoas) {
+            cliPessoas.style.display = isReserva ? 'block' : 'none';
+            // Se for levantamento, limpa o valor para não enviar dados inválidos para a DB
+            if (!isReserva) cliPessoas.value = ''; 
+        }
+        
+        // 2. Mostrar/Esconder Pagamento e NIF
+        const paymentSection = document.getElementById('payment-section');
+        const nifSection = document.getElementById('nif-section');
+        
+        if (paymentSection) paymentSection.style.display = isReserva ? 'none' : 'block';
+        if (nifSection) nifSection.style.display = isReserva ? 'none' : 'block';
+        
+        if (typeof atualizarHorariosDisponiveis === 'function') {
+            atualizarHorariosDisponiveis();
+        }
     }
 
     function toggleNifField() {
