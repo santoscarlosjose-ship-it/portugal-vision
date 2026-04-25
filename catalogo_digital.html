@@ -407,7 +407,7 @@
     const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"};
 
     const legalTexts = {
-        termos: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Termos e Condições</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Natureza do Serviço:</strong> O catálogo digital da Portugal Vision atua exclusivamente como uma montra tecnológica e facilitadora de comunicação. Não somos a entidade vendedora dos produtos apresentados.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Preços e Alergénios:</strong> As informações sobre preços, descrições, ingredientes e alergénios são da inteira e exclusiva responsabilidade do Lojista. Em caso de restrições ou alergias alimentares graves, o cliente deve sempre confirmar os ingredientes diretamente com o estabelecimento no momento do pedido.</p>`,
+        termos: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Termos e Condições</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Natureza do Serviço:</strong> O catálogo digital da Portugal Vision atua exclusively como uma montra tecnológica e facilitadora de comunicação. Não somos a entidade vendedora dos produtos apresentados.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Preços e Alergénios:</strong> As informações sobre preços, descrições, ingredientes e alergénios são da inteira e exclusiva responsabilidade do Lojista. Em caso de restrições ou alergias alimentares graves, o cliente deve sempre confirmar os ingredientes diretamente com o estabelecimento no momento do pedido.</p>`,
         privacidade: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Privacidade e RGPD</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Navegação:</strong> A navegação neste catálogo digital é livre. O registo é exigido apenas para validação de pedidos online (Takeaway/Reserva) e comunicação de estado.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Dados Analíticos:</strong> A Portugal Vision recolhe apenas dados estatísticos totalmente anónimos para garantir o bom funcionamento do sistema.</p>`,
         cookies: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Política de Cookies</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. A Nossa Abordagem:</strong> A nossa plataforma foi desenhada para ser limpa e segura. Não utilizamos cookies invasivos nem rastreadores de publicidade.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Cookies Estritamente Necessários:</strong> Utilizamos tecnologias locais (memória do navegador) apenas para gerir a sua Sessão de Login, a persistência de Sala e o "Carrinho de Compras".</p>`
     };
@@ -574,7 +574,6 @@
                 btnAcoes += `<button onclick="cancelarMeuPedido(${p.id})" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px;">Cancelar</button>`;
             }
             
-            // CIRURGIA: Os botões JÁ CHEGUEI e VOU ATRASAR
             if((p.tipo_pedido === 'reserva' || p.tipo_pedido === 'mesa') && p.estado === 'reserva_confirmada' && diffMinutos <= 120 && diffMinutos >= -30) {
                 if (p.status_presenca === 'no_local') {
                     btnAcoes += `<span style="font-size:11px; color:var(--ok); font-weight:bold; margin-left:5px;"><i class="fas fa-check"></i> Receção Notificada</span>`;
@@ -611,14 +610,12 @@
         }
     }
 
-    // CIRURGIA: Sinalizar Chegada agora altera o status_presenca na reserva
     async function sinalizarChegada(id) {
         await _sb.from('pedidos').update({ status_presenca: 'no_local' }).eq('id', id);
         alert("O restaurante foi notificado da sua chegada! Aguarde que um funcionário o venha receber à entrada.");
         abrirConta();
     }
 
-    // CIRURGIA: Novo gatilho de atraso para proteger o lojista
     async function sinalizarAtraso(id) {
         const minStr = prompt("Quantos minutos prevê chegar atrasado? (ex: 15 ou 30)");
         if (minStr) {
@@ -648,17 +645,20 @@
                 const alerta = document.getElementById('cliente-alert');
                 const msgEl = document.getElementById('cliente-alert-msg');
                 
-                // CIRURGIA: A Limpeza "Feliz" (Ciclo fechado quando o estado passa a finalizado)
-                if (mesaAtual && novoEstado === 'finalizado') {
+                // CIRURGIA 2: A Limpeza (Finalizado OU Cancelado)
+                if (mesaAtual && (novoEstado === 'finalizado' || novoEstado === 'cancelado')) {
                     localStorage.removeItem('pv_mesa_sessao');
-                    alert("A sua conta foi finalizada. Obrigado pela visita e volte sempre!");
-                    // Remove o parâmetro "mesa" do URL e recarrega a página limpa
+                    if (novoEstado === 'finalizado') {
+                        alert("A sua conta foi finalizada. Obrigado pela visita e volte sempre!");
+                    } else {
+                        alert("O seu pedido/mesa foi cancelado pelo restaurante.");
+                    }
                     const urlSemMesa = window.location.href.replace(/([&?])mesa=[^&]+(&|$)/, '$1').replace(/&$/, '').replace(/\?$/, '');
                     window.location.href = urlSemMesa;
                     return;
                 }
 
-                // CIRURGIA: A Magia do URL (Gatilho corrigido com status_presenca)
+                // A Magia do URL (Gatilho)
                 if (!mesaAtual && mesaAtribuida && payload.new.status_presenca === 'sentado' && (tipoPedido === 'reserva' || tipoPedido === 'mesa')) {
                     try { new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3').play().catch(e=>{}); } catch(e) {}
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
@@ -674,14 +674,12 @@
                     return; 
                 }
 
-                // Filtro de silêncio para cozinha
                 if ((tipoPedido === 'mesa' || tipoPedido === 'reserva') && ['pendente', 'preparacao', 'pronto'].includes(novoEstado)) {
                     const modalConta = document.getElementById('contaModal');
                     if (modalConta && modalConta.style.display === 'block') abrirConta();
                     return; 
                 }
 
-                // Notificações para Levantamento
                 try { new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3').play().catch(e=>{}); } catch(e) {}
 
                 if(novoEstado === 'pendente') {
@@ -704,7 +702,20 @@
                     abrirConta();
                 }
 
-            }).subscribe();
+            })
+            // CIRURGIA 3: Escutar o evento DELETE (Quando o empregado clica no caixote do lixo)
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pedidos', filter: filtroStr }, payload => {
+                if (mesaAtual) {
+                    localStorage.removeItem('pv_mesa_sessao');
+                    alert("A sua sessão de mesa foi encerrada pelo sistema.");
+                    const urlSemMesa = window.location.href.replace(/([&?])mesa=[^&]+(&|$)/, '$1').replace(/&$/, '').replace(/\?$/, '');
+                    window.location.href = urlSemMesa;
+                } else {
+                    const modalConta = document.getElementById('contaModal');
+                    if (modalConta && modalConta.style.display === 'block') abrirConta();
+                }
+            })
+            .subscribe();
     }
 
     function configurarDatasIniciais() {
@@ -809,24 +820,24 @@
         const slug = urlParams.get('loja');
         let paramMesa = urlParams.get('mesa'); 
 
-        // CIRURGIA: A Rede de Segurança (LocalStorage + TTL de 12 horas)
-        const TTL_HOURS = 12;
+        // CIRURGIA 1: Redução do TTL para 2 horas
+        const TTL_HOURS = 2;
         const storedSessaoObj = JSON.parse(localStorage.getItem('pv_mesa_sessao'));
         
         if (paramMesa) {
-            // Se o URL tem mesa, guarda na memória com o tempo atual
             localStorage.setItem('pv_mesa_sessao', JSON.stringify({ mesa: paramMesa, timestamp: Date.now() }));
             mesaAtual = paramMesa;
         } else if (storedSessaoObj) {
-            // Se não tem no URL, mas tem na memória, verifica se expirou
             const hoursPassed = (Date.now() - storedSessaoObj.timestamp) / (1000 * 60 * 60);
             if (hoursPassed < TTL_HOURS) {
-                // A sessão é válida, "empurra" o cliente de volta para o URL da mesa
-                const sep = window.location.search ? '&' : '?';
-                window.location.href = window.location.href + sep + 'mesa=' + storedSessaoObj.mesa;
-                return; // Bloqueia o carregamento porque a página vai recarregar sozinha
+                mesaAtual = storedSessaoObj.mesa;
+                // Força o parâmetro no URL se não estiver lá para manter a consistência
+                if (!urlParams.has('mesa')) {
+                    const sep = window.location.search ? '&' : '?';
+                    window.location.href = window.location.href + sep + 'mesa=' + mesaAtual;
+                    return; // Bloqueia o carregamento porque a página vai recarregar sozinha
+                }
             } else {
-                // A sessão expirou, limpa para evitar a "Mesa Fantasma" eterna
                 localStorage.removeItem('pv_mesa_sessao');
             }
         }
@@ -843,6 +854,26 @@
         }
 
         lojaAtual = loja;
+
+        // --- VERIFICAÇÃO DE SEGURANÇA NA ENTRADA ---
+        if (mesaAtual) {
+            const { data: pedidosAtivos } = await _sb
+                .from('pedidos')
+                .select('id')
+                .eq('loja_id', lojaAtual.id)
+                .eq('mesa', mesaAtual)
+                .neq('estado', 'finalizado')
+                .neq('estado', 'cancelado') // Não conta pedidos cancelados
+                .limit(1);
+
+            if (!pedidosAtivos || pedidosAtivos.length === 0) {
+                console.log("Limpeza de Segurança Automática");
+                localStorage.removeItem('pv_mesa_sessao');
+                const urlLimpo = window.location.href.split('&mesa=')[0].split('?mesa=')[0];
+                window.location.href = urlLimpo;
+                return; 
+            }
+        }
 
         configurarDatasIniciais();
         atualizarHorariosDisponiveis();
