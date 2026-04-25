@@ -658,9 +658,8 @@
                     return;
                 }
 
-                // CIRURGIA: A Magia do URL (Gatilho corrigido)
-                // Se o cliente não tem mesaAtual ativa e a DB acabou de lhe atribuir uma mesa...
-                if (!mesaAtual && mesaAtribuida && (tipoPedido === 'reserva' || tipoPedido === 'mesa')) {
+                // CIRURGIA: A Magia do URL (Gatilho corrigido com status_presenca)
+                if (!mesaAtual && mesaAtribuida && payload.new.status_presenca === 'sentado' && (tipoPedido === 'reserva' || tipoPedido === 'mesa')) {
                     try { new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3').play().catch(e=>{}); } catch(e) {}
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
                     
