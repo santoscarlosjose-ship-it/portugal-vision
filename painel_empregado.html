@@ -42,7 +42,7 @@
         .card.pedido-mesa { border-left-color: var(--primary); } .card.pedido-takeaway { border-left-color: #8b5cf6; } .card.pedido-reserva { border-left-color: #14b8a6; }
         .card.aguarda-confirmacao { border-left-color: var(--warning); background: #fffbeb; }
 
-        /* NOVA ANIMAÇÃO DE ALERTA DE MESA */
+        /* NOVA ANIMAÇÃO DE ALERTA DE MESA / NO-SHOW */
         .piscar-card { animation: flash-card 1.5s infinite; }
         @keyframes flash-card { 
             0% { box-shadow: 0 0 0px var(--danger); border-color: var(--danger); } 
@@ -185,10 +185,10 @@
             <span class="close-modal" onclick="fecharModal('modal-mesa-reserva')"><i class="fas fa-times"></i></span>
         </div>
         <div class="modal-body">
-            <p style="color:#475569; margin-bottom: 15px;">Para aceitar a reserva, indique em que mesa o cliente se vai sentar:</p>
+            <p style="color:#475569; margin-bottom: 15px;">Para onde vai encaminhar o cliente? (Abre o modo sala no telemóvel dele)</p>
             <input type="text" id="input-mesa-reserva" class="input-form" placeholder="Ex: 5 ou Esplanada 2">
             <input type="hidden" id="reserva-id-escondido">
-            <button class="btn-login" style="background: var(--success);" onclick="confirmarMesaReserva()"><i class="fas fa-check"></i> Confirmar Mesa</button>
+            <button class="btn-login" style="background: var(--success);" onclick="confirmarMesaReserva()"><i class="fas fa-check"></i> Sentar Cliente</button>
         </div>
     </div>
 </div>
@@ -386,9 +386,17 @@
 
         carregarDados();
         
+        // CIRURGIA: Escutar status_presenca para o "Já Cheguei" com alerta sonoro
         _sb.channel('sala-updates')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta('campainha'); carregarDados(); })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); })
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, (payload) => { 
+              if (payload.new.status_presenca === 'no_local' && payload.old.status_presenca !== 'no_local') {
+                  tocarSomAlerta('campainha');
+                  dispararAlertaCozinha(`O cliente ${payload.new.nome_cliente || 'da reserva'} chegou à receção!`);
+              }
+              carregarDados(); 
+          })
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); })
           .subscribe();
 
         iniciarEscutaNotificacoes();
@@ -419,7 +427,7 @@
         toast.innerHTML = `
             <i class="fas fa-bell notificacao-icon"></i>
             <div style="flex: 1;">
-                <b style="display:block; font-size:14px; margin-bottom:4px;">A Cozinha Avisa:</b>
+                <b style="display:block; font-size:14px; margin-bottom:4px;">Notificação:</b>
                 <span style="font-size:13px; line-height:1.4;">${mensagem}</span>
             </div>
             <button onclick="this.parentElement.classList.remove('mostrar'); setTimeout(() => this.parentElement.remove(), 500); document.body.classList.remove('piscar-ecra');" style="background:transparent; color:white; border:none; width:auto; padding:5px; font-size:18px; cursor:pointer;">
@@ -568,7 +576,7 @@
     }
 
     function gerarCartaoExterno(p, tipo) {
-        let itens = p.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join('');
+        let itens = p.itens && p.itens.length > 0 ? p.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join('') : '<li style="color:#94a3b8; font-style:italic;">Reserva de Mesa Apenas</li>';
         let icon = tipo === 'levantamento' ? '<i class="fas fa-shopping-bag" style="color:#8b5cf6;"></i>' : '<i class="far fa-calendar-check" style="color:#14b8a6;"></i>';
         let cClass = tipo === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva'; let estHtml = ''; let btn = '';
         
@@ -582,17 +590,40 @@
             } else {
                 const infoPessoas = p.numero_pessoas ? `<strong>👥 Para ${p.numero_pessoas} pessoas.</strong>` : '';
                 estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Reserva<br>${infoPessoas}</span>`; 
-                btn = `<button class="btn-action btn-warning" onclick="abrirModalAceitarReserva(${p.id})"><i class="fas fa-check"></i> Atribuir Mesa e Aceitar</button>`;
+                // CIRURGIA: Aceita sem pedir mesa
+                btn = `<button class="btn-action btn-warning" onclick="aceitarReserva(${p.id})"><i class="fas fa-check"></i> Aceitar (Sem Mesa)</button>
+                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Rejeitar"><i class="fas fa-times"></i></button>`;
             }
         } 
         else if(p.estado === 'pendente') { estHtml = `<span style="color: var(--danger); font-weight:bold;">Aguardar fogão</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')"><i class="fas fa-bell"></i> Marcar Pronto (Balcão)</button>`; } 
         else if(p.estado === 'preparacao') { estHtml = `<span style="color: var(--primary); font-weight:bold;">Na Cozinha 🍳</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')">Marcar Pronto</button>`; } 
         else if(p.estado === 'pronto') { estHtml = `<span style="color: var(--success); font-weight:bold;">Pronto! 🔔</span>`; btn = `<button class="btn-action btn-resolve" onclick="avancarPedido(${p.id}, 'finalizado')"><i class="fas fa-check-double"></i> Entregue/Pago</button>`; }
         
-        // NOVO: Impedir que a reserva desapareça ou confunda antes do "Já Cheguei"
+        // CIRURGIA: Lógica Inteligente de Reserva (Atrasos, No-Show, "Já Cheguei")
         else if(p.estado === 'reserva_confirmada') {
-            estHtml = `<span style="color: var(--primary); font-weight:bold;">✅ Reserva Confirmada.<br>Mesa ${p.mesa} atribuída.<br><small>A aguardar que o cliente chegue.</small></span>`;
-            btn = `<button class="btn-action btn-resolve" style="opacity:0.5;"><i class="fas fa-hourglass-half"></i> A aguardar cliente</button>`;
+            const dataAgendada = p.data_agendada ? new Date(p.data_agendada) : new Date(p.created_at);
+            const agora = new Date();
+            const diffMinutos = (agora - dataAgendada) / 60000;
+
+            if (p.status_presenca === 'no_local') {
+                cClass += ' piscar-card'; // Pisca para chamar a atenção
+                estHtml = `<span style="color: var(--success); font-weight:bold; font-size: 1.1em;"><i class="fas fa-walking fa-bounce"></i> Cliente à Porta!</span>`;
+                btn = `<button class="btn-action btn-success" onclick="abrirModalAceitarReserva(${p.id})"><i class="fas fa-chair"></i> Sentar Cliente (Atribuir Mesa)</button>`;
+            } else if (p.status_presenca === 'atrasado') {
+                estHtml = `<span style="color: var(--warning); font-weight:bold;"><i class="fas fa-clock fa-shake"></i> Informou Atraso (${p.minutos_atraso || '?'}m)</span>`;
+                btn = `<button class="btn-action btn-resolve" style="opacity:0.8;"><i class="fas fa-hourglass-half"></i> A aguardar chegada</button>
+                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Cancelar"><i class="fas fa-times"></i></button>`;
+            } else {
+                if (diffMinutos > 30) {
+                    cClass += ' piscar-card'; // Pisca vermelho indicando No-Show
+                    estHtml = `<span style="color: var(--danger); font-weight:bold;"><i class="fas fa-exclamation-triangle"></i> NO-SHOW (Atraso > 30m)</span>`;
+                    btn = `<button class="btn-action" style="background:var(--danger); color:white;" onclick="apagarPedido(${p.id})"><i class="fas fa-times"></i> Cancelar Reserva</button>`;
+                } else {
+                    estHtml = `<span style="color: var(--primary); font-weight:bold;">✅ Confirmada. Aguarda cliente.</span>`;
+                    btn = `<button class="btn-action btn-resolve" style="opacity:0.5;"><i class="fas fa-hourglass-half"></i> A aguardar...</button>
+                           <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Cancelar"><i class="fas fa-times"></i></button>`;
+                }
+            }
         }
 
         const tel = p.telefone ? `<a href="tel:${p.telefone}" style="color:var(--primary); text-decoration:none;">📞 ${p.telefone}</a>` : '';
@@ -600,7 +631,7 @@
                     <div class="card-header">
                         <div class="mesa-tag">${icon} ${tipo}</div>
                         <div style="display:flex; align-items:center;">
-                            <div class="time-tag" style="margin-right:10px;">${formatarHora(p.created_at)}</div>
+                            <div class="time-tag" style="margin-right:10px;">Para: ${p.data_agendada ? formatarHora(p.data_agendada) : formatarHora(p.created_at)}</div>
                             <button onclick="abrirEdicao(${p.id})" class="btn-mini-edit"><i class="fas fa-edit"></i></button>
                             <button onclick="apagarPedido(${p.id})" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
                         </div>
@@ -617,13 +648,26 @@
     async function resolverChamada(id) { await _sb.from('chamadas_sala').update({ estado: 'resolvido' }).eq('id', id); }
     async function avancarPedido(id, est) { await _sb.from('pedidos').update({ estado: est }).eq('id', id); }
     
+    // CIRURGIA: Aceitar reserva mantendo na coluna das reservas (sem pedir mesa)
+    async function aceitarReserva(id) { 
+        await _sb.from('pedidos').update({ estado: 'reserva_confirmada' }).eq('id', id); 
+    }
+
     function abrirModalAceitarReserva(id) { document.getElementById('reserva-id-escondido').value = id; document.getElementById('input-mesa-reserva').value = ''; document.getElementById('modal-mesa-reserva').style.display = 'flex'; }
     
-    // ATUALIZAÇÃO: Reserva aceite passa para 'reserva_confirmada' e não para pendente
+    // CIRURGIA: Agora sim, empurra o cliente para a Sala e recarrega o telemóvel dele
     async function confirmarMesaReserva() {
         const id = document.getElementById('reserva-id-escondido').value; const mesa = document.getElementById('input-mesa-reserva').value.trim();
         if (!mesa) return alert("Por favor, introduza o número da mesa a que a reserva pertence.");
-        await _sb.from('pedidos').update({ mesa: mesa, estado: 'reserva_confirmada' }).eq('id', id); fecharModal('modal-mesa-reserva');
+        
+        await _sb.from('pedidos').update({ 
+            mesa: mesa, 
+            tipo_pedido: 'mesa', 
+            estado: 'pendente', // Ativa a fila para cozinha caso tenham encomendado comida
+            status_presenca: 'sentado'
+        }).eq('id', id); 
+        
+        fecharModal('modal-mesa-reserva');
     }
 
     async function abrirEdicao(id) {
