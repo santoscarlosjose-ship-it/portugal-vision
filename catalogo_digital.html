@@ -409,7 +409,7 @@
     const legalTexts = {
         termos: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Termos e Condições</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Natureza do Serviço:</strong> O catálogo digital da Portugal Vision atua exclusivamente como uma montra tecnológica e facilitadora de comunicação. Não somos a entidade vendedora dos produtos apresentados.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Preços e Alergénios:</strong> As informações sobre preços, descrições, ingredientes e alergénios são da inteira e exclusiva responsabilidade do Lojista. Em caso de restrições ou alergias alimentares graves, o cliente deve sempre confirmar os ingredientes diretamente com o estabelecimento no momento do pedido.</p>`,
         privacidade: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Privacidade e RGPD</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Navegação:</strong> A navegação neste catálogo digital é livre. O registo é exigido apenas para validação de pedidos online (Takeaway/Reserva) e comunicação de estado.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Dados Analíticos:</strong> A Portugal Vision recolhe apenas dados estatísticos totalmente anónimos para garantir o bom funcionamento do sistema.</p>`,
-        cookies: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Política de Cookies</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. A Nossa Abordagem:</strong> A nossa plataforma foi desenhada para ser limpa e segura. Não utilizamos cookies invasivos nem rastreadores de publicidade.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Cookies Estritamente Necessários:</strong> Utilizamos tecnologias locais (memória do navegador) apenas para gerir a sua Sessão de Login e o "Carrinho de Compras".</p>`
+        cookies: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Política de Cookies</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. A Nossa Abordagem:</strong> A nossa plataforma foi desenhada para ser limpa e segura. Não utilizamos cookies invasivos nem rastreadores de publicidade.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Cookies Estritamente Necessários:</strong> Utilizamos tecnologias locais (memória do navegador) apenas para gerir a sua Sessão de Login, a persistência de Sala e o "Carrinho de Compras".</p>`
     };
 
     function showLegal(type) {
@@ -574,9 +574,14 @@
                 btnAcoes += `<button onclick="cancelarMeuPedido(${p.id})" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px;">Cancelar</button>`;
             }
             
-            // O botão JÁ CHEGUEI só aparece se a reserva tiver sido confirmada (reserva_confirmada)
+            // CIRURGIA: Os botões JÁ CHEGUEI e VOU ATRASAR
             if((p.tipo_pedido === 'reserva' || p.tipo_pedido === 'mesa') && p.estado === 'reserva_confirmada' && diffMinutos <= 120 && diffMinutos >= -30) {
-                btnAcoes += `<button onclick="sinalizarChegada(${p.id})" style="background:var(--ok); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;">Já Cheguei!</button>`;
+                if (p.status_presenca === 'no_local') {
+                    btnAcoes += `<span style="font-size:11px; color:var(--ok); font-weight:bold; margin-left:5px;"><i class="fas fa-check"></i> Receção Notificada</span>`;
+                } else {
+                    btnAcoes += `<button onclick="sinalizarChegada(${p.id})" style="background:var(--ok); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;">Já Cheguei!</button>`;
+                    btnAcoes += `<button onclick="sinalizarAtraso(${p.id})" style="background:#f59e0b; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;"><i class="fas fa-clock"></i> Vou Atrasar</button>`;
+                }
             }
 
             if(p.estado === 'finalizado' || p.estado === 'cancelado') {
@@ -606,15 +611,28 @@
         }
     }
 
+    // CIRURGIA: Sinalizar Chegada agora altera o status_presenca na reserva
     async function sinalizarChegada(id) {
-        await _sb.from('chamadas_sala').insert([{ loja_id: lojaAtual.id, tipo_chamada: 'chegada_reserva', mesa: id.toString() }]);
-        alert("O restaurante foi notificado da sua chegada!");
-        fecharModal('contaModal');
+        await _sb.from('pedidos').update({ status_presenca: 'no_local' }).eq('id', id);
+        alert("O restaurante foi notificado da sua chegada! Aguarde que um funcionário o venha receber à entrada.");
+        abrirConta();
+    }
+
+    // CIRURGIA: Novo gatilho de atraso para proteger o lojista
+    async function sinalizarAtraso(id) {
+        const minStr = prompt("Quantos minutos prevê chegar atrasado? (ex: 15 ou 30)");
+        if (minStr) {
+            const min = parseInt(minStr);
+            if (!isNaN(min)) {
+                await _sb.from('pedidos').update({ status_presenca: 'atrasado', minutos_atraso: min }).eq('id', id);
+                alert("O restaurante foi notificado do seu atraso. A sua mesa será guardada.");
+                abrirConta();
+            }
+        }
     }
 
     function iniciarOuvinteCliente() {
         if(!lojaAtual) return;
-        
         if(!clienteAtual && !mesaAtual) return;
 
         if(realtimeCanal) _sb.removeChannel(realtimeCanal);
@@ -630,30 +648,41 @@
                 const alerta = document.getElementById('cliente-alert');
                 const msgEl = document.getElementById('cliente-alert-msg');
                 
-                // REDIRECIONAMENTO AUTOMÁTICO DE RESERVA PARA MESA
-                if (tipoPedido === 'mesa' && novoEstado === 'reserva_confirmada' && mesaAtribuida) {
+                // CIRURGIA: A Limpeza "Feliz" (Ciclo fechado quando o estado passa a finalizado)
+                if (mesaAtual && novoEstado === 'finalizado') {
+                    localStorage.removeItem('pv_mesa_sessao');
+                    alert("A sua conta foi finalizada. Obrigado pela visita e volte sempre!");
+                    // Remove o parâmetro "mesa" do URL e recarrega a página limpa
+                    const urlSemMesa = window.location.href.replace(/([&?])mesa=[^&]+(&|$)/, '$1').replace(/&$/, '').replace(/\?$/, '');
+                    window.location.href = urlSemMesa;
+                    return;
+                }
+
+                // CIRURGIA: A Magia do URL (Gatilho corrigido)
+                // Se o cliente não tem mesaAtual ativa e a DB acabou de lhe atribuir uma mesa...
+                if (!mesaAtual && mesaAtribuida && (tipoPedido === 'reserva' || tipoPedido === 'mesa')) {
                     try { new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3').play().catch(e=>{}); } catch(e) {}
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
                     
-                    msgEl.innerText = `A sua Reserva foi aceite! Mesa ${mesaAtribuida} atribuída. A abrir a mesa...`;
+                    msgEl.innerText = `A sua mesa (${mesaAtribuida}) está pronta! A reencaminhar...`;
                     alerta.style.background = "var(--primary)"; 
                     alerta.classList.add('show');
                     
                     setTimeout(() => {
-                        window.location.href = `?loja=${lojaAtual.slug}&mesa=${mesaAtribuida}`;
-                    }, 3500);
+                        const sep = window.location.search ? '&' : '?';
+                        window.location.href = window.location.href + sep + 'mesa=' + mesaAtribuida;
+                    }, 3000);
                     return; 
                 }
 
-                // FILTRO DE SILÊNCIO PARA COZINHA (Ignorar alertas de fogão na Sala/Reserva)
+                // Filtro de silêncio para cozinha
                 if ((tipoPedido === 'mesa' || tipoPedido === 'reserva') && ['pendente', 'preparacao', 'pronto'].includes(novoEstado)) {
-                    // Atualiza a lista mas não mostra o alerta toast no ecrã
                     const modalConta = document.getElementById('contaModal');
                     if (modalConta && modalConta.style.display === 'block') abrirConta();
                     return; 
                 }
 
-                // NOTIFICAÇÕES PARA LEVANTAMENTO / TAKEAWAY
+                // Notificações para Levantamento
                 try { new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3').play().catch(e=>{}); } catch(e) {}
 
                 if(novoEstado === 'pendente') {
@@ -779,7 +808,29 @@
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
-        mesaAtual = urlParams.get('mesa'); 
+        let paramMesa = urlParams.get('mesa'); 
+
+        // CIRURGIA: A Rede de Segurança (LocalStorage + TTL de 12 horas)
+        const TTL_HOURS = 12;
+        const storedSessaoObj = JSON.parse(localStorage.getItem('pv_mesa_sessao'));
+        
+        if (paramMesa) {
+            // Se o URL tem mesa, guarda na memória com o tempo atual
+            localStorage.setItem('pv_mesa_sessao', JSON.stringify({ mesa: paramMesa, timestamp: Date.now() }));
+            mesaAtual = paramMesa;
+        } else if (storedSessaoObj) {
+            // Se não tem no URL, mas tem na memória, verifica se expirou
+            const hoursPassed = (Date.now() - storedSessaoObj.timestamp) / (1000 * 60 * 60);
+            if (hoursPassed < TTL_HOURS) {
+                // A sessão é válida, "empurra" o cliente de volta para o URL da mesa
+                const sep = window.location.search ? '&' : '?';
+                window.location.href = window.location.href + sep + 'mesa=' + storedSessaoObj.mesa;
+                return; // Bloqueia o carregamento porque a página vai recarregar sozinha
+            } else {
+                // A sessão expirou, limpa para evitar a "Mesa Fantasma" eterna
+                localStorage.removeItem('pv_mesa_sessao');
+            }
+        }
 
         if (!slug) return;
 
@@ -1037,7 +1088,8 @@
                     quer_nif: querNif,
                     nif_cliente: nifCliente,
                     data_agendada: dataAgendada.toISOString(), 
-                    estado: 'aguarda_confirmacao'
+                    estado: 'aguarda_confirmacao',
+                    status_presenca: 'pendente'
                 }]);
                 if (error) throw error; 
 
