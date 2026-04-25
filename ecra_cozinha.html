@@ -114,24 +114,43 @@
     let minhaLojaId = null;
     let timerAtualizacao = null; 
 
-    // 1. INICIALIZAÇÃO INTELIGENTE (A CORREÇÃO DO "MAYBESINGLE")
+// 1. INICIALIZAÇÃO INTELIGENTE (CORRIGIDA PARA MULTI-DISPOSITIVOS)
     async function init() {
+        // Primeiro, vê se já temos um "Passe VIP" guardado neste dispositivo
+        const { data: { session } } = await _sb.auth.getSession();
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
-        
-        if (slug) {
-            // Em vez de maybeSingle(), usamos limit(1) e extraímos o primeiro resultado da array (se existir)
-            const { data: lojas, error } = await _sb.from('lojas').select('id, nome').eq('slug', slug).limit(1);
-            
+
+        // Se já tem sessão (ex: no teu PC), arranca imediatamente de forma segura
+        if (session) {
+            const { data: lojas } = await _sb.from('lojas').select('id, nome').eq('user_id', session.user.id).limit(1);
             if (lojas && lojas.length > 0) {
                 arrancarCozinha(lojas[0]);
                 return;
-            } else {
-                console.error("Loja não encontrada pelo slug:", slug);
             }
         }
-        verificarSessao();
+
+        // Se não tem sessão (Tablet) mas tentou usar o Link Mágico
+        if (slug && !session) {
+            const { data: lojas, error } = await _sb.from('lojas').select('id, nome').eq('slug', slug).limit(1);
+            
+            // Se a Base de Dados bloquear o acesso por segurança (RLS) ou não encontrar
+            if (error || !lojas || lojas.length === 0) {
+                document.getElementById('login-screen').style.display = 'flex';
+                alert("🔒 Segurança: Este dispositivo não tem sessão ativa. Por favor, faça login com o email do restaurante uma vez para autorizar este Tablet.");
+                return;
+            } else {
+                // Se a tua DB for pública e permitir, ele arranca
+                arrancarCozinha(lojas[0]);
+                return;
+            }
+        }
+
+        // Se não tem link nem sessão, mostra o login normalmente
+        document.getElementById('login-screen').style.display = 'flex';
     }
+
+    // Removi a antiga função verificarSessao() porque o novo init() já faz tudo!
 
     async function verificarSessao() {
         const { data: { session } } = await _sb.auth.getSession();
