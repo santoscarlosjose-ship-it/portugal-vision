@@ -751,29 +751,32 @@
     }
 
     // CIRURGIA 2: Timeout forçado para garantir que a UI limpa o cartão
-    async function confirmarFechoMesa() {
+async function confirmarFechoMesa() {
         const idsStr = document.getElementById('pagar-mesa-ids').value;
         const ids = JSON.parse(idsStr);
         const metodo = document.getElementById('pagar-mesa-metodo').value;
         
         const btn = document.querySelector('#modal-pagar-mesa .btn-success');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...'; btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...'; 
+        btn.disabled = true;
 
         try {
+            // Atualizar os pedidos na Base de Dados
             for(let id of ids) {
                 await _sb.from('pedidos').update({ estado: 'finalizado', metodo_pagamento: metodo }).eq('id', id);
             }
+            
             fecharModal('modal-pagar-mesa');
             
-            // Aguarda 150ms para a base de dados respirar e força o redraw total
-            setTimeout(() => {
-                carregarDados();
-            }, 150);
+            // CIRURGIA: Forçar o carregamento dos dados e Redesenhar todo o Ecrã
+            // O await garante que a função carregarDados só termina quando tudo for desenhado.
+            await carregarDados(); 
             
         } catch(e) {
             alert("Erro ao fechar mesa.");
         } finally {
-            btn.innerHTML = '<i class="fas fa-check-double"></i> Confirmar Pagamento'; btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-double"></i> Confirmar Pagamento'; 
+            btn.disabled = false;
         }
     }
 
