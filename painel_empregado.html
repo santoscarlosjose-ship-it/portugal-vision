@@ -386,18 +386,21 @@
 
         carregarDados();
         
-        // CIRURGIA: Escutar status_presenca para o "Já Cheguei" e também reagir ao DELETE!
+        // CIRURGIA 1: Escutar status_presenca para o "Atrasado" também
         _sb.channel('sala-updates')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta('campainha'); carregarDados(); })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, (payload) => { 
               if (payload.new.status_presenca === 'no_local' && payload.old.status_presenca !== 'no_local') {
                   tocarSomAlerta('campainha');
-                  dispararAlertaCozinha(`O cliente ${payload.new.nome_cliente || 'da reserva'} chegou à receção!`);
+              }
+              // Novo Alerta Sonoro para o Atraso
+              if (payload.new.status_presenca === 'atrasado' && payload.old.status_presenca !== 'atrasado') {
+                  tocarSomAlerta('alarme');
               }
               carregarDados(); 
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); })
-          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); }) // CORREÇÃO PARA O DELETE EM TEMPO REAL
+          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); }) 
           .subscribe();
 
         iniciarEscutaNotificacoes();
@@ -414,11 +417,9 @@
             ).subscribe();
     }
 
+    // CIRURGIA 2: Som da Cozinha nativo
     function dispararAlertaCozinha(mensagem) {
-        try {
-            const audio = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'); 
-            audio.play().catch(e => console.warn("Browser bloqueou o som."));
-        } catch(e) {}
+        tocarSomAlerta('alarme_grave'); // Usa o sintetizador agora!
 
         document.body.classList.add('piscar-ecra');
         setTimeout(() => document.body.classList.remove('piscar-ecra'), 8000);
@@ -428,7 +429,7 @@
         toast.innerHTML = `
             <i class="fas fa-bell notificacao-icon"></i>
             <div style="flex: 1;">
-                <b style="display:block; font-size:14px; margin-bottom:4px;">Notificação:</b>
+                <b style="display:block; font-size:14px; margin-bottom:4px;">Notificação da Cozinha:</b>
                 <span style="font-size:13px; line-height:1.4;">${mensagem}</span>
             </div>
             <button onclick="this.parentElement.classList.remove('mostrar'); setTimeout(() => this.parentElement.remove(), 500); document.body.classList.remove('piscar-ecra');" style="background:transparent; color:white; border:none; width:auto; padding:5px; font-size:18px; cursor:pointer;">
@@ -509,10 +510,14 @@
                 let piscarClass = chamadasMesa.length > 0 ? 'piscar-card' : '';
                 
                 let chamadasHtml = '';
+                let metodoSelecionadoPeloCliente = ''; // CIRURGIA 3: Para pescar a info de pagamento
+
                 chamadasMesa.forEach(c => {
                     const isC = c.tipo_chamada === 'conta'; 
                     if(isC) {
                         const metodo = c.metodo_pagamento || "Dinheiro";
+                        metodoSelecionadoPeloCliente = metodo; // Guarda a escolha do cliente
+
                         const nif = (c.quer_nif && c.nif_cliente) ? `<br><strong style="color: var(--danger);">NIF:</strong> ${c.nif_cliente}` : '';
                         chamadasHtml += `<div style="background:#fef2f2; border:1px solid #fecaca; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; color:var(--danger);">
                                             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -559,7 +564,8 @@
                     btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>
                            <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${idConf})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
                 } else if (m.tudoPronto) { 
-                    btn = `<button class="btn-action btn-success" onclick="prepararFechoMesa('${m.mesa}', ${m.totalAcumulado}, '${JSON.stringify(m.rondas.map(r=>r.id))}')"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
+                    // CIRURGIA 3: Injetar o método de pagamento no botão
+                    btn = `<button class="btn-action btn-success" data-metodo="${metodoSelecionadoPeloCliente}" onclick="prepararFechoMesa('${m.mesa}', ${m.totalAcumulado}, '${JSON.stringify(m.rondas.map(r=>r.id))}', this.dataset.metodo)"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
                 } else {
                     btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo...</button>`;
                 }
@@ -705,7 +711,6 @@
 
     async function confirmarTakeaway(id) { if(confirm("ATENÇÃO:\nO pagamento MBWay já caiu na conta?\nA fatura foi emitida com os dados corretos?\n\n(Se sim, o pedido avança para a cozinha).")) { await _sb.from('pedidos').update({ estado: 'pendente' }).eq('id', id); } }
     
-    // CORREÇÃO AQUI: Faltava o carregarDados(); para atualizar a lista imediatamente
     async function apagarPedido(id) { 
         if(confirm("Tem a certeza absoluta que deseja CANCELAR e APAGAR este pedido do sistema?")) { 
             await _sb.from('pedidos').delete().eq('id', id); 
@@ -713,10 +718,19 @@
         } 
     }
     
-    function prepararFechoMesa(mesa, total, idsStr) {
+    // CIRURGIA 3: Injetar o método de pagamento recebido na chamada
+    function prepararFechoMesa(mesa, total, idsStr, metodoPreferido) {
         document.getElementById('pagar-mesa-num').innerText = mesa;
         document.getElementById('pagar-mesa-total').innerText = total.toFixed(2);
         document.getElementById('pagar-mesa-ids').value = idsStr;
+        
+        // Se houver método de pagamento preferido, seleciona-o. Se não, predefine para Dinheiro.
+        if (metodoPreferido) {
+            document.getElementById('pagar-mesa-metodo').value = metodoPreferido;
+        } else {
+            document.getElementById('pagar-mesa-metodo').value = "Dinheiro";
+        }
+        
         document.getElementById('modal-pagar-mesa').style.display = 'flex';
     }
 
@@ -741,8 +755,45 @@
         }
     }
 
+    // Função de Som Melhorada com Alarme para Cozinha e Atrasos
     function tocarSomAlerta(tipo) { 
-        try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); if(tipo === 'campainha') { osc.frequency.setValueAtTime(800, ctx.currentTime); osc.type = 'sine'; } else { osc.frequency.setValueAtTime(400, ctx.currentTime); osc.type = 'square'; } gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5); } catch(e) {} 
+        try { 
+            const ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+            const osc = ctx.createOscillator(); 
+            const gain = ctx.createGain(); 
+            osc.connect(gain); 
+            gain.connect(ctx.destination); 
+            
+            if(tipo === 'campainha') { 
+                osc.frequency.setValueAtTime(800, ctx.currentTime); 
+                osc.type = 'sine'; 
+                gain.gain.setValueAtTime(0, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1); 
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); 
+                osc.start(ctx.currentTime); 
+                osc.stop(ctx.currentTime + 0.5); 
+            } else if (tipo === 'alarme') {
+                // Som de Atraso (Dois bipes agudos rápidos)
+                osc.frequency.setValueAtTime(1200, ctx.currentTime); 
+                osc.type = 'square'; 
+                gain.gain.setValueAtTime(0, ctx.currentTime); 
+                gain.gain.setValueAtTime(0.2, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime); 
+                osc.stop(ctx.currentTime + 0.4);
+            } else if (tipo === 'alarme_grave') {
+                // Som da Cozinha (Tom grave e mais longo)
+                osc.frequency.setValueAtTime(300, ctx.currentTime); 
+                osc.type = 'sawtooth'; 
+                gain.gain.setValueAtTime(0, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2); 
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5); 
+                osc.start(ctx.currentTime); 
+                osc.stop(ctx.currentTime + 1.5);
+            }
+        } catch(e) {} 
     }
 
     function abrirPOS() {
