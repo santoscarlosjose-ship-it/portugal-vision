@@ -23,8 +23,8 @@
         
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-light); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* ECRÃ DE LOGIN */
-        #login-screen { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        /* ECRÃ DE LOGIN / AUTORIZAÇÃO */
+        .full-screen-modal { position: fixed; inset: 0; background: var(--bg-dark); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
         .input-form { width: 100%; padding: 15px; margin-bottom: 15px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 10px; font-size: 16px; box-sizing: border-box; }
         .input-form:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
@@ -78,24 +78,45 @@
         .empty-kds { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); }
         .empty-kds i { font-size: 5em; margin-bottom: 20px; opacity: 0.2; }
         .empty-kds h2 { font-size: 2em; font-weight: 400; }
+        
+        /* SISTEMA DE NOTIFICAÇÕES */
+        .notificacao-toast {
+            position: fixed; bottom: -100px; right: 20px;
+            background: var(--warning); color: white; padding: 16px 20px;
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+            display: flex; align-items: center; gap: 15px; z-index: 9999;
+            transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 350px;
+        }
+        .notificacao-toast.mostrar { bottom: 20px; }
+        .notificacao-icon { font-size: 24px; animation: pulse-ring 2s infinite; }
+        .piscar-ecra { animation: flash-border 1s infinite; }
+        @keyframes flash-border { 0% { box-shadow: inset 0 0 0px var(--warning); } 50% { box-shadow: inset 0 0 25px var(--warning); } 100% { box-shadow: inset 0 0 0px var(--warning); } }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
+<div id="auth-screen" class="full-screen-modal">
+    <div class="login-box">
+        <h2 style="margin-top:0; color: white;"><i class="fas fa-lock"></i> Segurança</h2>
+        <p style="color: var(--warning); margin-bottom: 25px; font-size: 0.9em;">Este dispositivo não está autorizado. Faça login com a conta de Lojista para registar este terminal.</p>
+        <input type="email" id="auth-email" class="input-form" placeholder="Email do Lojista">
+        <input type="password" id="auth-password" class="input-form" placeholder="Password">
+        <button onclick="autorizarEquipamento()" class="btn-login" id="btn-auth-text"><i class="fas fa-shield-alt"></i> Autorizar Dispositivo</button>
+    </div>
+</div>
+
+<div id="login-screen" class="full-screen-modal">
     <div class="login-box">
         <h2 style="margin-top:0; color: white;"><i class="fas fa-fire-burner"></i> Ecrã da Cozinha</h2>
         <p style="color: var(--text-muted); margin-bottom: 25px;">Acesso restrito a colaboradores.</p>
         
-        <div style="text-align: left; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: var(--text-muted);">1. Identificador da Loja</div>
-        <input type="text" id="slug-loja" class="input-form" placeholder="Ex: restaurante-santos" oninput="procurarLoja()">
-        
-        <div id="label-empregado" style="display: none; text-align: left; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: var(--text-muted);">2. Nome do Colaborador</div>
-        <select id="select-empregado" class="input-form" style="display: none;" onchange="mostrarPin()">
-            <option value="">A procurar equipa...</option>
+        <div style="text-align: left; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: var(--text-muted);">Nome do Colaborador</div>
+        <select id="select-empregado" class="input-form" onchange="mostrarPin()">
+            <option value="">A carregar equipa...</option>
         </select>
         
-        <div id="label-pin" style="display: none; text-align: left; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: var(--text-muted);">3. PIN de Acesso</div>
+        <div id="label-pin" style="display: none; text-align: left; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: var(--text-muted);">PIN de Acesso</div>
         <input type="password" id="pin-empregado" class="input-form" placeholder="******" maxlength="6" style="display: none; text-align: center; letter-spacing: 10px; font-size: 24px;">
         
         <button onclick="fazerLoginEmpregado()" class="btn-login" id="btn-login-text" style="display: none; margin-top: 15px;"><i class="fas fa-sign-in-alt"></i> Iniciar Turno</button>
@@ -112,67 +133,94 @@
             <div style="color: var(--text-muted); font-size: 1.2em; font-weight: bold; background: var(--bg-card); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                 Pendentes: <span id="contador-pendentes" style="color: white;">0</span>
             </div>
-            <button onclick="logout()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.5em;"><i class="fas fa-sign-out-alt"></i></button>
+            <button onclick="logoutEmpregado()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.5em;" title="Sair do Turno"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </header>
 
     <div class="main-content" id="linha-producao">
-        </div>
+    </div>
 </div>
 
 <script>
     const _sb = supabase.createClient("https://hhrmbrcaujfsqfanxqqq.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk");
     
     let minhaLojaId = null;
-    let timerAtualizacao = null; 
+    let nomeLojaAtual = "Cozinha";
     let nomeOperadorAtual = "";
+    let timerAtualizacao = null; 
     let canalNotificacoesCozinha = null;
 
-    // 1. GESTÃO DO LOGIN DE EMPREGADOS (IDÊNTICO À SALA)
-    async function procurarLoja() {
-        const inputSlug = document.getElementById('slug-loja').value.toLowerCase().trim();
-        const selectEmp = document.getElementById('select-empregado');
-        const labelEmp = document.getElementById('label-empregado');
-        const inputPin = document.getElementById('pin-empregado');
-        const labelPin = document.getElementById('label-pin');
-        const btnLogin = document.getElementById('btn-login-text');
-
-        if(inputSlug.length < 3) {
-            selectEmp.style.display = 'none'; labelEmp.style.display = 'none';
-            inputPin.style.display = 'none'; labelPin.style.display = 'none';
-            btnLogin.style.display = 'none'; 
-            return;
-        }
-
-        const { data: loja } = await _sb.from('lojas').select('id, slug, nome').eq('slug', inputSlug).limit(1).maybeSingle();
+    // --- ARRANQUE E CAMADA 1 (AUTORIZAÇÃO) ---
+    async function init() {
+        // Verifica se existe sessão no Supabase (O Tablet está autorizado?)
+        const { data: { session } } = await _sb.auth.getSession();
         
-        if (loja) {
-            minhaLojaId = loja.id;
-            // Guarda o nome da loja temporariamente no DOM para usar após o login
-            document.getElementById('nome-restaurante').dataset.lojanome = loja.nome;
-
-            const { data: equipa } = await _sb.from('empregados').select('*').eq('loja_id', minhaLojaId);
+        if (session) {
+            // O tablet está autorizado. Vai buscar os dados da loja deste Lojista.
+            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', session.user.id).limit(1).maybeSingle();
             
-            if (equipa && equipa.length > 0) {
-                selectEmp.innerHTML = '<option value="" disabled selected>Selecione o seu nome...</option>' + 
-                                      equipa.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
-                selectEmp.style.display = 'block'; labelEmp.style.display = 'block';
-                inputPin.style.display = 'none'; labelPin.style.display = 'none'; btnLogin.style.display = 'none';
+            if (loja) {
+                minhaLojaId = loja.id;
+                nomeLojaAtual = loja.nome;
+                
+                // Agora verificamos se o Empregado já fez login (Sessão Local)
+                const op = sessionStorage.getItem('pv_coz_operador');
+                if (op) {
+                    nomeOperadorAtual = op;
+                    arrancarCozinha();
+                } else {
+                    // Prepara o ecrã de PIN carregando a equipa
+                    carregarEquipaParaLogin();
+                }
             } else {
-                selectEmp.innerHTML = '<option value="" disabled selected>Nenhum colaborador configurado.</option>';
-                selectEmp.style.display = 'block'; labelEmp.style.display = 'block';
-                inputPin.style.display = 'none'; labelPin.style.display = 'none'; btnLogin.style.display = 'none';
+                alert("Erro: Não foi encontrada nenhuma loja associada a esta conta.");
             }
         } else {
-            selectEmp.style.display = 'none'; labelEmp.style.display = 'none';
-            inputPin.style.display = 'none'; labelPin.style.display = 'none';
-            btnLogin.style.display = 'none';
+            // O tablet não tem sessão. Mostra o ecrã de Autorização do Lojista.
+            document.getElementById('auth-screen').style.display = 'flex';
+        }
+    }
+
+    async function autorizarEquipamento() {
+        const e = document.getElementById('auth-email').value;
+        const p = document.getElementById('auth-password').value;
+        const btn = document.getElementById('btn-auth-text');
+        
+        if(!e || !p) return alert("Preencha todos os campos.");
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A validar...';
+        btn.disabled = true;
+
+        const { data, error } = await _sb.auth.signInWithPassword({ email: e, password: p });
+        
+        if (error) { 
+            alert("Erro de Autorização: " + error.message); 
+            btn.innerHTML = '<i class="fas fa-shield-alt"></i> Autorizar Dispositivo';
+            btn.disabled = false;
+        } else { 
+            // Autorização bem sucedida! Oculta o modal e recarrega para entrar na Camada 2
+            document.getElementById('auth-screen').style.display = 'none';
+            init(); 
+        }
+    }
+
+    // --- CAMADA 2 (LOGIN DO EMPREGADO POR PIN) ---
+    async function carregarEquipaParaLogin() {
+        document.getElementById('login-screen').style.display = 'flex';
+        const selectEmp = document.getElementById('select-empregado');
+        
+        const { data: equipa } = await _sb.from('empregados').select('*').eq('loja_id', minhaLojaId);
+        
+        if (equipa && equipa.length > 0) {
+            selectEmp.innerHTML = '<option value="" disabled selected>Selecione o seu nome...</option>' + 
+                                  equipa.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
+        } else {
+            selectEmp.innerHTML = '<option value="" disabled selected>Nenhum colaborador configurado.</option>';
         }
     }
 
     function mostrarPin() {
-        const selectEmp = document.getElementById('select-empregado');
-        if (selectEmp.value) {
+        if (document.getElementById('select-empregado').value) {
             document.getElementById('pin-empregado').style.display = 'block';
             document.getElementById('label-pin').style.display = 'block';
             document.getElementById('btn-login-text').style.display = 'block';
@@ -187,61 +235,45 @@
         if (!empId || !pinDigitado) return alert("Selecione o seu nome e insira o PIN.");
 
         const btn = document.getElementById('btn-login-text');
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A validar...`; btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A validar...`; 
+        btn.disabled = true;
 
         const { data: empregado } = await _sb.from('empregados').select('nome').eq('id', empId).eq('pin_acesso', pinDigitado).maybeSingle();
 
         if (empregado) {
             nomeOperadorAtual = empregado.nome;
-            sessionStorage.setItem('pv_coz_loja_id', minhaLojaId);
             sessionStorage.setItem('pv_coz_operador', nomeOperadorAtual);
             
-            const lojaNome = document.getElementById('nome-restaurante').dataset.lojanome || "Cozinha";
-            arrancarCozinha(minhaLojaId, lojaNome);
+            document.getElementById('login-screen').style.display = 'none';
+            arrancarCozinha();
         } else {
             alert("❌ PIN incorreto.");
             document.getElementById('pin-empregado').value = "";
-            btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Iniciar Turno`; btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Iniciar Turno`; 
+            btn.disabled = false;
         }
     }
 
-    function verificarSessao() {
-        const id = sessionStorage.getItem('pv_coz_loja_id');
-        const op = sessionStorage.getItem('pv_coz_operador');
-        
-        if (id && op) {
-            minhaLojaId = id;
-            nomeOperadorAtual = op;
-            // Carrega o nome da loja para garantir o título correto
-            _sb.from('lojas').select('nome').eq('id', id).single().then(({data}) => {
-                arrancarCozinha(id, data ? data.nome : "Cozinha");
-            });
-        } else {
-            document.getElementById('login-screen').style.display = 'flex';
-            
-            // Magia do Link: Preenche o slug automaticamente se vier no URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const slug = urlParams.get('loja');
-            if (slug) {
-                document.getElementById('slug-loja').value = slug;
-                procurarLoja(); // Despoleta a pesquisa de colaboradores
-            }
-        }
-    }
-
-    function logout() { 
-        sessionStorage.removeItem('pv_coz_loja_id');
+    function logoutEmpregado() { 
+        // Remove apenas a sessão do empregado. O tablet continua autorizado!
         sessionStorage.removeItem('pv_coz_operador');
-        window.location.reload(); 
+        document.getElementById('kds-screen').style.display = 'none';
+        
+        // Limpa o PIN e esconde os campos
+        document.getElementById('select-empregado').value = "";
+        document.getElementById('pin-empregado').value = "";
+        document.getElementById('pin-empregado').style.display = 'none';
+        document.getElementById('label-pin').style.display = 'none';
+        document.getElementById('btn-login-text').style.display = 'none';
+        
+        document.getElementById('login-screen').style.display = 'flex';
     }
 
-    // 2. ARRANCAR COZINHA E REALTIME
-    function arrancarCozinha(lojaId, lojaNome) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('kds-screen').style.display = 'flex';
 
-        minhaLojaId = lojaId;
-        document.getElementById('nome-restaurante').innerText = "Cozinha - " + lojaNome;
+    // --- ARRANQUE E FUNCIONAMENTO DA COZINHA ---
+    function arrancarCozinha() {
+        document.getElementById('kds-screen').style.display = 'flex';
+        document.getElementById('nome-restaurante').innerText = "Cozinha - " + nomeLojaAtual;
         document.getElementById('nome-operador').innerHTML = `<i class="fas fa-user-circle"></i> Op: ${nomeOperadorAtual}`;
 
         carregarPedidos();
@@ -272,13 +304,13 @@
         return palavrasBloqueadas.some(palavra => nomeLower.includes(palavra));
     }
 
-    // 3. CARREGAR E DESENHAR TICKETS
+    // --- CARREGAR E DESENHAR TICKETS ---
     async function carregarPedidos() {
         const { data: pedidos } = await _sb.from('pedidos')
             .select('*')
             .eq('loja_id', minhaLojaId)
             .in('estado', ['pendente', 'preparacao'])
-            .order('estado', { ascending: false }) // 'preparacao' aparece primeiro
+            .order('estado', { ascending: false }) 
             .order('created_at', { ascending: true });
 
         const div = document.getElementById('linha-producao');
@@ -439,7 +471,7 @@
         }, 8000);
     }
 
-    // O init() modificado que trata de ler o URL, verificar sessão e chamar o painel certo.
+    // Arranca a verificação do nível de segurança
     init();
 </script>
 </body>
