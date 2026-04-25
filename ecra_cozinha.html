@@ -119,7 +119,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
         
-        // Se temos o nome da loja no link, ignoramos o login e avançamos direto
         if (slug) {
             const { data: loja } = await _sb.from('lojas').select('id, nome').eq('slug', slug).maybeSingle();
             if (loja) {
@@ -127,8 +126,6 @@
                 return;
             }
         }
-        
-        // Se não há loja no link, recuamos para a verificação de sessão (Login)
         verificarSessao();
     }
 
@@ -187,12 +184,16 @@
         iniciarEscutaNotificacoes();
     }
 
-    // --- FUNÇÃO AUXILIAR: FILTRAR BEBIDAS ---
-    function isBebida(item) {
-        if (item.categoria && item.categoria.toLowerCase() === 'bebidas') return true;
-        const palavrasBebida = ['água', 'agua', 'sumo', 'coca-cola', 'cerveja', 'vinho', 'fanta', 'sprite', 'café', 'cafe', 'ice tea', 'nestea', 'refrigerante'];
+    // --- CIRURGIA 1: FILTRO INTELIGENTE PARA IGNORAR BEBIDAS E SOBREMESAS ---
+    function ignorarNaCozinha(item) {
+        if (item.categoria) {
+            const cat = item.categoria.toLowerCase();
+            if (cat === 'bebidas' || cat === 'sobremesas') return true;
+        }
+        // Lista de exclusão por palavra-chave para o caso da categoria falhar
+        const palavrasBloqueadas = ['água', 'agua', 'sumo', 'coca-cola', 'cerveja', 'vinho', 'fanta', 'sprite', 'café', 'cafe', 'ice tea', 'nestea', 'refrigerante', 'doce', 'pudim', 'mousse', 'torta', 'tarte', 'gelado', 'gelatina'];
         const nomeLower = item.nome.toLowerCase();
-        return palavrasBebida.some(palavra => nomeLower.includes(palavra));
+        return palavrasBloqueadas.some(palavra => nomeLower.includes(palavra));
     }
 
     // 3. CARREGAR E DESENHAR TICKETS
@@ -206,15 +207,14 @@
 
         const div = document.getElementById('linha-producao');
         
-        // FILTRAR OS PEDIDOS QUE TÊM COMIDA
         let pedidosCozinha = [];
         
         if (pedidos) {
             pedidos.forEach(p => {
-                // Filtra os itens do pedido: Só queremos o que NÃO for bebida
-                const itensComida = p.itens.filter(item => !isBebida(item));
+                // Filtra os itens do pedido com o novo filtro inteligente
+                const itensComida = p.itens.filter(item => !ignorarNaCozinha(item));
                 
-                // Se sobrou alguma comida neste pedido, ele entra para a Cozinha
+                // Só empurra para a Cozinha se sobrar algum item que justifique fogo/preparação
                 if (itensComida.length > 0) {
                     const pedidoApenasComida = { ...p, itens: itensComida };
                     pedidosCozinha.push(pedidoApenasComida);
@@ -294,6 +294,7 @@
         await _sb.from('pedidos').update({ estado: novoEstado }).eq('id', id);
     }
 
+    // CIRURGIA 3: Som nativo
     function tocarSinoCozinha() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -322,10 +323,21 @@
             ).subscribe();
     }
 
+    // CIRURGIA 3: Som nativo grave
     function dispararAlertaCozinha(mensagem) {
         try {
-            const audio = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'); 
-            audio.play().catch(e => console.warn("Browser bloqueou o som."));
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 1.5);
         } catch(e) {}
 
         document.body.classList.add('piscar-ecra');
@@ -354,7 +366,6 @@
         }, 8000);
     }
 
-    // Iniciar a máquina!
     init();
 </script>
 </body>
