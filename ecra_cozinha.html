@@ -26,12 +26,12 @@
         /* ECRÃ DE LOGIN */
         #login-screen { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
-        .input-form { width: 100%; padding: 15px; margin-bottom: 15px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 10px; font-size: 16px; }
+        .input-form { width: 100%; padding: 15px; margin-bottom: 15px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 10px; font-size: 16px; box-sizing: border-box; }
         .btn-login { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-login:hover { background: #2563eb; }
 
         /* CABEÇALHO */
-        header { background: #0b1120; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 10; }
+        header { background: #0b1120; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0; }
         .logo-area h1 { margin: 0; font-size: 1.8em; font-weight: 900; color: #e2e8f0; display: flex; align-items: center; gap: 15px; }
         .status-dot { width: 14px; height: 14px; background: var(--success); border-radius: 50%; display: inline-block; box-shadow: 0 0 10px var(--success); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
@@ -40,7 +40,7 @@
         .main-content { display: flex; gap: 20px; padding: 20px; flex-grow: 1; overflow-x: auto; overflow-y: hidden; align-items: flex-start; scroll-behavior: smooth; }
         
         /* CARTÃO DE PEDIDO (TICKET) */
-        .ticket { background: var(--bg-card); border-radius: 12px; width: 350px; min-width: 350px; display: flex; flex-direction: column; overflow: hidden; border: 2px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-shrink: 0; }
+        .ticket { background: var(--bg-card); border-radius: 12px; width: 350px; min-width: 350px; display: flex; flex-direction: column; overflow: hidden; border: 2px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-shrink: 0; max-height: 100%; }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* ESTADO: PENDENTE */
@@ -51,18 +51,20 @@
         .ticket.estado-preparacao { border-top: 6px solid var(--warning); border-color: var(--warning); transform: scale(1.02); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
         .ticket.estado-preparacao .ticket-header { background: rgba(245, 158, 11, 0.15); }
 
-        .ticket-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .ticket-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .mesa-numero { font-size: 1.8em; font-weight: 900; display: flex; align-items: center; gap: 10px; }
         .tempo-espera { font-size: 1.2em; font-weight: 800; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,0.1); }
         
         .ticket-body { padding: 20px; flex-grow: 1; overflow-y: auto; }
+        .ticket-body::-webkit-scrollbar { width: 6px; } .ticket-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
         .item-row { display: flex; gap: 15px; font-size: 1.3em; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .item-row:last-child { border: none; }
         .item-qtde { font-weight: 900; color: var(--warning); min-width: 40px; }
         .item-nome { font-weight: 600; line-height: 1.2; }
-        .item-obs { display: block; font-size: 0.7em; color: var(--text-muted); font-style: italic; margin-top: 4px; } /* Adicionado para notas do cliente */
+        .item-obs { display: block; font-size: 0.7em; color: var(--text-muted); font-style: italic; margin-top: 4px; } 
 
-        .ticket-footer { padding: 15px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.2); }
+        .ticket-footer { padding: 15px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.2); flex-shrink: 0;}
         .btn-kds { width: 100%; padding: 20px; font-size: 1.2em; font-weight: 900; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
         .btn-start { background: var(--bg-dark); color: white; border: 2px solid var(--border-color); }
@@ -82,14 +84,14 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="margin-top:0; color: white;">🍳 Ecrã da Cozinha</h2>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Faça login para ligar o ecrã.</p>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Faça login ou abra com a hiperligação correta da loja.</p>
         <input type="email" id="email" class="input-form" placeholder="Email do Lojista">
         <input type="password" id="password" class="input-form" placeholder="Password">
         <button onclick="fazerLogin()" class="btn-login" id="btn-login-text">Entrar na Cozinha</button>
     </div>
 </div>
 
-<div id="kds-screen" style="display: none; height: 100%;">
+<div id="kds-screen" style="display: none; height: 100%; flex-direction: column;">
     <header>
         <div class="logo-area">
             <h1><span class="status-dot"></span> <span id="nome-restaurante">A carregar Cozinha...</span></h1>
@@ -112,10 +114,33 @@
     let minhaLojaId = null;
     let timerAtualizacao = null; 
 
-    // 1. LOGIN E SESSÃO
+    // 1. INICIALIZAÇÃO INTELIGENTE (URL vs LOGIN)
+    async function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('loja');
+        
+        // Se temos o nome da loja no link, ignoramos o login e avançamos direto
+        if (slug) {
+            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('slug', slug).maybeSingle();
+            if (loja) {
+                arrancarCozinha(loja);
+                return;
+            }
+        }
+        
+        // Se não há loja no link, recuamos para a verificação de sessão (Login)
+        verificarSessao();
+    }
+
     async function verificarSessao() {
         const { data: { session } } = await _sb.auth.getSession();
-        if (session) iniciarCozinha(session.user.id);
+        if (session) {
+            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', session.user.id).limit(1).maybeSingle();
+            if (loja) arrancarCozinha(loja);
+            else document.getElementById('login-screen').style.display = 'flex';
+        } else {
+            document.getElementById('login-screen').style.display = 'flex';
+        }
     }
 
     async function fazerLogin() {
@@ -124,20 +149,24 @@
         const e = document.getElementById('email').value;
         const p = document.getElementById('password').value;
         const { data, error } = await _sb.auth.signInWithPassword({ email: e, password: p });
-        if (error) { alert("Erro: " + error.message); btn.innerText = "Entrar na Cozinha"; } 
-        else { iniciarCozinha(data.user.id); }
+        
+        if (error) { 
+            alert("Erro: " + error.message); 
+            btn.innerText = "Entrar na Cozinha"; 
+        } else { 
+            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', data.user.id).limit(1).maybeSingle();
+            if (loja) arrancarCozinha(loja);
+            else { alert("Não tem nenhuma loja registada."); btn.innerText = "Entrar na Cozinha"; }
+        }
     }
 
     async function logout() { await _sb.auth.signOut(); window.location.reload(); }
 
     // 2. ARRANCAR COZINHA E REALTIME
-    async function iniciarCozinha(userId) {
+    function arrancarCozinha(loja) {
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('kds-screen').style.display = 'block';
+        document.getElementById('kds-screen').style.display = 'flex';
 
-        const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', userId).single();
-        if (!loja) { alert("Não tem nenhuma loja registada."); return; }
-        
         minhaLojaId = loja.id;
         document.getElementById('nome-restaurante').innerText = "Cozinha - " + loja.nome;
 
@@ -154,18 +183,15 @@
                 carregarPedidos();
             })
             .subscribe();
+            
+        iniciarEscutaNotificacoes();
     }
 
     // --- FUNÇÃO AUXILIAR: FILTRAR BEBIDAS ---
-    // Esta função analisa o nome do item ou a categoria (se gravada) para excluir bebidas
     function isBebida(item) {
-        // Se no momento da compra guardarmos a categoria, o ideal é:
         if (item.categoria && item.categoria.toLowerCase() === 'bebidas') return true;
-        
-        // Proteção (Fallback) através de palavras-chave no nome do produto
         const palavrasBebida = ['água', 'agua', 'sumo', 'coca-cola', 'cerveja', 'vinho', 'fanta', 'sprite', 'café', 'cafe', 'ice tea', 'nestea', 'refrigerante'];
         const nomeLower = item.nome.toLowerCase();
-        
         return palavrasBebida.some(palavra => nomeLower.includes(palavra));
     }
 
@@ -180,7 +206,7 @@
 
         const div = document.getElementById('linha-producao');
         
-        // --- NOVO: FILTRAR OS PEDIDOS QUE TÊM COMIDA ---
+        // FILTRAR OS PEDIDOS QUE TÊM COMIDA
         let pedidosCozinha = [];
         
         if (pedidos) {
@@ -190,7 +216,6 @@
                 
                 // Se sobrou alguma comida neste pedido, ele entra para a Cozinha
                 if (itensComida.length > 0) {
-                    // Substitui a lista de itens original pela lista filtrada (só comida)
                     const pedidoApenasComida = { ...p, itens: itensComida };
                     pedidosCozinha.push(pedidoApenasComida);
                 }
@@ -225,7 +250,6 @@
                 localTag = `<i class="far fa-calendar-alt"></i> Reserva`;
             }
 
-            // --- NOVO: RENDERIZAR SÓ OS ITENS DE COMIDA COM POSSÍVEL OBSERVAÇÃO ---
             let itensHtml = p.itens.map(item => {
                 let obsHtml = item.obs ? `<span class="item-obs"><i class="fas fa-comment-alt"></i> ${item.obs}</span>` : '';
                 return `
@@ -246,7 +270,6 @@
                 btnAcao = `<button class="btn-kds btn-start" onclick="mudarEstado(${p.id}, 'preparacao')"><i class="fas fa-fire"></i> Iniciar Preparação</button>`;
             } else if (p.estado === 'preparacao') {
                 classeEstado = 'estado-preparacao';
-                // O GATILHO QUE CRIA A NOTIFICAÇÃO NO SUPABASE
                 btnAcao = `<button class="btn-kds btn-finish" onclick="mudarEstado(${p.id}, 'pronto')"><i class="fas fa-bell"></i> Marcar como Pronto</button>`;
             }
 
@@ -269,7 +292,6 @@
 
     async function mudarEstado(id, novoEstado) {
         await _sb.from('pedidos').update({ estado: novoEstado }).eq('id', id);
-        // Ao atualizar para 'pronto', a nossa função SQL "criar_notificacao_pedido_pronto" dispara automaticamente!
     }
 
     function tocarSinoCozinha() {
@@ -289,7 +311,51 @@
         } catch(e) {}
     }
 
-    verificarSessao();
+    function iniciarEscutaNotificacoes() {
+        if (canalNotificacoesCozinha) _sb.removeChannel(canalNotificacoesCozinha);
+        canalNotificacoesCozinha = _sb.channel('alertas-cozinha')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificacoes', filter: 'loja_id=eq.' + minhaLojaId }, 
+                (payload) => {
+                    dispararAlertaCozinha(payload.new.mensagem);
+                    carregarPedidos();
+                }
+            ).subscribe();
+    }
+
+    function dispararAlertaCozinha(mensagem) {
+        try {
+            const audio = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'); 
+            audio.play().catch(e => console.warn("Browser bloqueou o som."));
+        } catch(e) {}
+
+        document.body.classList.add('piscar-ecra');
+        setTimeout(() => document.body.classList.remove('piscar-ecra'), 8000);
+
+        const toast = document.createElement('div');
+        toast.className = 'notificacao-toast no-print';
+        toast.innerHTML = `
+            <i class="fas fa-bell notificacao-icon"></i>
+            <div style="flex: 1;">
+                <b style="display:block; font-size:14px; margin-bottom:4px;">Notificação:</b>
+                <span style="font-size:13px; line-height:1.4;">${mensagem}</span>
+            </div>
+            <button onclick="this.parentElement.classList.remove('mostrar'); setTimeout(() => this.parentElement.remove(), 500); document.body.classList.remove('piscar-ecra');" style="background:transparent; color:white; border:none; width:auto; padding:5px; font-size:18px; cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('mostrar'), 100);
+
+        setTimeout(() => {
+            if(document.body.contains(toast)) {
+                toast.classList.remove('mostrar');
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 8000);
+    }
+
+    // Iniciar a máquina!
+    init();
 </script>
 </body>
 </html>
