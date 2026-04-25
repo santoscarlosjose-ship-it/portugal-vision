@@ -64,8 +64,14 @@
         .btn-success { background: var(--success); color: white; } .btn-warning { background: var(--warning); color: white; }
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; } .empty-state i { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
 
-        .fab-pos { position: fixed; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5); cursor: pointer; z-index: 100; transition: 0.3s; border: none;}
+        /* BOTÕES FLUTUANTES (FABs) */
+        .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
+        .fab-pos { background: var(--primary); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5); cursor: pointer; transition: 0.3s; border: none;}
         .fab-pos:hover { transform: scale(1.1); }
+        .fab-refresh { background: #94a3b8; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; border: none; align-self: flex-end;}
+        .fab-refresh:hover { transform: scale(1.1); background: #64748b; }
+        .fab-refresh i { transition: transform 0.5s; }
+        .fab-refresh:active i { transform: rotate(180deg); }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; padding: 20px; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 100%; max-width: 900px; max-height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
@@ -156,7 +162,10 @@
         </div>
     </div>
     
-    <button class="fab-pos" onclick="abrirPOS()" title="Novo Pedido Manual"><i class="fas fa-plus"></i></button>
+    <div class="fab-container">
+        <button class="fab-refresh" onclick="carregarDados()" title="Forçar Sincronização (Atualizar)"><i class="fas fa-sync-alt"></i></button>
+        <button class="fab-pos" onclick="abrirPOS()" title="Novo Pedido Manual"><i class="fas fa-plus"></i></button>
+    </div>
 </div>
 
 <div id="modal-pos" class="modal">
@@ -342,7 +351,15 @@
         if (!empId || !pinDigitado) return alert("Selecione o seu nome e insira o PIN.");
 
         const btn = document.getElementById('btn-login-text');
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A validar...`; btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A validar...`; 
+        btn.disabled = true;
+
+        // Tenta Ecrã Inteiro automaticamente
+        try {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            }
+        } catch (e) {}
 
         const { data: empregado } = await _sb.from('empregados').select('nome').eq('id', empId).eq('pin_acesso', pinDigitado).maybeSingle();
 
@@ -354,7 +371,8 @@
         } else {
             alert("❌ PIN incorreto.");
             document.getElementById('pin-empregado').value = "";
-            btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Iniciar Turno`; btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Iniciar Turno`; 
+            btn.disabled = false;
         }
     }
 
@@ -369,9 +387,23 @@
     }
 
     function logout() { 
+        // Tenta sair do ecrã inteiro se estiver ativo
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(err => console.log(err));
+        }
+
         sessionStorage.removeItem('pv_sala_loja_id');
         sessionStorage.removeItem('pv_sala_operador');
-        window.location.reload(); 
+        
+        // Limpa formulário e regressa ao ecrã inicial
+        document.getElementById('select-empregado').value = "";
+        document.getElementById('pin-empregado').value = "";
+        document.getElementById('pin-empregado').style.display = 'none';
+        document.getElementById('label-pin').style.display = 'none';
+        document.getElementById('btn-login-text').style.display = 'none';
+
+        document.getElementById('dashboard-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
     }
 
     async function iniciarDashboard(idLoja) {
@@ -387,7 +419,6 @@
 
         carregarDados();
         
-        // CIRURGIA 1: Ouvir 'pronto' para tocar campainha da Cozinha
         _sb.channel('sala-updates')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta('campainha'); carregarDados(); })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, (payload) => { 
@@ -397,7 +428,6 @@
               if (payload.new.status_presenca === 'atrasado' && payload.old.status_presenca !== 'atrasado') {
                   tocarSomAlerta('alarme');
               }
-              // Novo: Se a cozinha puser PRONTO, avisa a sala!
               if (payload.new.estado === 'pronto' && payload.old.estado !== 'pronto') {
                   tocarSomAlerta('campainha');
               }
@@ -567,7 +597,6 @@
                     btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>
                            <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${idConf})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
                 } else if (m.tudoPronto) { 
-                    // CIRURGIA 3: Botão da Mesa lê o método
                     btn = `<button class="btn-action btn-success" onclick="prepararFechoMesa('Mesa ${m.mesa}', ${m.totalAcumulado}, '[${m.rondas.map(r=>r.id).join(',')}]', '${metodoSelecionadoPeloCliente}')"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
                 } else {
                     btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo...</button>`;
@@ -590,7 +619,7 @@
         let icon = tipo === 'levantamento' ? '<i class="fas fa-shopping-bag" style="color:#8b5cf6;"></i>' : '<i class="far fa-calendar-check" style="color:#14b8a6;"></i>';
         let cClass = tipo === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva'; let estHtml = ''; let btn = '';
         
-        let metodoTakeaway = p.metodo_pagamento || ''; // Apanha o método de pagamento original
+        let metodoTakeaway = p.metodo_pagamento || '';
 
         if(p.estado === 'aguarda_confirmacao') { 
             cClass += ' aguarda-confirmacao'; 
@@ -610,7 +639,6 @@
         else if(p.estado === 'preparacao') { estHtml = `<span style="color: var(--primary); font-weight:bold;">Na Cozinha 🍳</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')">Marcar Pronto</button>`; } 
         else if(p.estado === 'pronto') { 
             estHtml = `<span style="color: var(--success); font-weight:bold;">Pronto! 🔔</span>`; 
-            // CIRURGIA 3: Botão de Fechar Externo lê o método original do pedido
             btn = `<button class="btn-action btn-resolve" onclick="prepararFechoMesa('${tipo === 'levantamento' ? 'Takeaway' : 'Reserva'}', ${p.total}, '[${p.id}]', '${metodoTakeaway}')"><i class="fas fa-check-double"></i> Entregue / Fechar</button>`; 
         }
         
@@ -727,7 +755,6 @@
         } 
     }
     
-    // CIRURGIA 3: Injetar o método e forçar fallback para 'Dinheiro' apenas se vier vazio ou "undefined"
     function prepararFechoMesa(mesa, total, idsStr, metodoPreferido) {
         if (mesa === 'Takeaway' || mesa === 'Reserva') {
             document.getElementById('pagar-mesa-num').innerText = mesa;
@@ -740,7 +767,6 @@
         document.getElementById('pagar-mesa-total').innerText = total.toFixed(2);
         document.getElementById('pagar-mesa-ids').value = idsStr;
         
-        // Verifica se a variável tem valor válido, caso contrário limpa para Dinheiro
         if (metodoPreferido && metodoPreferido !== "undefined" && metodoPreferido !== "") {
             document.getElementById('pagar-mesa-metodo').value = metodoPreferido;
         } else {
@@ -750,33 +776,26 @@
         document.getElementById('modal-pagar-mesa').style.display = 'flex';
     }
 
-    // CIRURGIA 2: Timeout forçado para garantir que a UI limpa o cartão
-async function confirmarFechoMesa() {
+    async function confirmarFechoMesa() {
         const idsStr = document.getElementById('pagar-mesa-ids').value;
         const ids = JSON.parse(idsStr);
         const metodo = document.getElementById('pagar-mesa-metodo').value;
         
         const btn = document.querySelector('#modal-pagar-mesa .btn-success');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...'; 
-        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...'; btn.disabled = true;
 
         try {
-            // Atualizar os pedidos na Base de Dados
             for(let id of ids) {
                 await _sb.from('pedidos').update({ estado: 'finalizado', metodo_pagamento: metodo }).eq('id', id);
             }
-            
             fecharModal('modal-pagar-mesa');
             
-            // CIRURGIA: Forçar o carregamento dos dados e Redesenhar todo o Ecrã
-            // O await garante que a função carregarDados só termina quando tudo for desenhado.
-            await carregarDados(); 
+            await carregarDados();
             
         } catch(e) {
             alert("Erro ao fechar mesa.");
         } finally {
-            btn.innerHTML = '<i class="fas fa-check-double"></i> Confirmar Pagamento'; 
-            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-double"></i> Confirmar Pagamento'; btn.disabled = false;
         }
     }
 
@@ -825,7 +844,6 @@ async function confirmarFechoMesa() {
     function addPOS(id, n, p) { const it = posCarrinho.find(i=>i.id===id); if(it) it.qtde++; else posCarrinho.push({id, nome:n, preco:p, qtde:1}); atualizaPOSCart(); }
     function atualizaPOSCart() { posTotal = 0; document.getElementById('pos-cart-list').innerHTML = posCarrinho.map(i => { posTotal += (i.preco*i.qtde); return `<li>${i.qtde}x ${i.nome} - ${(i.preco*i.qtde).toFixed(2)}€</li>`; }).join(''); document.getElementById('pos-total').innerText = posTotal.toFixed(2); }
     
-    // POS envia sempre com "Dinheiro" por defeito. O empregado corrige no fim, ao fechar a mesa.
     async function enviarPedidoPOS() {
         const mesaStr = document.getElementById('pos-mesa').value; if(!mesaStr) return alert("Insira o Nº da mesa ou Nome."); if(posCarrinho.length === 0) return alert("Carrinho vazio.");
         await _sb.from('pedidos').insert([{ loja_id: minhaLojaId, tipo_pedido: isNaN(mesaStr) ? 'levantamento' : 'mesa', mesa: isNaN(mesaStr) ? null : mesaStr, nome_cliente: isNaN(mesaStr) ? mesaStr : null, itens: posCarrinho, total: posTotal, estado: 'pendente', metodo_pagamento: 'Dinheiro' }]); fecharModal('modal-pos');
