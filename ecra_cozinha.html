@@ -114,16 +114,20 @@
     let minhaLojaId = null;
     let timerAtualizacao = null; 
 
-    // 1. INICIALIZAÇÃO INTELIGENTE (URL vs LOGIN)
+    // 1. INICIALIZAÇÃO INTELIGENTE (A CORREÇÃO DO "MAYBESINGLE")
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
         
         if (slug) {
-            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('slug', slug).maybeSingle();
-            if (loja) {
-                arrancarCozinha(loja);
+            // Em vez de maybeSingle(), usamos limit(1) e extraímos o primeiro resultado da array (se existir)
+            const { data: lojas, error } = await _sb.from('lojas').select('id, nome').eq('slug', slug).limit(1);
+            
+            if (lojas && lojas.length > 0) {
+                arrancarCozinha(lojas[0]);
                 return;
+            } else {
+                console.error("Loja não encontrada pelo slug:", slug);
             }
         }
         verificarSessao();
@@ -132,8 +136,8 @@
     async function verificarSessao() {
         const { data: { session } } = await _sb.auth.getSession();
         if (session) {
-            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', session.user.id).limit(1).maybeSingle();
-            if (loja) arrancarCozinha(loja);
+            const { data: lojas } = await _sb.from('lojas').select('id, nome').eq('user_id', session.user.id).limit(1);
+            if (lojas && lojas.length > 0) arrancarCozinha(lojas[0]);
             else document.getElementById('login-screen').style.display = 'flex';
         } else {
             document.getElementById('login-screen').style.display = 'flex';
@@ -151,8 +155,8 @@
             alert("Erro: " + error.message); 
             btn.innerText = "Entrar na Cozinha"; 
         } else { 
-            const { data: loja } = await _sb.from('lojas').select('id, nome').eq('user_id', data.user.id).limit(1).maybeSingle();
-            if (loja) arrancarCozinha(loja);
+            const { data: lojas } = await _sb.from('lojas').select('id, nome').eq('user_id', data.user.id).limit(1);
+            if (lojas && lojas.length > 0) arrancarCozinha(lojas[0]);
             else { alert("Não tem nenhuma loja registada."); btn.innerText = "Entrar na Cozinha"; }
         }
     }
@@ -184,7 +188,7 @@
         iniciarEscutaNotificacoes();
     }
 
-    // --- CIRURGIA 1: FILTRO INTELIGENTE PARA IGNORAR BEBIDAS E SOBREMESAS ---
+    // --- FILTRO INTELIGENTE PARA IGNORAR BEBIDAS E SOBREMESAS ---
     function ignorarNaCozinha(item) {
         if (item.categoria) {
             const cat = item.categoria.toLowerCase();
@@ -211,7 +215,7 @@
         
         if (pedidos) {
             pedidos.forEach(p => {
-                // Filtra os itens do pedido com o novo filtro inteligente
+                // Filtra os itens do pedido com o filtro inteligente
                 const itensComida = p.itens.filter(item => !ignorarNaCozinha(item));
                 
                 // Só empurra para a Cozinha se sobrar algum item que justifique fogo/preparação
@@ -294,7 +298,7 @@
         await _sb.from('pedidos').update({ estado: novoEstado }).eq('id', id);
     }
 
-    // CIRURGIA 3: Som nativo
+    // Som nativo da campainha
     function tocarSinoCozinha() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -323,7 +327,6 @@
             ).subscribe();
     }
 
-    // CIRURGIA 3: Som nativo grave
     function dispararAlertaCozinha(mensagem) {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
