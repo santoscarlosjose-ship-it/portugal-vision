@@ -27,20 +27,29 @@
         .btn-header { background: #e2e8f0; color: var(--text); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-header:hover { background: #cbd5e1; }
 
-        .main-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; flex-grow: 1; overflow: hidden; height: calc(100vh - 80px); }
+        .main-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; flex-grow: 1; overflow: hidden; height: calc(100vh - 80px); transition: 0.3s; }
         @media (max-width: 1024px) { .main-content { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
         
-        .coluna { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 5px; padding-bottom: 120px; }
+        /* SISTEMA DE EXPANSÃO DE COLUNAS */
+        .main-content.col-expanded .coluna:not(.is-expanded) { display: none; }
+        .coluna.is-expanded { grid-column: 1 / -1; }
+        
+        .coluna { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 5px; padding-bottom: 120px; transition: 0.3s; }
         .coluna::-webkit-scrollbar { width: 8px; } .coluna::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        .coluna-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .coluna-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s;}
+        .coluna-header:hover { background: #f8fafc; transform: translateY(-2px); }
+        .btn-expandir { background: #e2e8f0; color: #475569; border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1em; transition: 0.2s; margin-right: 10px; }
+        .btn-expandir:hover { background: #cbd5e1; color: var(--primary); }
+        .coluna.is-expanded .btn-expandir i::before { content: "\f066"; } /* ícone contrair (fa-compress-arrows-alt) */
         
-        .badge { background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; }
+        .badge { background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold;}
         
-        /* CIRURGIA 1: CARTÃO & EFEITO LUPA (FOCO) */
-        .card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-width 0.2s ease; }
-        .card.focado { transform: scale(1.08); box-shadow: 0 0 0 9999px rgba(0,0,0,0.4), 0 25px 50px -12px rgba(0,0,0,0.5); border-left-width: 10px; z-index: 100; position: relative; }
+        /* CARTÕES RESUMO */
+        .card { background: var(--card); border-radius: 15px; padding: 15px 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-width 0.2s; user-select: none;}
+        .card:hover { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-left-width: 10px; }
+        .card:active { transform: scale(0.98); }
         
         .card.pedido-mesa { border-left-color: var(--primary); } .card.pedido-takeaway { border-left-color: #8b5cf6; } .card.pedido-reserva { border-left-color: #14b8a6; }
         .card.aguarda-confirmacao { border-left-color: var(--warning); background: #fffbeb; }
@@ -48,16 +57,15 @@
         .piscar-card { animation: flash-card 1.5s infinite; }
         @keyframes flash-card { 0% { box-shadow: 0 0 0px var(--danger); border-color: var(--danger); } 50% { box-shadow: 0 0 20px var(--danger); border-color: var(--danger); } 100% { box-shadow: 0 0 0px var(--danger); border-color: transparent; } }
 
-        .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .mesa-tag { font-size: 1.5em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-        .time-tag { color: #64748b; font-size: 0.9em; }
-        .card-body { font-size: 1.1em; color: #475569; }
-        .itens-lista { list-style: none; padding: 0; margin: 0; font-size: 0.95em; } .itens-lista li { padding: 5px 0; border-bottom: 1px solid #f1f5f9; }
-        .ronda-box { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #e2e8f0;}
-        .ronda-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
+        .mesa-tag { font-size: 1.3em; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text); }
+        .time-tag { color: #64748b; font-size: 0.9em; font-weight: bold; }
         
-        .card-footer { display: flex; gap: 10px; margin-top: auto; }
-        .btn-action { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 1em; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        /* ELEMENTOS DO NOVO MODAL DE DETALHE */
+        .itens-lista { list-style: none; padding: 0; margin: 0; font-size: 1.1em; color: #475569; } .itens-lista li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .ronda-box { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0;}
+        .ronda-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;}
+        
+        .btn-action { flex: 1; padding: 18px; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-resolve { background: #f1f5f9; color: var(--text); } .btn-resolve:hover { background: #e2e8f0; }
         .btn-success { background: var(--success); color: white; } .btn-warning { background: var(--warning); color: white; }
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; } .empty-state i { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
@@ -70,14 +78,14 @@
         .fab-refresh i { transition: transform 0.5s; }
         .fab-refresh:active i { transform: rotate(180deg); }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; padding: 20px; justify-content: center; align-items: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); z-index: 9999; padding: 20px; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 100%; max-width: 900px; max-height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
-        .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-        .modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .modal-body { padding: 25px; overflow-y: auto; flex-grow: 1; }
+        .modal-footer { padding: 20px 25px; background: #f8fafc; border-top: 1px solid #e2e8f0; display:flex; gap:15px; flex-wrap: wrap;}
         
-        /* CIRURGIA 2: O "X" CLARO E VISÍVEL */
-        .close-modal { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 24px; cursor: pointer; color: #94a3b8; transition: 0.2s; background: #f1f5f9; }
-        .close-modal:hover { color: var(--danger); background: #fef2f2; }
+        .close-modal { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 24px; cursor: pointer; color: #94a3b8; transition: 0.2s; background: #f1f5f9; border: 2px solid transparent; }
+        .close-modal:hover { color: var(--danger); background: #fef2f2; border-color: #fecaca; }
         
         .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
         .pos-item { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; transition: 0.2s; user-select: none; display: flex; flex-direction: column; align-items: center; background: white;}
@@ -92,10 +100,9 @@
         .piscar-ecra { animation: flash-border 1s infinite; }
         @keyframes flash-border { 0% { box-shadow: inset 0 0 0px var(--danger); } 50% { box-shadow: inset 0 0 25px var(--danger); } 100% { box-shadow: inset 0 0 0px var(--danger); } }
 
-        .btn-mini-edit { background: var(--primary); color: white; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-left: 5px;}
-        .btn-mini-edit:hover { opacity: 0.8; }
+        .btn-mini-edit { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: bold; cursor: pointer; margin-left: 5px; transition: 0.2s;}
+        .btn-mini-edit:hover { opacity: 0.8; transform: translateY(-2px); }
 
-        /* ESTILO PARA O INPUT DO PIN DE SEGURANÇA */
         .pin-modal-input { text-align: center; letter-spacing: 15px; font-size: 28px; font-weight: 800; }
 
         @media print {
@@ -141,17 +148,37 @@
         </div>
     </header>
 
-    <div class="main-content" onclick="removerFocoGeral()"> 
-        <div class="coluna">
-            <div class="coluna-header"><span><i class="fas fa-shopping-bag" style="color:#8b5cf6;"></i> Levantamentos</span><span class="badge" id="count-takeaway">0</span></div>
+    <div class="main-content" id="main-grid"> 
+        <div class="coluna" id="col-takeaway">
+            <div class="coluna-header" onclick="toggleExpandirColuna('col-takeaway')">
+                <span style="display:flex; align-items:center;">
+                    <button class="btn-expandir"><i class="fas fa-expand-arrows-alt"></i></button>
+                    <i class="fas fa-shopping-bag" style="color:#8b5cf6; margin-right:8px;"></i> Levantamentos
+                </span>
+                <span class="badge" id="count-takeaway">0</span>
+            </div>
             <div id="lista-takeaway"><div class="empty-state"><i class="fas fa-box"></i><p>Sem pedidos.</p></div></div>
         </div>
-        <div class="coluna">
-            <div class="coluna-header"><span><i class="far fa-calendar-check" style="color:#14b8a6;"></i> Reservas</span><span class="badge" id="count-reservas">0</span></div>
+        
+        <div class="coluna" id="col-reservas">
+            <div class="coluna-header" onclick="toggleExpandirColuna('col-reservas')">
+                <span style="display:flex; align-items:center;">
+                    <button class="btn-expandir"><i class="fas fa-expand-arrows-alt"></i></button>
+                    <i class="far fa-calendar-check" style="color:#14b8a6; margin-right:8px;"></i> Reservas
+                </span>
+                <span class="badge" id="count-reservas">0</span>
+            </div>
             <div id="lista-reservas"><div class="empty-state"><i class="fas fa-chair"></i><p>Sem reservas ativas.</p></div></div>
         </div>
-        <div class="coluna">
-            <div class="coluna-header"><span><i class="fas fa-utensils" style="color:var(--primary);"></i> Sala</span><span class="badge" id="count-sala">0</span></div>
+        
+        <div class="coluna" id="col-sala">
+            <div class="coluna-header" onclick="toggleExpandirColuna('col-sala')">
+                <span style="display:flex; align-items:center;">
+                    <button class="btn-expandir"><i class="fas fa-expand-arrows-alt"></i></button>
+                    <i class="fas fa-utensils" style="color:var(--primary); margin-right:8px;"></i> Sala
+                </span>
+                <span class="badge" id="count-sala">0</span>
+            </div>
             <div id="lista-sala"><div class="empty-state"><i class="fas fa-utensils"></i><p>Nenhuma mesa a consumir.</p></div></div>
         </div>
     </div>
@@ -159,6 +186,19 @@
     <div class="fab-container">
         <button class="fab-refresh" onclick="forcarAtualizacaoManual()" title="Forçar Sincronização (Atualizar)"><i class="fas fa-sync-alt"></i></button>
         <button class="fab-pos" onclick="abrirPOS()" title="Novo Pedido Manual"><i class="fas fa-plus"></i></button>
+    </div>
+</div>
+
+<div id="modal-detalhes-gerais" class="modal">
+    <div class="modal-content" style="max-width: 650px;">
+        <div class="modal-header">
+            <h3 id="detalhes-gerais-titulo" style="margin:0; font-size: 1.5em; display:flex; align-items:center; gap:10px;">Detalhes</h3>
+            <div class="close-modal" onclick="fecharModal('modal-detalhes-gerais')"><i class="fas fa-times"></i></div> 
+        </div>
+        <div class="modal-body" id="detalhes-gerais-body">
+            </div>
+        <div class="modal-footer" id="detalhes-gerais-footer">
+            </div>
     </div>
 </div>
 
@@ -270,7 +310,6 @@
     </div>
 </div>
 
-
 <div id="modal-fecho" class="modal">
     <div class="modal-content">
         <div class="modal-header no-print">
@@ -301,6 +340,29 @@
     let pedidoEditando = null; 
     let timerAtualizacao = null; 
     let acaoSegurancaPendente = null; 
+    
+    // Globais para gerir o Modal e os Dados Vivos
+    window.pedidosGlobais = [];
+    window.chamadasGlobais = [];
+    window.mesasGlobais = {};
+    let modalDetalheAberto = { tipo: null, id: null }; // Ex: { tipo: 'mesa', id: '5' } ou { tipo: 'externo', id: 123 }
+
+    // --- NOVA LÓGICA: EXPANSÃO DE COLUNAS ---
+    function toggleExpandirColuna(colId) {
+        const grid = document.getElementById('main-grid');
+        const coluna = document.getElementById(colId);
+        
+        if (coluna.classList.contains('is-expanded')) {
+            // Se já está expandida, volta ao normal
+            coluna.classList.remove('is-expanded');
+            grid.classList.remove('col-expanded');
+        } else {
+            // Expande
+            document.querySelectorAll('.coluna').forEach(c => c.classList.remove('is-expanded'));
+            coluna.classList.add('is-expanded');
+            grid.classList.add('col-expanded');
+        }
+    }
 
     // --- CIRURGIA NOVO PEDIDO MANUAL (POS) ---
     function abrirPOS() {
@@ -366,9 +428,9 @@
                             <span style="font-size:0.85em; color:#64748b;">${item.preco.toFixed(2)}€/un</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <button onclick="alterarQtdePOS(${index}, -1)" class="btn-mini-edit" style="background:#e2e8f0; color:#333; height:28px; width:28px;">-</button>
+                            <button onclick="alterarQtdePOS(${index}, -1)" class="btn-mini-edit" style="background:#e2e8f0; color:#333; height:28px; width:28px; display:flex; align-items:center; justify-content:center;">-</button>
                             <span style="font-weight:bold; width:20px; text-align:center;">${item.qtde}</span>
-                            <button onclick="alterarQtdePOS(${index}, 1)" class="btn-mini-edit" style="background:#e2e8f0; color:#333; height:28px; width:28px;">+</button>
+                            <button onclick="alterarQtdePOS(${index}, 1)" class="btn-mini-edit" style="background:#e2e8f0; color:#333; height:28px; width:28px; display:flex; align-items:center; justify-content:center;">+</button>
                         </div>
                     </li>
                 `;
@@ -387,7 +449,6 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
         btn.disabled = true;
 
-        // Lógica simples: Se contiver letras, assumimos que é um Takeaway (nome pessoa). Se for só número, é mesa.
         const isMesa = /^\d+$/.test(mesaInput) || mesaInput.toLowerCase().includes('esplanada') || mesaInput.toLowerCase().includes('mesa');
         const tipoPedido = isMesa ? 'mesa' : 'levantamento';
 
@@ -399,7 +460,7 @@
                 nome_cliente: !isMesa ? mesaInput : 'Cliente Sala',
                 itens: posCarrinho,
                 total: posTotal,
-                estado: 'pendente', // Vai direto para a cozinha/fila
+                estado: 'pendente',
                 status_presenca: isMesa ? 'sentado' : 'pendente',
                 metodo_pagamento: 'No Local'
             }]);
@@ -418,20 +479,8 @@
     }
 
 
-    // --- CIRURGIA 1: EFEITO LUPA ---
-    function focarCartao(elemento) {
-        event.stopPropagation(); // Previne que o clique dispare o removerFocoGeral
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('focado'));
-        elemento.classList.add('focado');
-    }
-    
-    function removerFocoGeral() {
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('focado'));
-    }
-
     // --- CIRURGIA 2: SEGURANÇA (PIN) ---
     function pedirPin(acaoCallback) {
-        event.stopPropagation(); // Previne a lupa de ativar ao clicar no botão
         acaoSegurancaPendente = acaoCallback;
         document.getElementById('input-pin-seguranca').value = '';
         document.getElementById('modal-pin-seguranca').style.display = 'flex';
@@ -590,21 +639,8 @@
         timerAtualizacao = setInterval(carregarDados, 30000); 
         
         _sb.channel('sala-updates')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta('campainha'); carregarDados(); })
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, (payload) => { 
-              if (payload.new.status_presenca === 'no_local' && payload.old.status_presenca !== 'no_local') {
-                  tocarSomAlerta('campainha');
-              }
-              if (payload.new.status_presenca === 'atrasado' && payload.old.status_presenca !== 'atrasado') {
-                  tocarSomAlerta('alarme');
-              }
-              if (payload.new.estado === 'pronto' && payload.old.estado !== 'pronto') {
-                  tocarSomAlerta('campainha');
-              }
-              carregarDados(); 
-          })
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); })
-          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); }) 
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `loja_id=eq.${minhaLojaId}` }, () => { carregarDados(); }) 
           .subscribe();
 
         iniciarEscutaNotificacoes();
@@ -622,8 +658,6 @@
     }
 
     function dispararAlertaCozinha(mensagem) {
-        tocarSomAlerta('alarme_grave'); 
-
         document.body.classList.add('piscar-ecra');
         setTimeout(() => document.body.classList.remove('piscar-ecra'), 8000);
 
@@ -661,7 +695,17 @@
         const { data: chamadas } = await _sb.from('chamadas_sala').select('*').eq('loja_id', minhaLojaId).eq('estado', 'pendente').order('created_at', { ascending: true });
         const { data: pedidos } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).neq('estado', 'finalizado').neq('estado', 'cancelado').order('created_at', { ascending: true });
         
-        renderizarInterface(pedidos || [], chamadas || []);
+        window.pedidosGlobais = pedidos || [];
+        window.chamadasGlobais = chamadas || [];
+        
+        renderizarInterface(window.pedidosGlobais, window.chamadasGlobais);
+        
+        // Se o modal estiver aberto, atualiza a vista interna dele com os novos dados em tempo real
+        if (modalDetalheAberto.tipo === 'mesa' && modalDetalheAberto.id) {
+            abrirDetalhesMesa(modalDetalheAberto.id);
+        } else if (modalDetalheAberto.tipo === 'externo' && modalDetalheAberto.id) {
+            abrirDetalhesExterno(modalDetalheAberto.id);
+        }
     }
 
     function formatarHora(iso) { const d = new Date(iso); return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0'); }
@@ -682,12 +726,12 @@
 
         let htmlTakeaway = '';
         if(takeaways.length === 0) htmlTakeaway = '<div class="empty-state"><i class="fas fa-box"></i><p>Sem pedidos.</p></div>';
-        else takeaways.forEach(p => { htmlTakeaway += gerarCartaoExterno(p, 'levantamento'); });
+        else takeaways.forEach(p => { htmlTakeaway += gerarCartaoResumo(p, 'levantamento'); });
         document.getElementById('lista-takeaway').innerHTML = htmlTakeaway;
 
         let htmlReservas = '';
         if(reservas.length === 0) htmlReservas = '<div class="empty-state"><i class="fas fa-chair"></i><p>Sem reservas ativas.</p></div>';
-        else reservas.forEach(p => { htmlReservas += gerarCartaoExterno(p, 'reserva'); });
+        else reservas.forEach(p => { htmlReservas += gerarCartaoResumo(p, 'reserva'); });
         document.getElementById('lista-reservas').innerHTML = htmlReservas;
 
         const mesasAgrupadas = {};
@@ -703,6 +747,8 @@
                 mesasAgrupadas[mesaNum] = { mesa: mesaNum, rondas: [], totalAcumulado: 0, temParaConfirmar: false, tudoPronto: true, hora: chamadasAtivas[mesaNum][0].created_at, soChamada: true };
             }
         });
+        
+        window.mesasGlobais = mesasAgrupadas;
 
         document.getElementById('count-sala').innerText = Object.keys(mesasAgrupadas).length;
         let htmlSala = '';
@@ -713,163 +759,242 @@
                 let chamadasMesa = chamadasAtivas[m.mesa] || [];
                 let piscarClass = chamadasMesa.length > 0 ? 'piscar-card' : '';
                 
-                let chamadasHtml = '';
-                let metodoSelecionadoPeloCliente = ''; 
-
-                chamadasMesa.forEach(c => {
-                    const isC = c.tipo_chamada === 'conta'; 
-                    if(isC) {
-                        const metodo = c.metodo_pagamento || "Dinheiro";
-                        metodoSelecionadoPeloCliente = metodo; 
-
-                        const nif = (c.quer_nif && c.nif_cliente) ? `<br><strong style="color: var(--danger);">NIF:</strong> ${c.nif_cliente}` : '';
-                        chamadasHtml += `<div style="background:#fef2f2; border:1px solid #fecaca; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; color:var(--danger);">
-                                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                                <strong><i class="fas fa-file-invoice-dollar"></i> Pediu a Conta</strong>
-                                                <button onclick="resolverChamada(${c.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--danger); padding:6px 12px;"><i class="fas fa-check"></i> Feito</button>
-                                            </div>
-                                            <div style="margin-top:5px;"><strong>Paga c/:</strong> ${metodo} ${nif}</div>
-                                        </div>`;
-                    } else if (c.tipo_chamada === 'chegada_reserva') {
-                        chamadasHtml += `<div style="background:#ecfdf5; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; color:#b45309; display:flex; justify-content:space-between; align-items:center;">
-                                            <strong><i class="fas fa-walking"></i> O Cliente Chegou!</strong>
-                                            <button onclick="resolverChamada(${c.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--warning); padding:6px 12px;"><i class="fas fa-check"></i> Ok</button>
-                                        </div>`;
-                    } else {
-                        chamadasHtml += `<div style="background:#fffbeb; border:1px solid #fde68a; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; color:#b45309; display:flex; justify-content:space-between; align-items:center;">
-                                            <strong><i class="fas fa-bell"></i> Chamou Empregado</strong>
-                                            <button onclick="resolverChamada(${c.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--warning); padding:6px 12px;"><i class="fas fa-check"></i> Feito</button>
-                                        </div>`;
-                    }
-                });
-
-                let rondasHtml = ''; let idConf = null;
-                m.rondas.forEach((r, i) => {
-                    let itens = r.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join(''); 
-                    let badge = '';
-                    if (r.estado === 'aguarda_confirmacao') { badge = `<span style="color:var(--warning);">⚠️ Confirmar</span>`; idConf = r.id; } 
-                    else if (r.estado === 'pendente') { badge = `<span style="color:var(--danger);">Na Fila</span> <button onclick="avancarPedido(${r.id}, 'pronto'); event.stopPropagation();" class="btn-mini-edit" style="background:var(--success);"><i class="fas fa-check"></i> Pronto</button>`; } 
-                    else if (r.estado === 'preparacao') badge = `<span style="color:var(--primary);">Cozinha 🍳</span>`; 
-                    else if (r.estado === 'pronto') badge = `<span style="color:var(--success);">Pronto 🔔</span>`;
-                    
-                    rondasHtml += `<div class="ronda-box">
-                                    <div class="ronda-title">
-                                        <span>Ronda ${i + 1} ${badge}</span>
-                                        <div>
-                                            <button onclick="abrirEdicaoSegura(${r.id}); event.stopPropagation();" class="btn-mini-edit"><i class="fas fa-edit"></i></button>
-                                            <button onclick="apagarPedidoSeguro(${r.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
-                                        </div>
-                                    </div>
-                                    <ul class="itens-lista">${itens}</ul>
-                                   </div>`;
-                });
-                
                 let cl = 'pedido-mesa ' + piscarClass; 
-                let btn = '';
+                let estHtml = '';
                 
-                if (m.soChamada) {
-                    btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Apenas chamado, sem pedidos.</button>`;
-                } else if (m.temParaConfirmar) { 
-                    cl += ' aguarda-confirmacao'; 
-                    btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente'); event.stopPropagation();"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>
-                           <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedidoSeguro(${idConf}); event.stopPropagation();"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
-                } else if (m.tudoPronto) { 
-                    btn = `<button class="btn-action btn-success" onclick="prepararFechoMesa('Mesa ${m.mesa}', ${m.totalAcumulado}, '[${m.rondas.map(r=>r.id).join(',')}]', '${metodoSelecionadoPeloCliente}'); event.stopPropagation();"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
-                } else {
-                    btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo...</button>`;
+                if (m.temParaConfirmar) {
+                    cl += ' aguarda-confirmacao';
+                    estHtml = `<span class="badge" style="background:var(--warning); color:white;">A Confirmar</span>`;
+                } else if (m.tudoPronto && !m.soChamada) {
+                    estHtml = `<span class="badge" style="background:var(--success); color:white;">Pronto</span>`;
+                } else if (chamadasMesa.length > 0) {
+                    estHtml = `<span class="badge" style="background:var(--danger); color:white;">Chamou Sala</span>`;
+                } else if (!m.soChamada) {
+                    estHtml = `<span class="badge">Em Consumo</span>`;
                 }
 
-                htmlSala += `<div class="card ${cl}" onclick="focarCartao(this)">
-                                <div class="card-header"><div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div><div class="time-tag">${formatarHora(m.hora)}</div></div>
-                                <div class="card-body">${chamadasHtml}${rondasHtml}
-                                    ${m.soChamada ? '' : `<div style="margin-top: 15px; font-weight: 800; font-size: 1.1em; text-align:right;">Acumulado: ${m.totalAcumulado.toFixed(2)}€</div>`}
-                                </div>
-                                <div class="card-footer">${btn}</div>
-                             </div>`;
+                htmlSala += `
+                <div class="card ${cl} card-resumo" onclick="abrirDetalhesMesa('${m.mesa}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="mesa-tag"><i class="fas fa-utensils"></i> Mesa ${m.mesa}</div>
+                        ${estHtml}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <div class="time-tag">${formatarHora(m.hora)}</div>
+                        <div style="font-weight:bold; font-size:1.1em; color:var(--text);">${m.totalAcumulado.toFixed(2)}€</div>
+                    </div>
+                </div>`;
             });
         }
         document.getElementById('lista-sala').innerHTML = htmlSala;
     }
 
-    function gerarCartaoExterno(p, tipo) {
+    // GERA APENAS O CARTÃO RESUMO NA VISTA GERAL
+    function gerarCartaoResumo(p, tipo) {
+        let icon = tipo === 'levantamento' ? '<i class="fas fa-shopping-bag"></i>' : '<i class="far fa-calendar-check"></i>';
+        let cClass = tipo === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva';
+        
+        let estBadge = '';
+        if(p.estado === 'aguarda_confirmacao') {
+            cClass += ' aguarda-confirmacao';
+            estBadge = `<span class="badge" style="background:var(--warning); color:white;">Validar</span>`;
+        }
+        else if(p.estado === 'pendente') estBadge = `<span class="badge" style="background:var(--danger); color:white;">Fila</span>`;
+        else if(p.estado === 'preparacao') estBadge = `<span class="badge" style="background:var(--primary); color:white;">Cozinha</span>`;
+        else if(p.estado === 'pronto') estBadge = `<span class="badge" style="background:var(--success); color:white;">Pronto</span>`;
+        else if(p.estado === 'reserva_confirmada') {
+            if (p.status_presenca === 'no_local') {
+                cClass += ' piscar-card';
+                estBadge = `<span class="badge" style="background:var(--success); color:white;">À Porta</span>`;
+            }
+            else if (p.status_presenca === 'atrasado') estBadge = `<span class="badge" style="background:var(--warning); color:white;">Atraso</span>`;
+            else estBadge = `<span class="badge">Confirmada</span>`;
+        }
+        
+        return `
+        <div class="card ${cClass} card-resumo" onclick="abrirDetalhesExterno(${p.id})">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="mesa-tag" style="font-size:1.2em;">${icon} ${p.nome_cliente || 'Anónimo'}</div>
+                ${estBadge}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <div class="time-tag">${p.data_agendada ? formatarHora(p.data_agendada) : formatarHora(p.created_at)}</div>
+                <div style="font-weight:bold; color:var(--text);">${p.total.toFixed(2)}€</div>
+            </div>
+        </div>`;
+    }
+
+    // --- CIRURGIA 3: ABRIR O NOVO MODAL DE DETALHES ---
+    
+    // Para Mesas (Sala)
+    function abrirDetalhesMesa(mesaNum) {
+        modalDetalheAberto = { tipo: 'mesa', id: mesaNum };
+        
+        const m = window.mesasGlobais[mesaNum];
+        if(!m) { fecharModal('modal-detalhes-gerais'); return; }
+
+        let chamadasMesa = window.chamadasGlobais.filter(c => c.mesa === mesaNum) || [];
+        let chamadasHtml = '';
+        let metodoSelecionadoPeloCliente = ''; 
+
+        chamadasMesa.forEach(c => {
+            const isC = c.tipo_chamada === 'conta'; 
+            if(isC) {
+                const metodo = c.metodo_pagamento || "Dinheiro";
+                metodoSelecionadoPeloCliente = metodo; 
+                const nif = (c.quer_nif && c.nif_cliente) ? `<br><strong style="color: var(--danger);">NIF:</strong> ${c.nif_cliente}` : '';
+                chamadasHtml += `<div style="background:#fef2f2; border:1px solid #fecaca; padding:15px; border-radius:12px; margin-bottom:15px; font-size:1em; color:var(--danger);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong><i class="fas fa-file-invoice-dollar"></i> Pediu a Conta</strong>
+                                        <button onclick="resolverChamada(${c.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--danger); padding:8px 15px;"><i class="fas fa-check"></i> Feito</button>
+                                    </div>
+                                    <div style="margin-top:8px;"><strong>Paga com:</strong> ${metodo} ${nif}</div>
+                                </div>`;
+            } else {
+                chamadasHtml += `<div style="background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:12px; margin-bottom:15px; font-size:1em; color:#b45309; display:flex; justify-content:space-between; align-items:center;">
+                                    <strong><i class="fas fa-bell"></i> Chamou Empregado</strong>
+                                    <button onclick="resolverChamada(${c.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--warning); padding:8px 15px;"><i class="fas fa-check"></i> Feito</button>
+                                </div>`;
+            }
+        });
+
+        let rondasHtml = ''; let idConf = null;
+        m.rondas.forEach((r, i) => {
+            let itens = r.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join(''); 
+            let badge = '';
+            if (r.estado === 'aguarda_confirmacao') { badge = `<span style="color:var(--warning);">⚠️ Confirmar</span>`; idConf = r.id; } 
+            else if (r.estado === 'pendente') { badge = `<span style="color:var(--danger);">Na Fila</span> <button onclick="avancarPedido(${r.id}, 'pronto'); event.stopPropagation();" class="btn-mini-edit" style="background:var(--success);"><i class="fas fa-check"></i> Pronto</button>`; } 
+            else if (r.estado === 'preparacao') badge = `<span style="color:var(--primary);">Cozinha 🍳</span>`; 
+            else if (r.estado === 'pronto') badge = `<span style="color:var(--success);">Pronto 🔔</span>`;
+            
+            rondasHtml += `<div class="ronda-box">
+                            <div class="ronda-title">
+                                <span>Ronda ${i + 1} &nbsp; ${badge}</span>
+                                <div>
+                                    <button onclick="abrirEdicaoSegura(${r.id}); event.stopPropagation();" class="btn-mini-edit"><i class="fas fa-edit"></i> Editar</button>
+                                    <button onclick="apagarPedidoSeguro(${r.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <ul class="itens-lista">${itens}</ul>
+                           </div>`;
+        });
+
+        let btn = '';
+        if (m.soChamada) {
+            btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Apenas chamado, sem pedidos.</button>`;
+        } else if (m.temParaConfirmar) { 
+            btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente'); event.stopPropagation();"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>
+                   <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedidoSeguro(${idConf}); event.stopPropagation();"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
+        } else if (m.tudoPronto) { 
+            btn = `<button class="btn-action btn-success" onclick="prepararFechoMesa('Mesa ${m.mesa}', ${m.totalAcumulado}, '[${m.rondas.map(r=>r.id).join(',')}]', '${metodoSelecionadoPeloCliente}'); event.stopPropagation();"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
+        } else {
+            btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo (Fila/Cozinha)</button>`;
+        }
+
+        document.getElementById('detalhes-gerais-titulo').innerHTML = `<i class="fas fa-utensils" style="color:var(--primary);"></i> Detalhes Mesa ${m.mesa}`;
+        document.getElementById('detalhes-gerais-body').innerHTML = `
+            ${chamadasHtml}
+            ${rondasHtml}
+            ${m.soChamada ? '' : `<div style="margin-top: 20px; font-weight: 900; font-size: 1.5em; text-align:right; color:var(--text);">Acumulado: ${m.totalAcumulado.toFixed(2)}€</div>`}
+        `;
+        document.getElementById('detalhes-gerais-footer').innerHTML = btn;
+        
+        document.getElementById('modal-detalhes-gerais').style.display = 'flex';
+    }
+
+    // Para Takeaways ou Reservas
+    function abrirDetalhesExterno(id) {
+        modalDetalheAberto = { tipo: 'externo', id: id };
+        
+        const p = window.pedidosGlobais.find(x => x.id === id);
+        if(!p) { fecharModal('modal-detalhes-gerais'); return; }
+
+        let tipo = p.tipo_pedido;
         let itens = p.itens && p.itens.length > 0 ? p.itens.map(it => `<li><strong>${it.qtde}x</strong> ${it.nome}</li>`).join('') : '<li style="color:#94a3b8; font-style:italic;">Reserva de Mesa Apenas</li>';
         let icon = tipo === 'levantamento' ? '<i class="fas fa-shopping-bag" style="color:#8b5cf6;"></i>' : '<i class="far fa-calendar-check" style="color:#14b8a6;"></i>';
-        let cClass = tipo === 'levantamento' ? 'pedido-takeaway' : 'pedido-reserva'; let estHtml = ''; let btn = '';
         
+        let estHtml = ''; let btn = '';
         let metodoTakeaway = p.metodo_pagamento || '';
 
         if(p.estado === 'aguarda_confirmacao') { 
-            cClass += ' aguarda-confirmacao'; 
             if(tipo === 'levantamento') {
                 const infoNif = p.quer_nif ? `<strong><i class="fas fa-file-invoice"></i> Cliente pediu NIF:</strong> ${p.nif_cliente}` : `<strong><i class="fas fa-ban"></i> Cliente NÃO quer NIF.</strong>`;
-                estHtml = `<div style="background:#fff7ed; padding:10px; border-radius:8px; margin-top:10px; border:1px solid #fed7aa; color:#9a3412; font-size:0.9em; display:flex; flex-direction:column; gap:5px;">
+                estHtml = `<div style="background:#fff7ed; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #fed7aa; color:#9a3412; font-size:1em; display:flex; flex-direction:column; gap:8px;">
                             <span><i class="fas fa-mobile-screen-button"></i> Aguarda comprovativo MBWay.</span>${infoNif}</div>`;
-                btn = `<button class="btn-action btn-warning" onclick="confirmarTakeaway(${p.id}); event.stopPropagation();"><i class="fas fa-check"></i> Validar MbWay e Aceitar</button>`;
+                btn = `<button class="btn-action btn-warning" onclick="confirmarTakeaway(${p.id});"><i class="fas fa-check"></i> Validar MbWay e Aceitar</button>`;
             } else {
                 const infoPessoas = p.numero_pessoas ? `<strong>👥 Para ${p.numero_pessoas} pessoas.</strong>` : '';
-                estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Reserva<br>${infoPessoas}</span>`; 
-                btn = `<button class="btn-action btn-warning" onclick="aceitarReserva(${p.id}); event.stopPropagation();"><i class="fas fa-check"></i> Aceitar (Sem Mesa)</button>
-                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id}); event.stopPropagation();" title="Rejeitar"><i class="fas fa-times"></i></button>`;
+                estHtml = `<div style="background:#fffbeb; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #fcd34d; color:#b45309; font-size:1em;">⚠️ Validar Reserva<br>${infoPessoas}</div>`; 
+                btn = `<button class="btn-action btn-warning" onclick="aceitarReserva(${p.id});"><i class="fas fa-check"></i> Aceitar Reserva</button>
+                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id});"><i class="fas fa-times"></i> Rejeitar</button>`;
             }
         } 
-        else if(p.estado === 'pendente') { estHtml = `<span style="color: var(--danger); font-weight:bold;">Aguardar fogão</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto'); event.stopPropagation();"><i class="fas fa-bell"></i> Marcar Pronto (Balcão)</button>`; } 
-        else if(p.estado === 'preparacao') { estHtml = `<span style="color: var(--primary); font-weight:bold;">Na Cozinha 🍳</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto'); event.stopPropagation();">Marcar Pronto</button>`; } 
+        else if(p.estado === 'pendente') { 
+            estHtml = `<div style="background:#fef2f2; padding:15px; border-radius:12px; color:var(--danger); font-weight:bold; margin-bottom:15px;">Aguardar fogão (Fila)</div>`; 
+            btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto');"><i class="fas fa-bell"></i> Marcar Pronto (Balcão)</button>`; 
+        } 
+        else if(p.estado === 'preparacao') { 
+            estHtml = `<div style="background:#eff6ff; padding:15px; border-radius:12px; color:var(--primary); font-weight:bold; margin-bottom:15px;">Na Cozinha 🍳</div>`; 
+            btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto');">Marcar Pronto</button>`; 
+        } 
         else if(p.estado === 'pronto') { 
-            estHtml = `<span style="color: var(--success); font-weight:bold;">Pronto! 🔔</span>`; 
-            btn = `<button class="btn-action btn-resolve" onclick="prepararFechoMesa('${tipo === 'levantamento' ? 'Takeaway' : 'Reserva'}', ${p.total}, '[${p.id}]', '${metodoTakeaway}'); event.stopPropagation();"><i class="fas fa-check-double"></i> Entregue / Fechar</button>`; 
+            estHtml = `<div style="background:#ecfdf5; padding:15px; border-radius:12px; color:var(--success); font-weight:bold; margin-bottom:15px;">Pronto para Entregar! 🔔</div>`; 
+            btn = `<button class="btn-action btn-resolve" onclick="prepararFechoMesa('${tipo === 'levantamento' ? 'Takeaway' : 'Reserva'}', ${p.total}, '[${p.id}]', '${metodoTakeaway}');"><i class="fas fa-check-double"></i> Entregar e Fechar Conta</button>`; 
         }
-        
         else if(p.estado === 'reserva_confirmada') {
             const dataAgendada = p.data_agendada ? new Date(p.data_agendada) : new Date(p.created_at);
             const agora = new Date();
             const diffMinutos = (agora - dataAgendada) / 60000;
 
             if (p.status_presenca === 'no_local') {
-                cClass += ' piscar-card'; 
-                estHtml = `<span style="color: var(--success); font-weight:bold; font-size: 1.1em;"><i class="fas fa-walking fa-bounce"></i> Cliente à Porta!</span>`;
-                btn = `<button class="btn-action btn-success" onclick="abrirModalAceitarReserva(${p.id}); event.stopPropagation();"><i class="fas fa-chair"></i> Sentar Cliente (Atribuir Mesa)</button>`;
+                estHtml = `<div style="background:#ecfdf5; padding:15px; border-radius:12px; color:var(--success); font-weight:bold; font-size:1.1em; margin-bottom:15px;"><i class="fas fa-walking fa-bounce"></i> O Cliente já está à porta!</div>`;
+                btn = `<button class="btn-action btn-success" onclick="abrirModalAceitarReserva(${p.id});"><i class="fas fa-chair"></i> Sentar Cliente (Atribuir Mesa)</button>`;
             } else if (p.status_presenca === 'atrasado') {
-                estHtml = `<span style="color: var(--warning); font-weight:bold;"><i class="fas fa-clock fa-shake"></i> Informou Atraso (${p.minutos_atraso || '?'}m)</span>`;
+                estHtml = `<div style="background:#fffbeb; padding:15px; border-radius:12px; color:var(--warning); font-weight:bold; margin-bottom:15px;"><i class="fas fa-clock fa-shake"></i> Informou Atraso (${p.minutos_atraso || '?'}m)</div>`;
                 btn = `<button class="btn-action btn-resolve" style="opacity:0.8;"><i class="fas fa-hourglass-half"></i> A aguardar chegada</button>
-                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id}); event.stopPropagation();" title="Cancelar"><i class="fas fa-times"></i></button>`;
+                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id});"><i class="fas fa-times"></i> Cancelar</button>`;
             } else {
                 if (diffMinutos > 30) {
-                    cClass += ' piscar-card'; 
-                    estHtml = `<span style="color: var(--danger); font-weight:bold;"><i class="fas fa-exclamation-triangle"></i> NO-SHOW (Atraso > 30m)</span>`;
-                    btn = `<button class="btn-action" style="background:var(--danger); color:white;" onclick="apagarPedidoSeguro(${p.id}); event.stopPropagation();"><i class="fas fa-times"></i> Cancelar Reserva</button>`;
+                    estHtml = `<div style="background:#fef2f2; padding:15px; border-radius:12px; color:var(--danger); font-weight:bold; margin-bottom:15px;"><i class="fas fa-exclamation-triangle"></i> NO-SHOW (Atraso > 30m)</div>`;
+                    btn = `<button class="btn-action" style="background:var(--danger); color:white;" onclick="apagarPedidoSeguro(${p.id});"><i class="fas fa-times"></i> Cancelar Reserva</button>`;
                 } else {
-                    estHtml = `<span style="color: var(--primary); font-weight:bold;">✅ Confirmada. Aguarda cliente.</span>`;
-                    btn = `<button class="btn-action btn-resolve" style="opacity:0.5;"><i class="fas fa-hourglass-half"></i> A aguardar...</button>
-                           <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id}); event.stopPropagation();" title="Cancelar"><i class="fas fa-times"></i></button>`;
+                    estHtml = `<div style="background:#f1f5f9; padding:15px; border-radius:12px; color:var(--primary); font-weight:bold; margin-bottom:15px;">✅ Confirmada. Aguarda cliente.</div>`;
+                    btn = `<button class="btn-action btn-resolve" style="opacity:0.5;"><i class="fas fa-hourglass-half"></i> A aguardar chegada...</button>
+                           <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id});"><i class="fas fa-times"></i> Cancelar</button>`;
                 }
             }
         }
 
-        const tel = p.telefone ? `<a href="tel:${p.telefone}" style="color:var(--primary); text-decoration:none;">📞 ${p.telefone}</a>` : '';
-        return `<div class="card ${cClass}" onclick="focarCartao(this)">
-                    <div class="card-header">
-                        <div class="mesa-tag">${icon} ${tipo}</div>
-                        <div style="display:flex; align-items:center;">
-                            <div class="time-tag" style="margin-right:10px;">Para: ${p.data_agendada ? formatarHora(p.data_agendada) : formatarHora(p.created_at)}</div>
-                            <button onclick="abrirEdicaoSegura(${p.id}); event.stopPropagation();" class="btn-mini-edit"><i class="fas fa-edit"></i></button>
-                            <button onclick="apagarPedidoSeguro(${p.id}); event.stopPropagation();" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div style="font-size:0.85em; text-transform:uppercase; font-weight:bold; color:#64748b; margin-bottom:10px; display:flex; justify-content:space-between;"><span>${p.nome_cliente || 'Anónimo'}</span><span>${tel}</span></div>
-                        ${estHtml}<hr style="border-top:1px dashed #cbd5e1; margin:10px 0;">
-                        <ul class="itens-lista">${itens}</ul><div style="margin-top: 10px; font-weight: 800; font-size: 1.1em; text-align:right;">Total: ${p.total.toFixed(2)}€</div>
-                    </div>
-                    <div class="card-footer">${btn}</div>
-                 </div>`;
+        const tel = p.telefone ? `<a href="tel:${p.telefone}" style="color:var(--primary); text-decoration:none;">📞 ${p.telefone}</a>` : 'S/ Número';
+        
+        document.getElementById('detalhes-gerais-titulo').innerHTML = `${icon} Detalhes de ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+        document.getElementById('detalhes-gerais-body').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <div>
+                    <div style="font-size:1.2em; font-weight:800;">${p.nome_cliente || 'Anónimo'}</div>
+                    <div style="color:#64748b; font-size:0.9em; margin-top:5px;">Para as ${p.data_agendada ? formatarHora(p.data_agendada) : formatarHora(p.created_at)} | ${tel}</div>
+                </div>
+                <div>
+                    <button onclick="abrirEdicaoSegura(${p.id});" class="btn-mini-edit" style="padding:10px 15px;"><i class="fas fa-edit"></i> Editar</button>
+                </div>
+            </div>
+            ${estHtml}
+            <div class="ronda-box" style="margin-top:0;">
+                <div class="ronda-title">Lista de Produtos</div>
+                <ul class="itens-lista">${itens}</ul>
+            </div>
+            <div style="margin-top: 20px; font-weight: 900; font-size: 1.5em; text-align:right; color:var(--text);">Total: ${p.total.toFixed(2)}€</div>
+        `;
+        document.getElementById('detalhes-gerais-footer').innerHTML = btn;
+        
+        document.getElementById('modal-detalhes-gerais').style.display = 'flex';
     }
 
-    async function resolverChamada(id) { await _sb.from('chamadas_sala').update({ estado: 'resolvido' }).eq('id', id); }
-    async function avancarPedido(id, est) { await _sb.from('pedidos').update({ estado: est }).eq('id', id); }
-    
-    async function aceitarReserva(id) { 
-        await _sb.from('pedidos').update({ estado: 'reserva_confirmada' }).eq('id', id); 
-    }
+
+    // --- FUNÇÕES GLOBAIS DE ACÇÃO ---
+    async function resolverChamada(id) { await _sb.from('chamadas_sala').update({ estado: 'resolvido' }).eq('id', id); carregarDados(); }
+    async function avancarPedido(id, est) { await _sb.from('pedidos').update({ estado: est }).eq('id', id); carregarDados(); }
+    async function aceitarReserva(id) { await _sb.from('pedidos').update({ estado: 'reserva_confirmada' }).eq('id', id); carregarDados(); }
 
     function abrirModalAceitarReserva(id) { document.getElementById('reserva-id-escondido').value = id; document.getElementById('input-mesa-reserva').value = ''; document.getElementById('modal-mesa-reserva').style.display = 'flex'; }
     
@@ -885,24 +1010,20 @@
         }).eq('id', id); 
         
         fecharModal('modal-mesa-reserva');
+        fecharModal('modal-detalhes-gerais');
+        carregarDados();
     }
 
-    // --- CIRURGIA 3: SOFT DELETE COM PIN ---
-    function apagarPedidoSeguro(id) {
-        pedirPin(() => efetuarCancelamentoLogico(id));
-    }
-
+    function apagarPedidoSeguro(id) { pedirPin(() => efetuarCancelamentoLogico(id)); }
     async function efetuarCancelamentoLogico(id) {
-        if(confirm("Tem a certeza que deseja CANCELAR este pedido? (Ele será movido para o Histórico e sairá da cozinha).")) { 
+        if(confirm("Tem a certeza que deseja CANCELAR este pedido? (Ele será movido para o Histórico).")) { 
             await _sb.from('pedidos').update({ estado: 'cancelado' }).eq('id', id); 
+            fecharModal('modal-detalhes-gerais');
             carregarDados(); 
         } 
     }
 
-    // --- CIRURGIA 3.1: EDIÇÃO COM PIN E BOTÕES GORDOS ---
-    function abrirEdicaoSegura(id) {
-        pedirPin(() => efetuarAberturaEdicao(id));
-    }
+    function abrirEdicaoSegura(id) { pedirPin(() => efetuarAberturaEdicao(id)); }
 
     async function efetuarAberturaEdicao(id) {
         const { data: p } = await _sb.from('pedidos').select('*').eq('id', id).single();
@@ -948,12 +1069,20 @@
         const btn = document.querySelector('#modal-edicao .btn-success'); if(!btn) return;
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A guardar...`; btn.disabled = true;
         const novoNome = document.getElementById('edit-nome').value.trim(); const novoNif = document.getElementById('edit-nif').value.trim(); const novaMesa = document.getElementById('edit-mesa').value.trim();
-        try { const { error } = await _sb.from('pedidos').update({ nome_cliente: novoNome || null, nif_cliente: novoNif || null, quer_nif: !!novoNif, mesa: novaMesa || null, itens: pedidoEditando.itens, total: pedidoEditando.total }).eq('id', pedidoEditando.id); if (error) throw error; fecharModal('modal-edicao'); carregarDados(); } catch (e) { alert("Erro ao atualizar a base de dados: " + e.message); } finally { btn.innerHTML = `<i class="fas fa-save"></i> Guardar Alterações`; btn.disabled = false; }
+        try { 
+            const { error } = await _sb.from('pedidos').update({ nome_cliente: novoNome || null, nif_cliente: novoNif || null, quer_nif: !!novoNif, mesa: novaMesa || null, itens: pedidoEditando.itens, total: pedidoEditando.total }).eq('id', pedidoEditando.id); 
+            if (error) throw error; 
+            fecharModal('modal-edicao'); 
+            carregarDados(); 
+        } catch (e) { alert("Erro ao atualizar a base de dados: " + e.message); } 
+        finally { btn.innerHTML = `<i class="fas fa-save"></i> Guardar Alterações`; btn.disabled = false; }
     }
 
-    async function confirmarTakeaway(id) { if(confirm("ATENÇÃO:\nO pagamento MBWay já caiu na conta?\nA fatura foi emitida com os dados corretos?\n\n(Se sim, o pedido avança para a cozinha).")) { await _sb.from('pedidos').update({ estado: 'pendente' }).eq('id', id); } }
+    async function confirmarTakeaway(id) { if(confirm("O pagamento MBWay já foi validado e a fatura emitida?")) { await _sb.from('pedidos').update({ estado: 'pendente' }).eq('id', id); carregarDados();} }
     
     function prepararFechoMesa(mesa, total, idsStr, metodoPreferido) {
+        fecharModal('modal-detalhes-gerais'); // Fecha o modal de detalhes para focar no pagamento
+        
         if (mesa === 'Takeaway' || mesa === 'Reserva') {
             document.getElementById('pagar-mesa-num').innerText = mesa;
             document.querySelector('#modal-pagar-mesa h3').innerHTML = '<i class="fas fa-box"></i> Fechar Pedido';
@@ -997,7 +1126,6 @@
         }
     }
 
-    // --- CIRURGIA 5: HISTÓRICO DE TURNO ---
     async function abrirHistorico() {
         document.getElementById('lista-historico').innerHTML = '<p style="text-align:center; padding: 20px;">A carregar histórico de hoje...</p>';
         document.getElementById('modal-historico').style.display = 'flex';
@@ -1021,7 +1149,6 @@
                 const desc = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `Takeaway/Reserva (${p.nome_cliente || 'Anónimo'})`;
                 const infoNif = p.nif_cliente ? `<br><small style="color:#64748b;">NIF: ${p.nif_cliente}</small>` : '';
                 
-                // Botão reabrir pede PIN!
                 const btnReabrir = `<button onclick="pedirPin(() => efetuarReabertura(${p.id}))" class="btn-mini-edit" style="background:var(--warning); padding:8px 12px; font-weight:bold; font-size:12px;"><i class="fas fa-undo"></i> Reabrir Pedido</button>`;
                 
                 return `<div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
@@ -1030,9 +1157,7 @@
                                 <span style="display:inline-block; background:${corBadge}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold; margin-left:10px;">${textBadge}</span>
                                 <span style="display:block; font-size:0.85em; color:#64748b; margin-top:5px;">${formatarHora(p.created_at)} | Via: ${p.metodo_pagamento || '-'} ${infoNif}</span>
                             </div>
-                            <div>
-                                ${btnReabrir}
-                            </div>
+                            <div>${btnReabrir}</div>
                         </div>`;
             }).join('');
         }
@@ -1046,7 +1171,13 @@
         }
     }
 
-    function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+    function fecharModal(id) { 
+        document.getElementById(id).style.display = 'none'; 
+        if (id === 'modal-detalhes-gerais') {
+            modalDetalheAberto = { tipo: null, id: null };
+        }
+    }
+
     verificarSessao();
 </script>
 </body>
