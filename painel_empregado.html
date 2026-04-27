@@ -27,7 +27,6 @@
         .btn-header { background: #e2e8f0; color: var(--text); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-header:hover { background: #cbd5e1; }
 
-        /* NOVA GRID 3 COLUNAS */
         .main-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; flex-grow: 1; overflow: hidden; height: calc(100vh - 80px); }
         @media (max-width: 1024px) { .main-content { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
@@ -38,17 +37,15 @@
         .coluna-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
         
         .badge { background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;}
+        
+        /* CIRURGIA 1: CARTÃO & EFEITO LUPA (FOCO) */
+        .card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease, border-width 0.2s ease; }
+        .card.focado { transform: scale(1.03); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); border-left-width: 10px; z-index: 10; position: relative; }
         .card.pedido-mesa { border-left-color: var(--primary); } .card.pedido-takeaway { border-left-color: #8b5cf6; } .card.pedido-reserva { border-left-color: #14b8a6; }
         .card.aguarda-confirmacao { border-left-color: var(--warning); background: #fffbeb; }
 
-        /* NOVA ANIMAÇÃO DE ALERTA DE MESA / NO-SHOW */
         .piscar-card { animation: flash-card 1.5s infinite; }
-        @keyframes flash-card { 
-            0% { box-shadow: 0 0 0px var(--danger); border-color: var(--danger); } 
-            50% { box-shadow: 0 0 20px var(--danger); border-color: var(--danger); } 
-            100% { box-shadow: 0 0 0px var(--danger); border-color: transparent; } 
-        }
+        @keyframes flash-card { 0% { box-shadow: 0 0 0px var(--danger); border-color: var(--danger); } 50% { box-shadow: 0 0 20px var(--danger); border-color: var(--danger); } 100% { box-shadow: 0 0 0px var(--danger); border-color: transparent; } }
 
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         .mesa-tag { font-size: 1.5em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
@@ -64,7 +61,6 @@
         .btn-success { background: var(--success); color: white; } .btn-warning { background: var(--warning); color: white; }
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; } .empty-state i { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
 
-        /* BOTÕES FLUTUANTES (FABs) */
         .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
         .fab-pos { background: var(--primary); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5); cursor: pointer; transition: 0.3s; border: none;}
         .fab-pos:hover { transform: scale(1.1); }
@@ -87,23 +83,17 @@
         .pos-item img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;}
         .pos-cart { background: #f8fafc; padding: 15px; border-radius: 10px; margin-top: 20px; border: 2px dashed #cbd5e1; }
 
-        /* --- SISTEMA DE NOTIFICAÇÕES --- */
-        .notificacao-toast {
-            position: fixed; bottom: -100px; right: 20px;
-            background: var(--danger); color: white; padding: 16px 20px;
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
-            display: flex; align-items: center; gap: 15px; z-index: 9999;
-            transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            max-width: 350px;
-        }
+        .notificacao-toast { position: fixed; bottom: -100px; right: 20px; background: var(--danger); color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); display: flex; align-items: center; gap: 15px; z-index: 9999; transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); max-width: 350px; }
         .notificacao-toast.mostrar { bottom: 20px; }
         .notificacao-icon { font-size: 24px; animation: pulse-ring 2s infinite; }
         .piscar-ecra { animation: flash-border 1s infinite; }
         @keyframes flash-border { 0% { box-shadow: inset 0 0 0px var(--danger); } 50% { box-shadow: inset 0 0 25px var(--danger); } 100% { box-shadow: inset 0 0 0px var(--danger); } }
 
-        /* Botão pequeno de edição nas rondas */
         .btn-mini-edit { background: var(--primary); color: white; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-left: 5px;}
         .btn-mini-edit:hover { opacity: 0.8; }
+
+        /* CIRURGIA 2: ESTILO PARA O INPUT DO PIN DE SEGURANÇA */
+        .pin-modal-input { text-align: center; letter-spacing: 15px; font-size: 28px; font-weight: 800; }
 
         @media print {
             body * { visibility: hidden; }
@@ -142,7 +132,8 @@
             <span style="font-size: 12px; color: #64748b; margin-left: 15px;" id="nome-operador"></span>
         </div>
         <div class="header-actions">
-            <button class="btn-header" onclick="abrirFechoTurno()"><i class="fas fa-archive"></i> Fecho de Turno</button>
+            <button class="btn-header" onclick="abrirHistorico()"><i class="fas fa-history"></i> Histórico</button>
+            <button class="btn-header" onclick="abrirFechoTurno()"><i class="fas fa-archive"></i> Fecho Diário</button>
             <button onclick="logout()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1.5em;"><i class="fas fa-power-off"></i></button>
         </div>
     </header>
@@ -165,6 +156,32 @@
     <div class="fab-container">
         <button class="fab-refresh" onclick="forcarAtualizacaoManual()" title="Forçar Sincronização (Atualizar)"><i class="fas fa-sync-alt"></i></button>
         <button class="fab-pos" onclick="abrirPOS()" title="Novo Pedido Manual"><i class="fas fa-plus"></i></button>
+    </div>
+</div>
+
+<div id="modal-pin-seguranca" class="modal" style="z-index: 10000;">
+    <div class="modal-content" style="max-width: 350px; text-align: center;">
+        <div class="modal-header" style="background: #fffbeb;">
+            <h3 style="margin:0; color: var(--warning);"><i class="fas fa-user-shield"></i> Autorização</h3>
+            <span class="close-modal" onclick="fecharModal('modal-pin-seguranca')"><i class="fas fa-times"></i></span>
+        </div>
+        <div class="modal-body">
+            <p style="color:#475569; margin-bottom: 15px; font-size: 0.9em; font-weight: bold;">Insira um PIN de Operador válido para confirmar esta ação.</p>
+            <input type="password" id="input-pin-seguranca" class="input-form pin-modal-input" placeholder="******" maxlength="6">
+            <button class="btn-login btn-warning" style="margin-top: 15px; background: var(--warning);" onclick="validarPinSeguranca()"><i class="fas fa-unlock"></i> Desbloquear e Avançar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-historico" class="modal">
+    <div class="modal-content" style="max-width: 800px; max-height: 85vh;">
+        <div class="modal-header">
+            <h3 style="margin:0;"><i class="fas fa-history"></i> Histórico de Turno (Hoje)</h3>
+            <span class="close-modal" onclick="fecharModal('modal-historico')"><i class="fas fa-times"></i></span>
+        </div>
+        <div class="modal-body" style="background: #f1f5f9;">
+            <div id="lista-historico"></div>
+        </div>
     </div>
 </div>
 
@@ -194,7 +211,7 @@
             <span class="close-modal" onclick="fecharModal('modal-mesa-reserva')"><i class="fas fa-times"></i></span>
         </div>
         <div class="modal-body">
-            <p style="color:#475569; margin-bottom: 15px;">Para onde vai encaminhar o cliente? (Abre o modo sala no telemóvel dele)</p>
+            <p style="color:#475569; margin-bottom: 15px;">Para onde vai encaminhar o cliente?</p>
             <input type="text" id="input-mesa-reserva" class="input-form" placeholder="Ex: 5 ou Esplanada 2">
             <input type="hidden" id="reserva-id-escondido">
             <button class="btn-login" style="background: var(--success);" onclick="confirmarMesaReserva()"><i class="fas fa-check"></i> Sentar Cliente</button>
@@ -233,37 +250,19 @@
         </div>
         <div class="modal-body" style="display: flex; flex-direction: column; gap: 15px;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                <div>
-                    <label style="font-size:12px; font-weight:bold; color:#64748b;">Nome do Cliente:</label>
-                    <input type="text" id="edit-nome" class="input-form" style="margin:0; padding:8px;">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:bold; color:#64748b;">NIF:</label>
-                    <input type="text" id="edit-nif" class="input-form" style="margin:0; padding:8px;">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:bold; color:#64748b;">Mesa:</label>
-                    <input type="text" id="edit-mesa" class="input-form" style="margin:0; padding:8px;">
-                </div>
+                <div><label style="font-size:12px; font-weight:bold; color:#64748b;">Nome do Cliente:</label><input type="text" id="edit-nome" class="input-form" style="margin:0; padding:8px;"></div>
+                <div><label style="font-size:12px; font-weight:bold; color:#64748b;">NIF:</label><input type="text" id="edit-nif" class="input-form" style="margin:0; padding:8px;"></div>
+                <div><label style="font-size:12px; font-weight:bold; color:#64748b;">Mesa:</label><input type="text" id="edit-mesa" class="input-form" style="margin:0; padding:8px;"></div>
             </div>
-            
             <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 5px 0;">
-            
-            <h4 style="margin:0; color:#1e293b;">Produtos Associados a este Pedido</h4>
-            <div id="edit-lista-produtos" style="background: #ffffff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; max-height: 250px; overflow-y: auto;">
-                </div>
-            
+            <h4 style="margin:0;">Produtos Associados a este Pedido</h4>
+            <div id="edit-lista-produtos" style="background: #ffffff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; max-height: 250px; overflow-y: auto;"></div>
             <div style="display: flex; gap: 10px; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 10px;">
-                <select id="edit-add-produto-select" class="input-form" style="margin:0; flex: 1;">
-                    </select>
+                <select id="edit-add-produto-select" class="input-form" style="margin:0; flex: 1;"></select>
                 <button class="btn-login" style="width:auto; margin:0;" onclick="adicionarProdutoEdicao()"><i class="fas fa-plus"></i> Inserir</button>
             </div>
-
-            <div style="text-align: right; font-size: 1.3em; font-weight: 800; margin-top: 10px; color:var(--text);">
-                Novo Total a Pagar: <span id="edit-total-preco" style="color:var(--primary);">0.00</span>€
-            </div>
-
-            <button class="btn-login btn-success" style="background: var(--success); margin-top: 10px;" onclick="guardarEdicao()"><i class="fas fa-save"></i> Guardar Alterações do Pedido</button>
+            <div style="text-align: right; font-size: 1.3em; font-weight: 800; margin-top: 10px;">Novo Total a Pagar: <span id="edit-total-preco" style="color:var(--primary);">0.00</span>€</div>
+            <button class="btn-login btn-success" style="background: var(--success); margin-top: 10px;" onclick="guardarEdicao()"><i class="fas fa-save"></i> Guardar Alterações</button>
         </div>
     </div>
 </div>
@@ -277,9 +276,11 @@
         </div>
         <div class="modal-body">
             <div style="background: #e0f2fe; color: #0369a1; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.95em; border: 1px solid #bae6fd;">
-                <i class="fas fa-info-circle"></i> Abaixo estão os pedidos entregues/pagos deste turno.
+                <i class="fas fa-info-circle"></i> O fecho de turno tranca as contas e notifica o Lojista.
             </div>
-            <div id="lista-fecho-cego" style="margin-bottom: 20px;"></div>
+            <div style="text-align:center; padding:20px; border: 1px dashed #cbd5e1; border-radius:10px; margin-bottom:20px;">
+                <p>Verifique o Histórico de Turno para conferir as faturas antes de fechar o dia.</p>
+            </div>
         </div>
         <div style="padding: 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display:flex; gap:10px;" class="no-print">
             <button class="btn-action btn-resolve" onclick="fecharModal('modal-fecho')">Cancelar</button>
@@ -295,7 +296,46 @@
     
     let canalNotificacoesCozinha = null; 
     let pedidoEditando = null; 
-    let timerAtualizacao = null; // Adicionado para a atualização automática
+    let timerAtualizacao = null; 
+    let acaoSegurancaPendente = null; // Variável que guarda a ação que o PIN vai desbloquear
+
+    // --- CIRURGIA 1: EFEITO LUPA (FOCO) ---
+    function focarCartao(elemento) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('focado'));
+        elemento.classList.add('focado');
+    }
+
+    // --- CIRURGIA 2: SEGURANÇA (PEDIDO DE PIN) ---
+    function pedirPin(acaoCallback) {
+        acaoSegurancaPendente = acaoCallback;
+        document.getElementById('input-pin-seguranca').value = '';
+        document.getElementById('modal-pin-seguranca').style.display = 'flex';
+        setTimeout(() => document.getElementById('input-pin-seguranca').focus(), 100);
+    }
+
+    async function validarPinSeguranca() {
+        const pinDigitado = document.getElementById('input-pin-seguranca').value;
+        if(!pinDigitado) return;
+
+        const btn = document.querySelector('#modal-pin-seguranca .btn-warning');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A verificar...'; btn.disabled = true;
+
+        // O sistema verifica se este PIN pertence a algum empregado válido desta loja
+        const { data, error } = await _sb.from('empregados').select('id, nome').eq('loja_id', minhaLojaId).eq('pin_acesso', pinDigitado).maybeSingle();
+        
+        btn.innerHTML = '<i class="fas fa-unlock"></i> Desbloquear e Avançar'; btn.disabled = false;
+
+        if (data) {
+            fecharModal('modal-pin-seguranca');
+            if (acaoSegurancaPendente) {
+                acaoSegurancaPendente(); // O cadeado abre e a ação de apagar/editar corre
+                acaoSegurancaPendente = null;
+            }
+        } else {
+            alert("PIN Inválido ou não autorizado.");
+            document.getElementById('input-pin-seguranca').value = '';
+        }
+    }
 
     async function procurarLoja() {
         const inputSlug = document.getElementById('slug-loja').value.toLowerCase().trim();
@@ -394,7 +434,7 @@
         sessionStorage.removeItem('pv_sala_loja_id');
         sessionStorage.removeItem('pv_sala_operador');
         
-        if(timerAtualizacao) clearInterval(timerAtualizacao); // Limpa o timer
+        if(timerAtualizacao) clearInterval(timerAtualizacao); 
         
         document.getElementById('select-empregado').value = "";
         document.getElementById('pin-empregado').value = "";
@@ -419,7 +459,6 @@
 
         carregarDados();
         
-        // CIRURGIA 1: OTIMIZAÇÃO DO TIMER PARA ATUALIZAR O RELÓGIO DA SALA A CADA 30 SEGUNDOS
         if(timerAtualizacao) clearInterval(timerAtualizacao);
         timerAtualizacao = setInterval(carregarDados, 30000); 
         
@@ -484,21 +523,16 @@
         }, 8000);
     }
 
-    // CIRURGIA 2: FUNÇÃO DO BOTÃO MANUAL
     async function forcarAtualizacaoManual() {
         const btn = document.querySelector('.fab-refresh');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Feedback visual
-        
-        await carregarDados(); // Força a ida ao Supabase
-        
-        setTimeout(() => {
-            btn.innerHTML = '<i class="fas fa-sync-alt"></i>'; // Restaura o botão
-        }, 500);
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+        await carregarDados(); 
+        setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync-alt"></i>'; }, 500);
     }
 
     async function carregarDados() {
         const { data: chamadas } = await _sb.from('chamadas_sala').select('*').eq('loja_id', minhaLojaId).eq('estado', 'pendente').order('created_at', { ascending: true });
-        const { data: pedidos } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).neq('estado', 'finalizado').order('created_at', { ascending: true });
+        const { data: pedidos } = await _sb.from('pedidos').select('*').eq('loja_id', minhaLojaId).neq('estado', 'finalizado').neq('estado', 'cancelado').order('created_at', { ascending: true });
         
         renderizarInterface(pedidos || [], chamadas || []);
     }
@@ -513,7 +547,7 @@
             chamadasAtivas[c.mesa].push(c);
         });
 
-        // Separar tipos de pedidos
+        // Separar tipos de pedidos (Oculta finalizados e cancelados)
         const takeaways = pedidos.filter(p => p.tipo_pedido === 'levantamento');
         const reservas = pedidos.filter(p => p.tipo_pedido === 'reserva');
         const mesas = pedidos.filter(p => p.tipo_pedido === 'mesa');
@@ -542,7 +576,7 @@
             if (p.estado !== 'pronto') mesasAgrupadas[p.mesa].tudoPronto = false;
         });
 
-        // Adicionar Mesas que só têm chamadas (ainda não fizeram pedido)
+        // Adicionar Mesas que só têm chamadas
         Object.keys(chamadasAtivas).forEach(mesaNum => {
             if(!mesasAgrupadas[mesaNum]) {
                 mesasAgrupadas[mesaNum] = { mesa: mesaNum, rondas: [], totalAcumulado: 0, temParaConfirmar: false, tudoPronto: true, hora: chamadasAtivas[mesaNum][0].created_at, soChamada: true };
@@ -598,7 +632,13 @@
                     else if (r.estado === 'pronto') badge = `<span style="color:var(--success);">Pronto 🔔</span>`;
                     
                     rondasHtml += `<div class="ronda-box">
-                                    <div class="ronda-title"><span>Ronda ${i + 1} ${badge}</span><div><button onclick="abrirEdicao(${r.id})" class="btn-mini-edit"><i class="fas fa-edit"></i></button><button onclick="apagarPedido(${r.id})" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button></div></div>
+                                    <div class="ronda-title">
+                                        <span>Ronda ${i + 1} ${badge}</span>
+                                        <div>
+                                            <button onclick="abrirEdicaoSegura(${r.id})" class="btn-mini-edit"><i class="fas fa-edit"></i></button>
+                                            <button onclick="apagarPedidoSeguro(${r.id})" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </div>
                                     <ul class="itens-lista">${itens}</ul>
                                    </div>`;
                 });
@@ -611,14 +651,14 @@
                 } else if (m.temParaConfirmar) { 
                     cl += ' aguarda-confirmacao'; 
                     btn = `<button class="btn-action btn-warning" onclick="avancarPedido(${idConf}, 'pendente')"><i class="fas fa-fire"></i> Enviar p/ Cozinha</button>
-                           <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedido(${idConf})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
+                           <button class="btn-action" style="background:#e2e8f0; flex: 0.3;" onclick="apagarPedidoSeguro(${idConf})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>`; 
                 } else if (m.tudoPronto) { 
                     btn = `<button class="btn-action btn-success" onclick="prepararFechoMesa('Mesa ${m.mesa}', ${m.totalAcumulado}, '[${m.rondas.map(r=>r.id).join(',')}]', '${metodoSelecionadoPeloCliente}')"><i class="fas fa-euro-sign"></i> Pagar e Fechar (${m.totalAcumulado.toFixed(2)}€)</button>`; 
                 } else {
                     btn = `<button class="btn-action btn-resolve" style="opacity:0.5;">Mesa em Consumo...</button>`;
                 }
 
-                htmlSala += `<div class="card ${cl}">
+                htmlSala += `<div class="card ${cl}" onclick="focarCartao(this)">
                                 <div class="card-header"><div class="mesa-tag"><i class="fas fa-utensils" style="color:var(--primary);"></i> Mesa ${m.mesa}</div><div class="time-tag">${formatarHora(m.hora)}</div></div>
                                 <div class="card-body">${chamadasHtml}${rondasHtml}
                                     ${m.soChamada ? '' : `<div style="margin-top: 15px; font-weight: 800; font-size: 1.1em; text-align:right;">Acumulado: ${m.totalAcumulado.toFixed(2)}€</div>`}
@@ -648,7 +688,7 @@
                 const infoPessoas = p.numero_pessoas ? `<strong>👥 Para ${p.numero_pessoas} pessoas.</strong>` : '';
                 estHtml = `<span style="color: var(--warning); font-weight:bold;">⚠️ Validar Reserva<br>${infoPessoas}</span>`; 
                 btn = `<button class="btn-action btn-warning" onclick="aceitarReserva(${p.id})"><i class="fas fa-check"></i> Aceitar (Sem Mesa)</button>
-                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Rejeitar"><i class="fas fa-times"></i></button>`;
+                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id})" title="Rejeitar"><i class="fas fa-times"></i></button>`;
             }
         } 
         else if(p.estado === 'pendente') { estHtml = `<span style="color: var(--danger); font-weight:bold;">Aguardar fogão</span>`; btn = `<button class="btn-action btn-success" onclick="avancarPedido(${p.id}, 'pronto')"><i class="fas fa-bell"></i> Marcar Pronto (Balcão)</button>`; } 
@@ -670,28 +710,28 @@
             } else if (p.status_presenca === 'atrasado') {
                 estHtml = `<span style="color: var(--warning); font-weight:bold;"><i class="fas fa-clock fa-shake"></i> Informou Atraso (${p.minutos_atraso || '?'}m)</span>`;
                 btn = `<button class="btn-action btn-resolve" style="opacity:0.8;"><i class="fas fa-hourglass-half"></i> A aguardar chegada</button>
-                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Cancelar"><i class="fas fa-times"></i></button>`;
+                       <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id})" title="Cancelar"><i class="fas fa-times"></i></button>`;
             } else {
                 if (diffMinutos > 30) {
                     cClass += ' piscar-card'; 
                     estHtml = `<span style="color: var(--danger); font-weight:bold;"><i class="fas fa-exclamation-triangle"></i> NO-SHOW (Atraso > 30m)</span>`;
-                    btn = `<button class="btn-action" style="background:var(--danger); color:white;" onclick="apagarPedido(${p.id})"><i class="fas fa-times"></i> Cancelar Reserva</button>`;
+                    btn = `<button class="btn-action" style="background:var(--danger); color:white;" onclick="apagarPedidoSeguro(${p.id})"><i class="fas fa-times"></i> Cancelar Reserva</button>`;
                 } else {
                     estHtml = `<span style="color: var(--primary); font-weight:bold;">✅ Confirmada. Aguarda cliente.</span>`;
                     btn = `<button class="btn-action btn-resolve" style="opacity:0.5;"><i class="fas fa-hourglass-half"></i> A aguardar...</button>
-                           <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedido(${p.id})" title="Cancelar"><i class="fas fa-times"></i></button>`;
+                           <button class="btn-action" style="background:var(--danger); color:white; flex: 0.3;" onclick="apagarPedidoSeguro(${p.id})" title="Cancelar"><i class="fas fa-times"></i></button>`;
                 }
             }
         }
 
         const tel = p.telefone ? `<a href="tel:${p.telefone}" style="color:var(--primary); text-decoration:none;">📞 ${p.telefone}</a>` : '';
-        return `<div class="card ${cClass}">
+        return `<div class="card ${cClass}" onclick="focarCartao(this)">
                     <div class="card-header">
                         <div class="mesa-tag">${icon} ${tipo}</div>
                         <div style="display:flex; align-items:center;">
                             <div class="time-tag" style="margin-right:10px;">Para: ${p.data_agendada ? formatarHora(p.data_agendada) : formatarHora(p.created_at)}</div>
-                            <button onclick="abrirEdicao(${p.id})" class="btn-mini-edit"><i class="fas fa-edit"></i></button>
-                            <button onclick="apagarPedido(${p.id})" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
+                            <button onclick="abrirEdicaoSegura(${p.id})" class="btn-mini-edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="apagarPedidoSeguro(${p.id})" class="btn-mini-edit" style="background:var(--danger);"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -726,7 +766,26 @@
         fecharModal('modal-mesa-reserva');
     }
 
-    async function abrirEdicao(id) {
+
+    // --- CIRURGIA 3: SOFT DELETE COM PIN ---
+    function apagarPedidoSeguro(id) {
+        pedirPin(() => efetuarCancelamentoLogico(id));
+    }
+
+    async function efetuarCancelamentoLogico(id) {
+        if(confirm("Tem a certeza que deseja CANCELAR este pedido? (Ele será movido para o Histórico e sairá da cozinha).")) { 
+            await _sb.from('pedidos').update({ estado: 'cancelado' }).eq('id', id); 
+            carregarDados(); 
+        } 
+    }
+
+
+    // --- CIRURGIA 3.1: EDIÇÃO COM PIN ---
+    function abrirEdicaoSegura(id) {
+        pedirPin(() => efetuarAberturaEdicao(id));
+    }
+
+    async function efetuarAberturaEdicao(id) {
         const { data: p } = await _sb.from('pedidos').select('*').eq('id', id).single();
         if (!p) return alert("Erro ao carregar pedido.");
         pedidoEditando = JSON.parse(JSON.stringify(p)); 
@@ -759,17 +818,10 @@
         const btn = document.querySelector('#modal-edicao .btn-success'); if(!btn) return;
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A guardar...`; btn.disabled = true;
         const novoNome = document.getElementById('edit-nome').value.trim(); const novoNif = document.getElementById('edit-nif').value.trim(); const novaMesa = document.getElementById('edit-mesa').value.trim();
-        try { const { error } = await _sb.from('pedidos').update({ nome_cliente: novoNome || null, nif_cliente: novoNif || null, quer_nif: !!novoNif, mesa: novaMesa || null, itens: pedidoEditando.itens, total: pedidoEditando.total }).eq('id', pedidoEditando.id); if (error) throw error; fecharModal('modal-edicao'); carregarDados(); } catch (e) { alert("Erro ao atualizar a base de dados: " + e.message); } finally { btn.innerHTML = `<i class="fas fa-save"></i> Guardar Alterações do Pedido`; btn.disabled = false; }
+        try { const { error } = await _sb.from('pedidos').update({ nome_cliente: novoNome || null, nif_cliente: novoNif || null, quer_nif: !!novoNif, mesa: novaMesa || null, itens: pedidoEditando.itens, total: pedidoEditando.total }).eq('id', pedidoEditando.id); if (error) throw error; fecharModal('modal-edicao'); carregarDados(); } catch (e) { alert("Erro ao atualizar a base de dados: " + e.message); } finally { btn.innerHTML = `<i class="fas fa-save"></i> Guardar Alterações`; btn.disabled = false; }
     }
 
     async function confirmarTakeaway(id) { if(confirm("ATENÇÃO:\nO pagamento MBWay já caiu na conta?\nA fatura foi emitida com os dados corretos?\n\n(Se sim, o pedido avança para a cozinha).")) { await _sb.from('pedidos').update({ estado: 'pendente' }).eq('id', id); } }
-    
-    async function apagarPedido(id) { 
-        if(confirm("Tem a certeza absoluta que deseja CANCELAR e APAGAR este pedido do sistema?")) { 
-            await _sb.from('pedidos').delete().eq('id', id); 
-            carregarDados(); 
-        } 
-    }
     
     function prepararFechoMesa(mesa, total, idsStr, metodoPreferido) {
         if (mesa === 'Takeaway' || mesa === 'Reserva') {
@@ -865,22 +917,55 @@
         await _sb.from('pedidos').insert([{ loja_id: minhaLojaId, tipo_pedido: isNaN(mesaStr) ? 'levantamento' : 'mesa', mesa: isNaN(mesaStr) ? null : mesaStr, nome_cliente: isNaN(mesaStr) ? mesaStr : null, itens: posCarrinho, total: posTotal, estado: 'pendente', metodo_pagamento: 'Dinheiro' }]); fecharModal('modal-pos');
     }
 
-    async function abrirFechoTurno() {
-        const hoje = new Date().toISOString().split('T')[0]; const { data: fechados } = await _sb.from('pedidos').select('tipo_pedido, mesa, nome_cliente, created_at, metodo_pagamento, total').eq('loja_id', minhaLojaId).eq('estado', 'finalizado').gte('created_at', hoje + 'T00:00:00').lte('created_at', hoje + 'T23:59:59');
-        const divLista = document.getElementById('lista-fecho-cego');
-        if(!fechados || fechados.length === 0) { divLista.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fas fa-folder-open"></i><p>Nenhum pedido finalizado neste turno.</p></div>`; } 
-        else { divLista.innerHTML = fechados.map(p => { 
-            const desc = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `Takeaway/Reserva (${p.nome_cliente || 'Anónimo'})`; 
-            return `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0; color:#475569;">
-                        <span style="font-weight:bold; color:var(--text);">${desc} <small>(${p.metodo_pagamento || '-'})</small></span>
-                        <small><i class="fas fa-check-circle" style="color:var(--success);"></i> Fechado às ${formatarHora(p.created_at)}</small>
-                    </div>`; 
-            }).join(''); 
+    // --- CIRURGIA 4: HISTÓRICO COM BOTÃO DE REABRIR ---
+    async function abrirHistorico() {
+        document.getElementById('lista-historico').innerHTML = '<p style="text-align:center; padding: 20px;">A carregar histórico de hoje...</p>';
+        document.getElementById('modal-historico').style.display = 'flex';
+        
+        const hoje = new Date().toISOString().split('T')[0]; 
+        
+        const { data: historico } = await _sb.from('pedidos')
+            .select('*')
+            .eq('loja_id', minhaLojaId)
+            .in('estado', ['finalizado', 'cancelado'])
+            .gte('created_at', hoje + 'T00:00:00')
+            .order('created_at', { ascending: false });
+            
+        if(!historico || historico.length === 0) {
+            document.getElementById('lista-historico').innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><p>Nenhum pedido pago ou cancelado hoje.</p></div>`;
+        } else {
+            document.getElementById('lista-historico').innerHTML = historico.map(p => {
+                const isCancelado = p.estado === 'cancelado';
+                const corBadge = isCancelado ? 'var(--danger)' : 'var(--success)';
+                const textBadge = isCancelado ? 'CANCELADO' : 'PAGO';
+                const desc = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `Takeaway/Reserva (${p.nome_cliente || 'Anónimo'})`;
+                const infoNif = p.nif_cliente ? `<br><small style="color:#64748b;">NIF: ${p.nif_cliente}</small>` : '';
+                
+                // Botão reabrir pede PIN!
+                const btnReabrir = `<button onclick="pedirPin(() => efetuarReabertura(${p.id}))" class="btn-mini-edit" style="background:var(--warning); padding:8px 12px; font-weight:bold; font-size:12px;"><i class="fas fa-undo"></i> Reabrir Pedido</button>`;
+                
+                return `<div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <div>
+                                <strong style="font-size:1.1em; color:var(--text);">${desc} - ${p.total.toFixed(2)}€</strong>
+                                <span style="display:inline-block; background:${corBadge}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold; margin-left:10px;">${textBadge}</span>
+                                <span style="display:block; font-size:0.85em; color:#64748b; margin-top:5px;">${formatarHora(p.created_at)} | Via: ${p.metodo_pagamento || '-'} ${infoNif}</span>
+                            </div>
+                            <div>
+                                ${btnReabrir}
+                            </div>
+                        </div>`;
+            }).join('');
         }
-        document.getElementById('modal-fecho').style.display = 'flex';
     }
 
-    function enviarTurnoLojista() { alert("Turno arquivado. Os dados foram enviados com sucesso para o Lojista."); fecharModal('modal-fecho'); }
+    async function efetuarReabertura(id) {
+        if(confirm("Deseja reabrir este pedido? Ele voltará para a Sala (estado PRONTO) e o pagamento será anulado.")) {
+            await _sb.from('pedidos').update({ estado: 'pronto', metodo_pagamento: null }).eq('id', id);
+            fecharModal('modal-historico'); 
+            carregarDados();
+        }
+    }
+
     function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
     verificarSessao();
 </script>
