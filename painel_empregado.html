@@ -313,22 +313,26 @@
         setTimeout(() => document.getElementById('input-pin-seguranca').focus(), 100);
     }
 
-    async function validarPinSeguranca() {
+async function validarPinSeguranca() {
         const pinDigitado = document.getElementById('input-pin-seguranca').value;
         if(!pinDigitado) return;
 
         const btn = document.querySelector('#modal-pin-seguranca .btn-warning');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A verificar...'; btn.disabled = true;
 
-        // O sistema verifica se este PIN pertence a algum empregado válido desta loja. O minhaLojaId agora não se perde.
-        const { data, error } = await _sb.from('empregados').select('id, nome').eq('loja_id', minhaLojaId).eq('pin_acesso', pinDigitado).maybeSingle();
+        // O erro estava aqui! Removemos o .maybeSingle() para não bloquear se houver PINs repetidos na equipa
+        const { data, error } = await _sb.from('empregados')
+            .select('id, nome')
+            .eq('loja_id', minhaLojaId)
+            .eq('pin_acesso', pinDigitado);
         
         btn.innerHTML = '<i class="fas fa-unlock"></i> Desbloquear e Avançar'; btn.disabled = false;
 
-        if (data) {
+        // Se encontrou PELO MENOS UM empregado com este PIN, a porta abre.
+        if (data && data.length > 0) {
             fecharModal('modal-pin-seguranca');
             if (acaoSegurancaPendente) {
-                acaoSegurancaPendente(); // O cadeado abre e a ação de apagar/editar/reabrir corre
+                acaoSegurancaPendente(); // Executa o apagar, o editar ou o reabrir
                 acaoSegurancaPendente = null;
             }
         } else {
