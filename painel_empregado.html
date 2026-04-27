@@ -163,7 +163,7 @@
     </div>
     
     <div class="fab-container">
-        <button class="fab-refresh" onclick="carregarDados()" title="Forçar Sincronização (Atualizar)"><i class="fas fa-sync-alt"></i></button>
+        <button class="fab-refresh" onclick="forcarAtualizacaoManual()" title="Forçar Sincronização (Atualizar)"><i class="fas fa-sync-alt"></i></button>
         <button class="fab-pos" onclick="abrirPOS()" title="Novo Pedido Manual"><i class="fas fa-plus"></i></button>
     </div>
 </div>
@@ -295,6 +295,7 @@
     
     let canalNotificacoesCozinha = null; 
     let pedidoEditando = null; 
+    let timerAtualizacao = null; // Adicionado para a atualização automática
 
     async function procurarLoja() {
         const inputSlug = document.getElementById('slug-loja').value.toLowerCase().trim();
@@ -354,7 +355,6 @@
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A validar...`; 
         btn.disabled = true;
 
-        // Tenta Ecrã Inteiro automaticamente
         try {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => console.log(err));
@@ -387,7 +387,6 @@
     }
 
     function logout() { 
-        // Tenta sair do ecrã inteiro se estiver ativo
         if (document.fullscreenElement) {
             document.exitFullscreen().catch(err => console.log(err));
         }
@@ -395,7 +394,8 @@
         sessionStorage.removeItem('pv_sala_loja_id');
         sessionStorage.removeItem('pv_sala_operador');
         
-        // Limpa formulário e regressa ao ecrã inicial
+        if(timerAtualizacao) clearInterval(timerAtualizacao); // Limpa o timer
+        
         document.getElementById('select-empregado').value = "";
         document.getElementById('pin-empregado').value = "";
         document.getElementById('pin-empregado').style.display = 'none';
@@ -418,6 +418,10 @@
         if(prods) produtosCatalogo = prods;
 
         carregarDados();
+        
+        // CIRURGIA 1: OTIMIZAÇÃO DO TIMER PARA ATUALIZAR O RELÓGIO DA SALA A CADA 30 SEGUNDOS
+        if(timerAtualizacao) clearInterval(timerAtualizacao);
+        timerAtualizacao = setInterval(carregarDados, 30000); 
         
         _sb.channel('sala-updates')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'chamadas_sala', filter: `loja_id=eq.${minhaLojaId}` }, () => { tocarSomAlerta('campainha'); carregarDados(); })
@@ -478,6 +482,18 @@
                 setTimeout(() => toast.remove(), 500);
             }
         }, 8000);
+    }
+
+    // CIRURGIA 2: FUNÇÃO DO BOTÃO MANUAL
+    async function forcarAtualizacaoManual() {
+        const btn = document.querySelector('.fab-refresh');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Feedback visual
+        
+        await carregarDados(); // Força a ida ao Supabase
+        
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i>'; // Restaura o botão
+        }, 500);
     }
 
     async function carregarDados() {
