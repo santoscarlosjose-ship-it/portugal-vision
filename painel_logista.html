@@ -10,7 +10,6 @@
     <meta name="theme-color" content="#0f172a">
     
     <script>
-        // LOGÓTIPO DA PORTUGAL VISION
         const LOGO_PADRAO_PV = "https://hhrmbrcaujfsqfanxqqq.supabase.co/storage/v1/object/public/produtos/plataforma/Portugal%20Vision.png"; 
         
         document.write(`
@@ -18,7 +17,6 @@
             <link id="dynamic-apple-icon" rel="apple-touch-icon" sizes="180x180" href="${LOGO_PADRAO_PV}">
         `);
 
-        // O Manifest garante o ecrã de Splash da Portugal Vision
         const manifestPadrao = {
             "name": "Portugal Vision",
             "short_name": "Painel PV",
@@ -45,13 +43,13 @@
         *, *::before, *::after { box-sizing: border-box; }
 
         :root { 
-            --p: #0f172a;      /* Azul escuro moderno (Primary) */
-            --s: #3b82f6;      /* Azul vibrante (Secondary) */
-            --ok: #10b981;     /* Verde Sucesso */
-            --err: #ef4444;    /* Vermelho Alerta */
-            --gray: #f8fafc;   /* Fundo geral */
-            --warn: #f59e0b;   /* Amarelo Aviso */
-            --ia: #8b5cf6;     /* Roxo Inteligência Artificial */
+            --p: #0f172a; 
+            --s: #3b82f6; 
+            --ok: #10b981;
+            --err: #ef4444;
+            --gray: #f8fafc;
+            --warn: #f59e0b;
+            --ia: #8b5cf6;
             --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
@@ -85,14 +83,12 @@
         .logo-box img { width: 100%; height: 100%; object-fit: cover; }
         .logo-box input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
 
-        /* NOVA ÁREA DE MÉTRICAS FINANCEIRAS */
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .metric-card { background: var(--p); color: white; padding: 15px; border-radius: 14px; text-align: center; box-shadow: var(--card-shadow); }
         .metric-card i { font-size: 1.2rem; opacity: 0.7; margin-bottom: 5px; display: block; }
         .metric-card b { font-size: 1.3rem; display: block; font-weight: 700; margin: 5px 0; }
         .metric-card span { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;}
 
-        /* ÁREA DE ESTATÍSTICAS */
         .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .stat-card { background: var(--p); color: white; padding: 16px; border-radius: 14px; text-align: center; box-shadow: var(--card-shadow); }
         .stat-card b { display: block; font-size: 1.4rem; margin-top: 5px; font-weight: 700; }
@@ -150,8 +146,9 @@
         .staff-list td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;}
         .btn-del-staff { color: var(--err); background: none; border: none; cursor: pointer; font-size: 1.1rem; width: auto; padding: 5px;}
         .btn-del-staff:hover { background: #fee2e2; transform: none; box-shadow: none;}
+        .btn-edit-staff { color: var(--s); background: none; border: none; cursor: pointer; font-size: 1.1rem; width: auto; padding: 5px;}
+        .btn-edit-staff:hover { background: #eff6ff; transform: none; box-shadow: none;}
 
-        /* --- NOVO: SISTEMA DE NOTIFICAÇÕES TOAST (REALTIME) --- */
         .notificacao-toast {
             position: fixed;
             bottom: -100px;
@@ -172,7 +169,7 @@
         .notificacao-icon { font-size: 24px; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        /* CSS DE IMPRESSÃO */
+        /* CSS DE IMPRESSÃO REESCRITO PARA MENU FÍSICO */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: white; padding: 0; color: black; }
@@ -180,9 +177,31 @@
             .no-print, button, .prod-actions, .logo-box input, .auth-card { display: none !important; }
             .card { box-shadow: none; border: none; padding: 0; margin: 0; }
             #print-area { display: block !important; padding: 2cm !important; width: 100%; }
+            
+            /* Tabela para o Relatório PDF */
             .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;}
             .print-table th, .print-table td { border: 1px solid #ccc; padding: 10px; text-align: left; }
             .print-table td.money { text-align: right; font-weight: bold; }
+            
+            /* Classes para o Menu Físico (1 prato por folha) */
+            .print-menu-item {
+                page-break-after: always; /* Força quebra de página */
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+            }
+            .print-menu-img {
+                max-width: 80%;
+                max-height: 50vh;
+                object-fit: contain;
+                border-radius: 12px;
+                margin-bottom: 20px;
+            }
+            
             @page { margin: 1.5cm; size: A4 portrait; }
         }
 
@@ -265,15 +284,10 @@
                         <div>
                             <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Tema do Catálogo:</label>
                             <select id="v-tema-sazonal" onchange="marcarAltPerfil()" style="margin-top: 0;">
-                                <option value="padrao">⚪ Padrão (Sem Tema)</option>
-                                <option value="namorados">💘 Dia dos Namorados</option>
-                                <option value="carnaval">🎭 Carnaval</option>
-                                <option value="pai">👔 Dia do Pai</option>
-                                <option value="pascoa">🐰 Páscoa</option>
-                                <option value="mae">💐 Dia da Mãe</option>
-                                <option value="bruxas">🎃 Dia das Bruxas</option>
-                                <option value="natal">🎄 Natal</option>
-                                <option value="anonovo">🎆 Ano Novo</option>
+                                <option value="padrao">⚪ Claro Padrão</option>
+                                <option value="minimalista">⬜ Claro Minimalista</option>
+                                <option value="elegante">🤍 Claro Elegante</option>
+                                <option value="bege">🟤 Bege Suave</option>
                             </select>
                         </div>
                     </div>
@@ -284,7 +298,7 @@
                 </div>
             </div>
 
-            <h4 style="margin: 0 0 10px 0; color: var(--p);"><i class="fas fa-chart-line"></i> Tesouraria e Vendas de Hoje</h4>
+            <h4 style="margin: 0 0 10px 0; color: var(--p);"><i class="fas fa-chart-line"></i> Tesouraria e Vendas</h4>
             <div class="metrics-grid">
                 <div class="metric-card" style="background: var(--p);">
                     <i class="fas fa-receipt"></i>
@@ -308,9 +322,13 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-                <button style="background: #475569;" onclick="gerarRelatorioPDF()"><i class="fas fa-file-pdf"></i> Exportar Fecho de Caixa</button>
-                <button style="background: #475569;" onclick="gerarMenuFisico()"><i class="fas fa-print"></i> Imprimir Menu de Sala</button>
+            <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 10px; background: #e2e8f0; padding: 5px 10px; border-radius: 10px;">
+                    <label style="font-size: 12px; font-weight: bold; color: #475569;">Data do Fecho:</label>
+                    <input type="date" id="data-export" style="margin: 0; padding: 8px; height: auto;">
+                </div>
+                <button style="background: #475569; width: auto; flex: 1;" onclick="gerarRelatorioPDF()"><i class="fas fa-file-pdf"></i> Exportar Fecho</button>
+                <button style="background: #475569; width: auto; flex: 1;" onclick="gerarMenuFisico()"><i class="fas fa-print"></i> Imprimir Menu</button>
             </div>
             <hr style="border: 0; border-bottom: 1px dashed #e2e8f0; margin-bottom: 20px;">
 
@@ -362,7 +380,16 @@
                 </div>
 
                 <input type="text" id="p-nome" placeholder="Nome (Ex: Bacalhau à Brás)" style="grid-column: span 2">
-                <input type="number" id="p-preco" placeholder="Preço (€)">
+                
+                <div style="grid-column: span 1; display: flex; gap: 10px;">
+                    <input type="number" id="p-preco" placeholder="Preço (€)" style="flex: 2;">
+                    <select id="p-taxa-iva" style="flex: 1; margin: 6px 0 12px;">
+                        <option value="23">23%</option>
+                        <option value="13">13%</option>
+                        <option value="6">6%</option>
+                        <option value="0">Isento</option>
+                    </select>
+                </div>
                 
                 <div style="grid-column: span 1">
                     <label style="font-size:12px; color:#64748b; font-weight: 600; margin-bottom: 4px; display: block;">Categoria:</label>
@@ -436,15 +463,17 @@
             </h3>
             
             <div id="config-staff" class="hidden" style="margin-top: 15px;">
-                <p style="font-size: 0.9em; color: #64748b;">Crie códigos de acesso (PIN) para os seus empregados operarem o tablet de sala e fazerem a gestão dos pedidos e mesas.</p>
+                <p style="font-size: 0.9em; color: #64748b;">Crie ou edite códigos de acesso (PIN) para os seus empregados operarem o tablet de sala.</p>
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
+                    <input type="hidden" id="staff-edit-id">
                     <input type="text" id="staff-nome" placeholder="Nome do Empregado" style="margin:0; flex: 1;">
                     <input type="password" id="staff-pin" placeholder="PIN (ex: 1234)" maxlength="6" style="margin:0; width: 120px;">
-                    <button style="background: var(--ok); width: auto;" onclick="adicionarEmpregado()"><i class="fas fa-user-plus"></i></button>
+                    <button id="btn-add-staff" style="background: var(--ok); width: auto;" onclick="salvarEmpregado()"><i class="fas fa-user-plus"></i></button>
+                    <button id="btn-cancel-staff" class="hidden" style="background: #94a3b8; width: auto;" onclick="cancelarEdicaoStaff()"><i class="fas fa-times"></i></button>
                 </div>
                 <div style="overflow-x: auto;">
                     <table class="staff-list" id="tabela-staff">
-                        <thead><tr><th>Nome da Equipa</th><th>PIN</th><th>Remover</th></tr></thead>
+                        <thead><tr><th>Nome da Equipa</th><th>PIN</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -522,8 +551,9 @@
     
     let lojaAtiva = null;
     let produtosLocais = []; 
+    let empregadosLocais = [];
     const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-    const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"};
+    const nomeDiasInt = {1: "Segunda-feira", 2: "Terça-feira", 3: "Quarta-feira", 4: "Quinta-feira", 5: "Sexta-feira", 6: "Sábado", 0: "Domingo"};
 
     let canalNotificacoes = null;
 
@@ -554,7 +584,6 @@
         }
     };
 
-    // --- FUNÇÕES DO MODAL DE ALERGÉNIOS ---
     function mostrarInfoAlergenios() { document.getElementById('modal-alergenios').classList.remove('hidden'); }
     function fecharInfoAlergenios() { document.getElementById('modal-alergenios').classList.add('hidden'); }
 
@@ -597,7 +626,6 @@
         else { div.classList.add('hidden'); seta.innerText = '▼'; }
     }
 
-    // --- NOVA INTERFACE DE HORÁRIOS: LOJA VS COZINHA ---
     document.getElementById('horarios-lista').innerHTML = diasSemana.map((dia, i) => `
         <div class="dia-config" id="card-${i}">
             <div class="dia-header">
@@ -780,6 +808,9 @@
         document.getElementById('link-catalogo').value = link;
         QRCode.toDataURL(link, { width: 250, margin: 2 }, (err, url) => { if(!err) document.getElementById('img-qrcode').src = url; });
 
+        // Set date input to today
+        document.getElementById('data-export').value = new Date().toISOString().split('T')[0];
+
         verificarPlano();
         carregarDados();
         carregarMetricasHoje(); 
@@ -856,35 +887,67 @@
 
     async function carregarStaff() {
         const { data } = await _sb.from('empregados').select('*').eq('loja_id', lojaAtiva.id);
+        empregadosLocais = data || [];
         const tbody = document.querySelector('#tabela-staff tbody');
         
-        if(!data || data.length === 0) {
+        if(empregadosLocais.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Nenhum empregado registado.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = data.map(s => `
+        tbody.innerHTML = empregadosLocais.map(s => `
             <tr>
                 <td><i class="fas fa-user-circle" style="color:var(--s); margin-right:8px;"></i> ${s.nome}</td>
                 <td>****</td>
-                <td><button class="btn-del-staff" onclick="removerStaff('${s.id}')"><i class="fas fa-trash-alt"></i></button></td>
+                <td>
+                    <button class="btn-edit-staff" onclick="prepararEdicaoStaff('${s.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-del-staff" onclick="removerStaff('${s.id}')" title="Remover"><i class="fas fa-trash-alt"></i></button>
+                </td>
             </tr>
         `).join('');
     }
 
-    async function adicionarEmpregado() {
+    async function salvarEmpregado() {
+        const id = document.getElementById('staff-edit-id').value;
         const nome = document.getElementById('staff-nome').value;
         const pin = document.getElementById('staff-pin').value;
         
         if(!nome || pin.length < 4) return alert("Preencha o Nome e um PIN de acesso (mínimo 4 dígitos).");
         
-        const { error } = await _sb.from('empregados').insert([{ loja_id: lojaAtiva.id, nome: nome, pin_acesso: pin }]);
-        if(error) return alert("Erro ao criar empregado: " + error.message);
+        let error;
+        if(id) {
+            const res = await _sb.from('empregados').update({ nome: nome, pin_acesso: pin }).eq('id', id);
+            error = res.error;
+        } else {
+            const res = await _sb.from('empregados').insert([{ loja_id: lojaAtiva.id, nome: nome, pin_acesso: pin }]);
+            error = res.error;
+        }
 
+        if(error) return alert("Erro ao guardar empregado: " + error.message);
+
+        cancelarEdicaoStaff();
+        carregarStaff();
+        alert("Empregado guardado com sucesso!");
+    }
+
+    function prepararEdicaoStaff(id) {
+        const emp = empregadosLocais.find(e => e.id === id);
+        if(!emp) return;
+        
+        document.getElementById('staff-edit-id').value = emp.id;
+        document.getElementById('staff-nome').value = emp.nome;
+        document.getElementById('staff-pin').value = emp.pin_acesso;
+        
+        document.getElementById('btn-add-staff').innerHTML = '<i class="fas fa-save"></i>';
+        document.getElementById('btn-cancel-staff').classList.remove('hidden');
+    }
+
+    function cancelarEdicaoStaff() {
+        document.getElementById('staff-edit-id').value = '';
         document.getElementById('staff-nome').value = '';
         document.getElementById('staff-pin').value = '';
-        carregarStaff();
-        alert("Empregado adicionado com sucesso!");
+        document.getElementById('btn-add-staff').innerHTML = '<i class="fas fa-user-plus"></i>';
+        document.getElementById('btn-cancel-staff').classList.add('hidden');
     }
 
     async function removerStaff(id) {
@@ -895,49 +958,78 @@
     }
 
     async function gerarRelatorioPDF() {
-        const hoje = new Date().toLocaleDateString('pt-PT');
-        document.getElementById('print-data-info').innerText = "Relatório de Fecho de Caixa - " + hoje;
+        const dataSelecionada = document.getElementById('data-export').value;
+        if(!dataSelecionada) return alert("Selecione uma data para exportar.");
+        
+        // Converte a data selecionada para formato PT no título
+        const [ano, mes, dia] = dataSelecionada.split('-');
+        const dataPt = `${dia}/${mes}/${ano}`;
+        
+        document.getElementById('print-data-info').innerText = "Relatório de Fecho de Caixa - " + dataPt;
         
         const { data: pedidos } = await _sb.from('pedidos')
             .select('*')
             .eq('loja_id', lojaAtiva.id)
             .eq('estado', 'finalizado')
-            .gte('created_at', new Date().toISOString().split('T')[0])
+            .gte('created_at', dataSelecionada + 'T00:00:00')
+            .lte('created_at', dataSelecionada + 'T23:59:59')
             .order('created_at', { ascending: true });
 
         if(!pedidos || pedidos.length === 0) {
-            alert("Não existem pedidos finalizados hoje para gerar relatório.");
+            alert(`Não existem pedidos finalizados no dia ${dataPt}.`);
             return;
         }
 
-        let html = `<table class="print-table">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">Hora</th>
-                    <th style="width: 40%;">Pedido/Mesa</th>
-                    <th style="width: 20%;">Pagamento</th>
-                    <th style="width: 25%; text-align:right;">Total</th>
-                </tr>
-            </thead>
-            <tbody>`;
-        
-        let totalTurno = 0;
-        pedidos.forEach(p => {
-            totalTurno += p.total;
-            const hora = new Date(p.created_at).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
-            const nomeOuMesa = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : `${p.tipo_pedido.toUpperCase()} - ${p.nome_cliente}`;
+        // Separa os pedidos por tipo
+        const pMesa = pedidos.filter(p => p.tipo_pedido === 'mesa');
+        const pTakeaway = pedidos.filter(p => p.tipo_pedido === 'levantamento');
+        const pReserva = pedidos.filter(p => p.tipo_pedido === 'reserva');
+
+        let html = '';
+        let totalGlobal = 0;
+
+        function renderizarSecao(titulo, lista) {
+            if(lista.length === 0) return '';
+            let secHtml = `<h3 style="margin-top: 20px; border-bottom: 1px solid #ccc;">${titulo}</h3>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Hora</th>
+                        <th style="width: 40%;">Identificador</th>
+                        <th style="width: 20%;">Pagamento</th>
+                        <th style="width: 25%; text-align:right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>`;
             
-            html += `<tr>
-                <td>${hora}</td>
-                <td>${nomeOuMesa}</td>
-                <td>${p.metodo_pagamento || 'N/A'}</td>
-                <td class="money">${p.total.toFixed(2)}€</td>
-            </tr>`;
-        });
+            let subtotal = 0;
+            lista.forEach(p => {
+                subtotal += p.total;
+                totalGlobal += p.total;
+                const hora = new Date(p.created_at).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                const ident = p.tipo_pedido === 'mesa' ? `Mesa ${p.mesa}` : p.nome_cliente;
+                
+                secHtml += `<tr>
+                    <td>${hora}</td>
+                    <td>${ident}</td>
+                    <td>${p.metodo_pagamento || 'N/A'}</td>
+                    <td class="money">${p.total.toFixed(2)}€</td>
+                </tr>`;
+            });
+            
+            secHtml += `</tbody></table>
+            <div style="text-align:right; font-size:14px; padding-top: 5px;">
+                Subtotal ${titulo}: <b>${subtotal.toFixed(2)}€</b>
+            </div>`;
+            return secHtml;
+        }
+
+        html += renderizarSecao('Vendas em Sala', pMesa);
+        html += renderizarSecao('Takeaway / Levantamento', pTakeaway);
+        html += renderizarSecao('Reservas', pReserva);
         
-        html += `</tbody></table>
-        <div style="margin-top:30px; text-align:right; font-size:18px; border-top: 2px dashed #000; padding-top: 15px;">
-            Total Faturado no Turno: <b>${totalTurno.toFixed(2)}€</b>
+        html += `<div style="margin-top:30px; text-align:right; font-size:18px; border-top: 2px dashed #000; padding-top: 15px;">
+            Total Faturado no Dia: <b>${totalGlobal.toFixed(2)}€</b>
         </div>`;
         
         document.getElementById('print-content').innerHTML = html;
@@ -945,44 +1037,35 @@
     }
 
     function gerarMenuFisico() {
-        document.getElementById('print-data-info').innerText = "Catálogo de Sala";
+        document.getElementById('print-data-info').innerText = "Menu de Sala";
         
-        let html = `<div style="display:flex; flex-direction: column; gap: 30px; margin-top: 20px;">`;
+        let html = `<div style="display:flex; flex-direction: column; width: 100%;">`;
         
         const categorias = [...new Set(produtosLocais.filter(p => !p.oculto).map(p => p.categoria))];
         
         categorias.forEach(cat => {
-            html += `
-            <div style="page-break-inside: avoid;">
-                <h3 style="margin: 0 0 15px 0; font-size: 22px; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 5px; color: #0f172a;">${cat}</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            `;
-            
             produtosLocais.filter(p => !p.oculto && p.categoria === cat).forEach(p => {
                 const descPromo = parseInt(p.desconto_percent) || 0;
                 const precoFinal = calcularPrecoFinal(p.preco, descPromo);
                 
                 let alergeniosHtml = "";
                 if(p.alergenios && p.alergenios.length > 0) {
-                    alergeniosHtml = `<p style="font-size: 10px; color: #b45309; margin: 5px 0 0 0;"><strong>Alergénios:</strong> ${p.alergenios.join(', ')}</p>`;
+                    alergeniosHtml = `<p style="font-size: 14px; color: #b45309; margin: 15px 0 0 0;"><strong>Alergénios:</strong> ${p.alergenios.join(', ')}</p>`;
                 }
 
-                let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">` : '';
+                let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" class="print-menu-img">` : '';
 
                 html += `
-                    <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; page-break-inside: avoid; display: flex; flex-direction: column;">
+                    <div class="print-menu-item">
+                        <h3 style="margin: 0 0 20px 0; font-size: 24px; text-transform: uppercase; color: #64748b; letter-spacing: 2px;">-- ${cat} --</h3>
                         ${imgHtml}
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-                            <h4 style="margin:0 0 5px 0; font-size: 16px; color: #0f172a;">${p.nome}</h4>
-                            <strong style="font-size: 16px; color: #10b981; white-space: nowrap;">${precoFinal.toFixed(2)}€</strong>
-                        </div>
-                        <p style="font-size: 12px; margin: 0; color: #475569; line-height: 1.4; flex-grow: 1;">${p.descricao || ''}</p>
+                        <h2 style="margin:0 0 10px 0; font-size: 36px; color: #0f172a;">${p.nome}</h2>
+                        <p style="font-size: 18px; margin: 0 0 20px 0; color: #475569; max-width: 80%; line-height: 1.5;">${p.descricao || ''}</p>
+                        <strong style="font-size: 42px; color: #10b981;">${precoFinal.toFixed(2)}€</strong>
                         ${alergeniosHtml}
                     </div>
                 `;
             });
-            
-            html += `</div></div>`;
         });
         
         html += `</div>`;
@@ -1182,18 +1265,20 @@
         const precoVal = parseFloat(document.getElementById('p-preco').value);
         if(!document.getElementById('p-nome').value || isNaN(precoVal)) return alert("Nome e preço são obrigatórios.");
 
+        const taxaIvaVal = parseInt(document.getElementById('p-taxa-iva').value) || 0;
+
         let stockVal = document.getElementById('p-stock').value;
         stockVal = (stockVal !== "" && stockVal !== null) ? parseInt(stockVal) : null;
         
         let diaVal = document.getElementById('p-dia-semana').value;
         diaVal = (diaVal !== "") ? parseInt(diaVal) : null;
         
-        // CAPTURA O ESTADO DE VISIBILIDADE (inverso da checkbox)
         const ocultarProduto = !document.getElementById('p-visibilidade').checked;
 
         const dados = {
             nome: document.getElementById('p-nome').value,
             preco: precoVal,
+            taxa_iva: taxaIvaVal,
             desconto_percent: parseInt(document.getElementById('p-desc').value) || 0,
             categoria: document.getElementById('p-categoria').value,
             tipo_tag: tags,
@@ -1249,10 +1334,10 @@
             const el = document.getElementById(id);
             if(el) el.value = "";
         });
+        document.getElementById('p-taxa-iva').value = "23";
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = false);
         document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = false);
         
-        // Repor visibilidade padrão para ON
         document.getElementById('p-visibilidade').checked = true;
 
         document.getElementById('form-title').innerHTML = `<i class="fas fa-box-open"></i> Publicar Artigo`;
@@ -1266,6 +1351,10 @@
         document.getElementById('edit-id').value = p.id;
         document.getElementById('p-nome').value = p.nome;
         document.getElementById('p-preco').value = p.preco;
+        
+        // Define o IVA no form, assumindo 23 se estiver vazio
+        document.getElementById('p-taxa-iva').value = p.taxa_iva !== null && p.taxa_iva !== undefined ? p.taxa_iva : "23";
+        
         document.getElementById('p-desc').value = p.desconto_percent || 0;
         document.getElementById('p-categoria').value = p.categoria || "";
         document.getElementById('p-ingredientes').value = p.descricao || "";
@@ -1273,7 +1362,6 @@
         document.getElementById('p-stock').value = p.stock !== null ? p.stock : "";
         document.getElementById('p-dia-semana').value = p.dia_semana !== null ? p.dia_semana : "";
         
-        // Refletir a visibilidade do produto no formulário
         document.getElementById('p-visibilidade').checked = !p.oculto;
 
         const tags = p.tipo_tag || [];
