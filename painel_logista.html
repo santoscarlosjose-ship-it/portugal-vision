@@ -169,7 +169,7 @@
         .notificacao-icon { font-size: 24px; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        /* CSS DE IMPRESSÃO REESCRITO PARA MENU FÍSICO */
+        /* CSS DE IMPRESSÃO REESCRITO PARA MENU FÍSICO E RELATÓRIO */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: white; padding: 0; color: black; }
@@ -185,7 +185,7 @@
             
             /* Classes para o Menu Físico (1 prato por folha) */
             .print-menu-item {
-                page-break-after: always; /* Força quebra de página */
+                page-break-after: always;
                 width: 100%;
                 height: 100vh;
                 display: flex;
@@ -193,10 +193,12 @@
                 justify-content: center;
                 align-items: center;
                 text-align: center;
+                box-sizing: border-box;
+                padding: 40px;
             }
             .print-menu-img {
                 max-width: 80%;
-                max-height: 50vh;
+                max-height: 45vh;
                 object-fit: contain;
                 border-radius: 12px;
                 margin-bottom: 20px;
@@ -301,10 +303,21 @@
             <h4 style="margin: 0 0 10px 0; color: var(--p);"><i class="fas fa-chart-line"></i> Tesouraria e Vendas</h4>
             <div class="metrics-grid">
                 <div class="metric-card" style="background: var(--p);">
-                    <i class="fas fa-receipt"></i>
-                    <b id="m-pedidos-hoje">0</b>
-                    <span>Pedidos</span>
+                    <i class="fas fa-utensils"></i>
+                    <b id="m-pedidos-sala">0</b>
+                    <span>Vendas Sala</span>
                 </div>
+                <div class="metric-card" style="background: #8b5cf6;">
+                    <i class="fas fa-shopping-bag"></i>
+                    <b id="m-pedidos-takeaway">0</b>
+                    <span>Takeaway</span>
+                </div>
+                <div class="metric-card" style="background: #14b8a6;">
+                    <i class="fas fa-calendar-check"></i>
+                    <b id="m-pedidos-reserva">0</b>
+                    <span>Reservas</span>
+                </div>
+                
                 <div class="metric-card" style="background: var(--ok);">
                     <i class="fas fa-coins"></i>
                     <b id="m-dinheiro">0.00€</b>
@@ -315,7 +328,7 @@
                     <b id="m-multibanco">0.00€</b>
                     <span>Multibanco</span>
                 </div>
-                <div class="metric-card" style="background: #8b5cf6;">
+                <div class="metric-card" style="background: #0284c7;">
                     <i class="fas fa-mobile-screen-button"></i>
                     <b id="m-mbway">0.00€</b>
                     <span>MBWay</span>
@@ -383,11 +396,11 @@
                 
                 <div style="grid-column: span 1; display: flex; gap: 10px;">
                     <input type="number" id="p-preco" placeholder="Preço (€)" style="flex: 2;">
-                    <select id="p-taxa-iva" style="flex: 1; margin: 6px 0 12px;">
+                    <select id="p-taxa-iva" style="flex: 1; margin: 6px 0 12px;" title="Taxa de IVA">
                         <option value="23">23%</option>
                         <option value="13">13%</option>
                         <option value="6">6%</option>
-                        <option value="0">Isento</option>
+                        <option value="0">0%</option>
                     </select>
                 </div>
                 
@@ -544,6 +557,7 @@
     </div>
     <div id="print-content"></div>
 </div>
+
 <script>
     const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
     const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhocm1icmNhdWpmc3FmYW54cXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTA0NDIsImV4cCI6MjA4ODcyNjQ0Mn0.pPkvwcb4h8SjYyvAFt1dnJE6Xn8KDQ4TVcy-QiamLpk";
@@ -808,7 +822,6 @@
         document.getElementById('link-catalogo').value = link;
         QRCode.toDataURL(link, { width: 250, margin: 2 }, (err, url) => { if(!err) document.getElementById('img-qrcode').src = url; });
 
-        // Set date input to today
         document.getElementById('data-export').value = new Date().toISOString().split('T')[0];
 
         verificarPlano();
@@ -868,18 +881,25 @@
             .eq('estado', 'finalizado')
             .gte('created_at', hoje + 'T00:00:00');
 
-        let totalPedidos = 0, din = 0, multi = 0, mbw = 0;
+        let qtdSala = 0, qtdTakeaway = 0, qtdReserva = 0;
+        let din = 0, multi = 0, mbw = 0;
         
         if(pedidos) {
             pedidos.forEach(p => {
-                totalPedidos++;
+                if(p.tipo_pedido === 'mesa') qtdSala++;
+                else if(p.tipo_pedido === 'levantamento') qtdTakeaway++;
+                else if(p.tipo_pedido === 'reserva') qtdReserva++;
+
                 if(p.metodo_pagamento === 'Dinheiro') din += p.total;
                 else if(p.metodo_pagamento === 'Multibanco') multi += p.total;
                 else if(p.metodo_pagamento === 'MBWay') mbw += p.total;
             });
         }
         
-        document.getElementById('m-pedidos-hoje').innerText = totalPedidos;
+        document.getElementById('m-pedidos-sala').innerText = qtdSala;
+        document.getElementById('m-pedidos-takeaway').innerText = qtdTakeaway;
+        document.getElementById('m-pedidos-reserva').innerText = qtdReserva;
+        
         document.getElementById('m-dinheiro').innerText = din.toFixed(2) + "€";
         document.getElementById('m-multibanco').innerText = multi.toFixed(2) + "€";
         document.getElementById('m-mbway').innerText = mbw.toFixed(2) + "€";
@@ -961,7 +981,6 @@
         const dataSelecionada = document.getElementById('data-export').value;
         if(!dataSelecionada) return alert("Selecione uma data para exportar.");
         
-        // Converte a data selecionada para formato PT no título
         const [ano, mes, dia] = dataSelecionada.split('-');
         const dataPt = `${dia}/${mes}/${ano}`;
         
@@ -980,7 +999,6 @@
             return;
         }
 
-        // Separa os pedidos por tipo
         const pMesa = pedidos.filter(p => p.tipo_pedido === 'mesa');
         const pTakeaway = pedidos.filter(p => p.tipo_pedido === 'levantamento');
         const pReserva = pedidos.filter(p => p.tipo_pedido === 'reserva');
@@ -1121,7 +1139,6 @@
         } catch (e) { alert("Erro ao fazer upload do logo."); }
     }
 
-    // --- NOVA LÓGICA DE GRAVAÇÃO DOS TURNOS GERAIS E COZINHA ---
     async function salvarHorarios() {
         const btn = document.getElementById('btn-save-config');
         const horarios = {};
@@ -1352,7 +1369,6 @@
         document.getElementById('p-nome').value = p.nome;
         document.getElementById('p-preco').value = p.preco;
         
-        // Define o IVA no form, assumindo 23 se estiver vazio
         document.getElementById('p-taxa-iva').value = p.taxa_iva !== null && p.taxa_iva !== undefined ? p.taxa_iva : "23";
         
         document.getElementById('p-desc').value = p.desconto_percent || 0;
