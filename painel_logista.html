@@ -168,70 +168,79 @@
         .notificacao-icon { font-size: 24px; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        /* CSS DE IMPRESSÃO REESCRITO PARA MENU FÍSICO E RELATÓRIO */
+        /* -----------------------------------------------------
+           CSS MODO EDIÇÃO E IMPRESSÃO (NOVO)
+           ----------------------------------------------------- */
+        
+        /* Estilos interativos para os textos editáveis */
+        [contenteditable="true"] { outline: none; border-radius: 6px; transition: 0.2s; padding: 2px 4px; box-sizing: border-box; }
+        [contenteditable="true"]:hover { background: rgba(59, 130, 246, 0.08); cursor: text; }
+        [contenteditable="true"]:focus { background: rgba(59, 130, 246, 0.12); outline: 2px dashed var(--s); }
+
+        #print-area-wrapper { background: #94a3b8; min-height: 100vh; padding: 20px; font-family: 'Georgia', serif; }
+        .print-toolbar { position: sticky; top: 10px; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; max-width: 210mm; margin: 0 auto 20px auto; z-index: 100; font-family: 'Inter', sans-serif;}
+        #print-preview-content { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+
+        /* A folha visual no ecrã (Estilo Editorial) */
+        .print-menu-item {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
+            padding: 2.5cm;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .print-header { width: 100%; margin-bottom: 30px; }
+        .print-store-name { font-size: 32px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 5px; font-family: 'Inter', sans-serif; }
+        .print-cat-badge { font-size: 16px; letter-spacing: 4px; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; display: inline-block; width: 60%; font-family: 'Inter', sans-serif; }
+
+        /* Imagem com escala controlada (25% max) */
+        .print-menu-img { width: 100%; max-height: 22vh; object-fit: contain; border-radius: 12px; margin: 15px 0 30px 0; }
+
+        .print-content { flex: 1; width: 100%; }
+        .print-item-title { font-size: 42px; font-weight: bold; color: #0f172a; margin-bottom: 15px; font-family: 'Inter', sans-serif; line-height: 1.1; }
+        .print-item-desc { font-size: 18px; color: #334155; line-height: 1.6; max-width: 90%; margin: 0 auto; text-align: left;}
+
+        /* Bloco de Preço no fundo */
+        .print-footer-price { margin-top: auto; padding-top: 30px; width: 100%; border-top: 1px dashed #cbd5e1; }
+        .print-price-row { display: flex; align-items: baseline; justify-content: center; gap: 15px; }
+        .print-item-old-price { font-size: 24px; color: #94a3b8; text-decoration: line-through; font-family: 'Inter', sans-serif; font-weight: 600;}
+        .print-item-price { font-size: 56px; color: #10b981; font-weight: 900; font-family: 'Inter', sans-serif; }
+        .print-item-allergens { margin-top: 15px; font-size: 14px; color: #b45309; text-transform: uppercase; letter-spacing: 1px; font-family: 'Inter', sans-serif; font-weight: bold;}
+
+        /* Impressão Real (Quando vai para o Papel) */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: white; padding: 0; color: black; font-family: 'Inter', sans-serif; }
-            .container, .no-print, button, .prod-actions, .logo-box input, .auth-card { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            .container, .no-print, .print-toolbar { display: none !important; }
             
-            #print-area { display: block !important; padding: 0; width: 100%; }
+            #print-area-wrapper { display: block !important; padding: 0; background: transparent; }
+            #print-preview-content { gap: 0; }
             
-            /* Tabela para o Relatório PDF */
-            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; font-family: 'Arial', sans-serif;}
+            [contenteditable="true"] { padding: 0; border: none; }
+            
+            .print-menu-item {
+                box-shadow: none;
+                margin: 0;
+                width: 210mm;
+                height: 297mm; /* Força o tamanho do papel */
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+
+            /* Tabela PDF Antiga */
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; font-family: 'Inter', sans-serif;}
             .print-table th, .print-table td { border: 1px solid #ccc; padding: 12px; text-align: left; }
             .print-table td.money { text-align: right; font-weight: bold; }
             
-            /* Layout Editorial: Um Prato, Uma Folha */
-            .print-menu-item {
-                page-break-after: always;
-                width: 210mm; /* A4 Width */
-                height: 297mm; /* A4 Height */
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: flex-start;
-                padding: 1.5cm;
-                box-sizing: border-box;
-                position: relative;
-            }
-
-            /* Cabeçalho da Loja */
-            .print-header { text-align: center; margin-bottom: 1cm; width: 100%; }
-            .print-store-name { font-size: 28pt; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 5px; }
-            .print-cat-badge { font-size: 12pt; letter-spacing: 4px; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
-
-            /* Imagem com Escala Inteligente (25% da folha) */
-            .print-menu-img {
-                width: 100%;
-                max-height: 25vh; /* 25% da altura da folha */
-                object-fit: cover;
-                border-radius: 20px;
-                margin: 1cm 0;
-            }
-
-            /* Corpo do Texto */
-            .print-content { flex: 1; text-align: center; width: 100%; }
-            .print-item-title { font-size: 32pt; font-weight: 900; color: #0f172a; margin-bottom: 0.5cm; line-height: 1.1; }
-            .print-item-desc { font-size: 16pt; color: #334155; line-height: 1.6; max-width: 90%; margin: 0 auto; font-family: 'Georgia', serif; font-style: italic; }
-
-            /* Zona de Preços no Fundo */
-            .print-footer-price { margin-top: auto; padding-top: 1cm; text-align: center; width: 100%; }
-            .print-price-row { display: flex; align-items: baseline; justify-content: center; gap: 15px; }
-            .print-item-old-price { font-size: 20pt; color: #94a3b8; text-decoration: line-through; }
-            .print-item-price { font-size: 50pt; color: #000; font-weight: 900; }
-
-            .print-item-allergens {
-                margin-top: 0.5cm;
-                font-size: 10pt;
-                color: #b45309;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
             @page { margin: 0; size: A4 portrait; }
         }
-
-        #print-area { display: none; }
 
         @media (max-width: 600px) {
             .header-loja { flex-direction: column; align-items: stretch; gap: 15px; }
@@ -390,7 +399,7 @@
                     <input type="date" id="data-export" style="margin: 0; padding: 8px; height: auto;">
                 </div>
                 <button style="background: #475569; width: auto; flex: 1;" onclick="gerarRelatorioPDF()"><i class="fas fa-file-pdf"></i> Exportar Fecho</button>
-                <button style="background: #475569; width: auto; flex: 1;" onclick="gerarMenuFisico()"><i class="fas fa-print"></i> Imprimir Menu</button>
+                <button style="background: var(--ia); width: auto; flex: 1; border: 1px solid #7c3aed; box-shadow: 0 4px 10px rgba(139,92,246,0.3);" onclick="gerarMenuFisico()"><i class="fas fa-book-open"></i> Modo Imprimir Menu</button>
             </div>
             <hr style="border: 0; border-bottom: 1px dashed #e2e8f0; margin-bottom: 20px;">
 
@@ -597,7 +606,19 @@
     </div>
 </div>
 
-<div id="print-area"></div>
+<div id="print-area-wrapper" class="hidden">
+    <div class="print-toolbar no-print">
+        <div>
+            <h3 style="margin:0; color: var(--p);"><i class="fas fa-magic"></i> Modo de Edição e Impressão</h3>
+            <small style="color: #64748b;">Clica em qualquer texto da folha abaixo para alterar antes de imprimir.</small>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="fecharPreview()" style="background: #94a3b8; width: auto; color: white; border: none; padding: 10px 15px;"><i class="fas fa-times"></i> Cancelar</button>
+            <button onclick="confirmarImpressao()" style="background: var(--ok); width: auto; color: white; border: none; padding: 10px 15px;"><i class="fas fa-print"></i> Confirmar & Imprimir</button>
+        </div>
+    </div>
+    <div id="print-preview-content"></div>
+</div>
 
 <script>
     const _URL = "https://hhrmbrcaujfsqfanxqqq.supabase.co";
@@ -1097,25 +1118,71 @@
             Total Faturado no Dia: <b>${totalGlobal.toFixed(2)}€</b>
         </div>`;
         
-        document.getElementById('print-area').innerHTML = html;
+        // Vamos usar temporariamente a janela inteira como print preview do Relatório
+        document.body.innerHTML = html;
         window.print();
+        setTimeout(() => window.location.reload(), 500); // Reloading is safest to reset body content
     }
 
-    // --- NOVA LÓGICA DE IMPRESSÃO DO MENU FÍSICO 1 PRATO = 1 FOLHA ---
+    // -----------------------------------------------------
+    // TRADUTOR DE MARKDOWN (IA PARA HTML VISUAL)
+    // -----------------------------------------------------
+    function parseMarkdownToHTML(text) {
+        if(!text) return '';
+        let lines = text.split('\n');
+        let html = '';
+        let inList = false;
+        
+        lines.forEach(l => {
+            let t = l.trim();
+            if(!t) return;
+            
+            // Negritos
+            t = t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Títulos H3
+            if(t.startsWith('###')) {
+                if(inList) { html += '</ul>'; inList = false; }
+                html += `<div style="font-weight:bold; font-size:1.1em; margin-top:20px; margin-bottom:8px;">${t.replace(/^###\s*/, '')}</div>`;
+            } 
+            // Listas
+            else if (t.startsWith('* ')) {
+                if(!inList) { html += '<ul style="text-align:left; display:inline-block; margin: 5px auto; padding-left: 20px;">'; inList = true; }
+                html += `<li>${t.replace(/^\*\s*/, '')}</li>`;
+            } 
+            // Texto Normal
+            else {
+                if(inList) { html += '</ul>'; inList = false; }
+                html += `<div style="margin-bottom:8px;">${t}</div>`;
+            }
+        });
+        if(inList) html += '</ul>';
+        return html;
+    }
+
+    // -----------------------------------------------------
+    // SISTEMA AVANÇADO DE IMPRESSÃO - MODO EDITÁVEL
+    // -----------------------------------------------------
     function gerarMenuFisico() {
         let html = '';
         const nomeLoja = lojaAtiva.nome || "O Nosso Menu";
         
-        // Filtrar apenas produtos visíveis
         const produtosParaImprimir = produtosLocais.filter(p => !p.oculto);
-        
-        if(produtosParaImprimir.length === 0) {
-            return alert("Não existem produtos visíveis para imprimir.");
-        }
+        if(produtosParaImprimir.length === 0) return alert("Não existem artigos visíveis para imprimir.");
 
-        // Agrupar por categoria para manter a ordem
-        const categorias = [...new Set(produtosParaImprimir.map(p => p.categoria))];
+        // 1. Extrair e Ordenar Categorias Master
+        let categorias = [...new Set(produtosParaImprimir.map(p => p.categoria || ''))];
+        const ordemMestra = ["entradas", "marisco", "mariscos", "pratos de carne", "carne", "pratos de peixe", "peixe", "sobremesas", "bebidas"];
         
+        categorias.sort((a, b) => {
+            let indexA = ordemMestra.indexOf(a.toLowerCase());
+            let indexB = ordemMestra.indexOf(b.toLowerCase());
+            if(indexA === -1) indexA = 999;
+            if(indexB === -1) indexB = 999;
+            return indexA - indexB;
+        });
+
+        // 2. Construir HTML (Com "contenteditable" ativo)
         categorias.forEach(cat => {
             produtosParaImprimir.filter(p => p.categoria === cat).forEach(p => {
                 const precoBase = parseFloat(p.preco) || 0;
@@ -1124,18 +1191,17 @@
                 
                 let alergeniosHtml = "";
                 if(p.alergenios && p.alergenios.length > 0) {
-                    alergeniosHtml = `<div class="print-item-allergens">⚠️ Contém: ${p.alergenios.join(' • ')}</div>`;
+                    alergeniosHtml = `<div class="print-item-allergens" contenteditable="true" spellcheck="false">⚠️ Contém: ${p.alergenios.join(' • ')}</div>`;
                 }
 
-                let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" class="print-menu-img">` : '<div style="margin-top: 2cm;"></div>';
+                let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" class="print-menu-img">` : '<div style="margin-top: 1cm;"></div>';
 
-                // Lógica de Preço Promocional
-                let precoBloco = `<div class="print-item-price">${precoFinal.toFixed(2)}€</div>`;
+                let precoBloco = `<div class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</div>`;
                 if(desconto > 0) {
                     precoBloco = `
                         <div class="print-price-row">
-                            <span class="print-item-old-price">${precoBase.toFixed(2)}€</span>
-                            <span class="print-item-price">${precoFinal.toFixed(2)}€</span>
+                            <span class="print-item-old-price" contenteditable="true" spellcheck="false">${precoBase.toFixed(2)}€</span>
+                            <span class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</span>
                         </div>
                     `;
                 }
@@ -1143,15 +1209,15 @@
                 html += `
                     <div class="print-menu-item">
                         <div class="print-header">
-                            <div class="print-store-name">${nomeLoja}</div>
-                            <div class="print-cat-badge">${p.categoria || 'Sugestão'}</div>
+                            <div class="print-store-name" contenteditable="true" spellcheck="false">${nomeLoja}</div>
+                            <div class="print-cat-badge" contenteditable="true" spellcheck="false">${p.categoria || 'Sugestão'}</div>
                         </div>
                         
                         ${imgHtml}
                         
                         <div class="print-content">
-                            <div class="print-item-title">${p.nome}</div>
-                            <div class="print-item-desc">${p.descricao ? p.descricao.replace(/\n/g, '<br>') : ''}</div>
+                            <div class="print-item-title" contenteditable="true" spellcheck="false">${p.nome}</div>
+                            <div class="print-item-desc" contenteditable="true" spellcheck="false">${parseMarkdownToHTML(p.descricao)}</div>
                         </div>
 
                         <div class="print-footer-price">
@@ -1163,7 +1229,20 @@
             });
         });
         
-        document.getElementById('print-area').innerHTML = html;
+        // 3. Trocar o Ecrã para o Modo de Edição Visual
+        document.getElementById('print-preview-content').innerHTML = html;
+        document.querySelector('.container').classList.add('hidden');
+        document.getElementById('print-area-wrapper').classList.remove('hidden');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function fecharPreview() {
+        document.getElementById('print-area-wrapper').classList.add('hidden');
+        document.querySelector('.container').classList.remove('hidden');
+    }
+
+    function confirmarImpressao() {
+        // Ao chamar window.print(), o CSS Media Queries esconde a barra superior e ajusta para papel
         window.print();
     }
 
