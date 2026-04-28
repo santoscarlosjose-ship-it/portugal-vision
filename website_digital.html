@@ -24,6 +24,7 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
+        /* VARIÁVEIS DE TEMA: Serão injetadas/sobrepostas via JS se o lojista alterar */
         :root { 
             --p: #2c3e50; 
             --s: #a89f91; 
@@ -31,6 +32,8 @@
             --accent: #c0392b;
             --bg: #fdfbf7; 
             --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --card-bg: white;
+            --btn-bg: white;
         }
         
         body { 
@@ -45,13 +48,16 @@
         .header { background: transparent; padding: 60px 20px 20px; text-align: center; position: relative; z-index: 2; border: none; }
         .logo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .header h2 { font-family: 'Playfair Display', serif; font-size: 2.2em; margin: 0; color: var(--p); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.1);}
+        
+        /* NOVO: BOAS VINDAS */
+        #boas-vindas-cliente { font-size: 1.1em; color: var(--s); font-weight: 600; margin-top: 10px; display: none; animation: fadeIn 1s; }
 
         .categories-container { padding: 10px 20px 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 2;}
-        .cat-btn { background: white; border: 1px solid #eee; color: #777; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+        .cat-btn { background: var(--btn-bg); border: 1px solid #eee; color: #777; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
         .cat-btn.active { background: var(--p); color: white; border-color: var(--p); }
 
         .search-container { padding: 0 20px 30px; max-width: 600px; margin: auto; position: relative; z-index: 2;}
-        #search-input { width: 100%; padding: 16px 25px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1); background: white; font-size: 16px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s;}
+        #search-input { width: 100%; padding: 16px 25px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1); background: var(--btn-bg); font-size: 16px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s;}
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: auto; position: relative; z-index: 2; }
         
@@ -60,7 +66,7 @@
         .card-container:hover .card-inner { box-shadow: 0 15px 35px rgba(0,0,0,0.2); transform: translateY(-5px); }
         .card-container.flipped .card-inner { transform: rotateY(180deg); }
 
-        .card-front, .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 24px; background: white; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden; transition: 0.5s; }
+        .card-front, .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 24px; background: var(--card-bg); border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden; transition: 0.5s; }
         
         .img-container { width: 100%; height: 210px; overflow: hidden; flex-shrink: 0; position: relative;}
         .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 24px 24px 0 0; }
@@ -101,6 +107,7 @@
         .mesa-active-floater { display: flex !important; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Estilos do Modal */
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 15px;}
@@ -190,6 +197,10 @@
             text-align: center;
         }
         #cliente-alert.show { bottom: 100px; }
+        
+        /* NOVO: BOTÕES PONTO DA CARNE */
+        .ponto-btn { border: 1px solid #cbd5e1; background: white; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; color: #334155; display: block; width: 100%; text-align: center; margin-bottom: 8px;}
+        .ponto-btn:hover { background: #f1f5f9; border-color: var(--p); }
     </style>
 </head>
 <body>
@@ -199,13 +210,25 @@
 <div id="block-screen">
     <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
     <h1 style="font-family: 'Playfair Display'; margin-bottom: 10px;">Acesso Indisponível</h1>
-    <p id="motivo-fecho">Este catálogo não se encontra ativo no momento.</p>
+    <p id="motivo-fecho">Este website não se encontra ativo no momento.</p>
 </div>
 
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeLegalModal()">×</span>
         <div id="modalText"></div>
+    </div>
+</div>
+
+<div id="modal-ponto-carne" class="modal">
+    <div class="modal-content" style="max-width: 350px;">
+        <h3 style="margin-bottom: 5px; font-size: 1.3em;">Ponto da Carne</h3>
+        <p style="color: #64748b; font-size: 0.9em; margin-bottom: 15px;">Como prefere que preparemos este prato?</p>
+        <button class="ponto-btn" onclick="confirmarAdicionarComPonto('Mal Passada')">🥩 Mal Passada</button>
+        <button class="ponto-btn" onclick="confirmarAdicionarComPonto('Médio Mal')">🥩 Médio Mal</button>
+        <button class="ponto-btn" onclick="confirmarAdicionarComPonto('Médio')">🥩 Ponto Médio</button>
+        <button class="ponto-btn" onclick="confirmarAdicionarComPonto('Bem Passada')">🥩 Bem Passada</button>
+        <button class="btn-checkout" style="background: #94a3b8; margin-top: 10px; padding: 12px;" onclick="fecharModal('modal-ponto-carne')">Cancelar</button>
     </div>
 </div>
 
@@ -231,6 +254,12 @@
             <input type="tel" id="auth-tel-reg" class="input-form" placeholder="Telemóvel">
             <input type="email" id="auth-email-reg" class="input-form" placeholder="E-mail">
             <input type="password" id="auth-pass-reg" class="input-form" placeholder="Password Segura">
+            
+            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: #64748b; margin-top: 10px; cursor: pointer;">
+                <input type="checkbox" id="auth-termos-reg" style="margin:0; width: 16px; height: 16px; flex-shrink: 0;">
+                Li e aceito os Termos e Condições e a Política de Privacidade deste serviço.
+            </label>
+
             <button class="btn-checkout" onclick="clienteRegisto()">Criar Conta</button>
         </div>
     </div>
@@ -243,7 +272,7 @@
         <div class="modal-body" id="lista-meus-pedidos">
             <p style="text-align:center; color:#94a3b8;">A carregar pedidos...</p>
         </div>
-        <button class="input-form" style="border-color:var(--danger); color:var(--danger); background:transparent; margin-top:20px; font-weight:bold;" onclick="clienteLogout()">Encerrar Sessão</button>
+        <button class="input-form" style="border-color:var(--err); color:var(--err); background:transparent; margin-top:20px; font-weight:bold;" onclick="clienteLogout()">Encerrar Sessão</button>
     </div>
 </div>
 
@@ -346,6 +375,7 @@
 <div class="header">
     <img id="v-logo" class="logo" src="" style="display:none;">
     <h2 id="v-nome">A carregar...</h2>
+    <div id="boas-vindas-cliente"></div>
     <div id="mesa-badge" style="display:none; background: var(--ok); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; display: inline-block;"></div>
 </div>
 
@@ -404,12 +434,18 @@
     let mesaAtual = null; 
     let clienteAtual = null; 
     let realtimeCanal = null;
+    
+    // Variáveis temporárias para o pop-up da Carne
+    let tempCarneId = null;
+    let tempCarneNome = null;
+    let tempCarnePreco = null;
+    let tempCarneDesconto = null;
 
-    const nomeDiasInt = {1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 0: "Domingo"};
+    const nomeDiasInt = {1: "Segunda-feira", 2: "Terça-feira", 3: "Quarta-feira", 4: "Quinta-feira", 5: "Sexta-feira", 6: "Sábado", 0: "Domingo"};
 
     const legalTexts = {
-        termos: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Termos e Condições</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Natureza do Serviço:</strong> O catálogo digital da Portugal Vision atua exclusivamente como uma montra tecnológica e facilitadora de comunicação. Não somos a entidade vendedora dos produtos apresentados.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Preços e Alergénios:</strong> As informações sobre preços, descrições, ingredientes e alergénios são da inteira e exclusiva responsabilidade do Lojista. Em caso de restrições ou alergias alimentares graves, o cliente deve sempre confirmar os ingredientes diretamente com o estabelecimento no momento do pedido.</p>`,
-        privacidade: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Privacidade e RGPD</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Navegação:</strong> A navegação neste catálogo digital é livre. O registo é exigido apenas para validação de pedidos online (Takeaway/Reserva) e comunicação de estado.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Dados Analíticos:</strong> A Portugal Vision recolhe apenas dados estatísticos totalmente anónimos para garantir o bom funcionamento do sistema.</p>`,
+        termos: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Termos e Condições</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Natureza do Serviço:</strong> O website digital da Portugal Vision atua exclusivamente como uma montra tecnológica e facilitadora de comunicação. Não somos a entidade vendedora dos produtos apresentados.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Preços e Alergénios:</strong> As informações sobre preços, descrições, ingredientes e alergénios são da inteira e exclusiva responsabilidade do Lojista. Em caso de restrições ou alergias alimentares graves, o cliente deve sempre confirmar os ingredientes diretamente com o estabelecimento no momento do pedido.</p>`,
+        privacidade: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Privacidade e RGPD</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. Navegação:</strong> A navegação neste website digital é livre. O registo é exigido apenas para validação de pedidos online (Takeaway/Reserva) e comunicação de estado.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Dados Analíticos:</strong> A Portugal Vision recolhe apenas dados estatísticos totalmente anónimos para garantir o bom funcionamento do sistema.</p>`,
         cookies: `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Política de Cookies</h3><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>1. A Nossa Abordagem:</strong> A nossa plataforma foi desenhada para ser limpa e segura. Não utilizamos cookies invasivos nem rastreadores de publicidade.</p><p style="font-size: 0.9em; line-height: 1.6; color: #475569;"><strong>2. Cookies Estritamente Necessários:</strong> Utilizamos tecnologias locais (memória do navegador) apenas para gerir a sua Sessão de Login, a persistência de Sala e o "Carrinho de Compras".</p>`
     };
 
@@ -481,6 +517,12 @@
             if(userData) {
                 clienteAtual = userData;
                 document.getElementById('btn-user-account').style.display = 'flex';
+                
+                // MENSAGEM DE BOAS VINDAS
+                const saudacao = document.getElementById('boas-vindas-cliente');
+                saudacao.innerText = `Olá, ${clienteAtual.nome} 👋`;
+                saudacao.style.display = 'block';
+
                 iniciarOuvinteCliente();
             }
         }
@@ -494,9 +536,14 @@
     }
 
     async function clienteRegisto() {
-        const n = document.getElementById('auth-nome-reg').value; const t = document.getElementById('auth-tel-reg').value;
-        const e = document.getElementById('auth-email-reg').value; const p = document.getElementById('auth-pass-reg').value;
+        const n = document.getElementById('auth-nome-reg').value; 
+        const t = document.getElementById('auth-tel-reg').value;
+        const e = document.getElementById('auth-email-reg').value; 
+        const p = document.getElementById('auth-pass-reg').value;
+        const aceitouTermos = document.getElementById('auth-termos-reg').checked;
+
         if(!n || !t || !e || !p) return alert("Preencha todos os campos.");
+        if(!aceitouTermos) return alert("Por favor, confirme que leu e aceita os Termos e Condições para prosseguir.");
         
         const btn = document.querySelector('#form-reg button');
         btn.innerText = "A criar conta..."; btn.disabled = true;
@@ -572,7 +619,7 @@
             
             let btnAcoes = '';
             if(diffMinutos > 60 && (p.estado === 'aguarda_confirmacao' || p.estado === 'reserva_confirmada')) {
-                btnAcoes += `<button onclick="cancelarMeuPedido(${p.id})" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px;">Cancelar</button>`;
+                btnAcoes += `<button onclick="cancelarMeuPedido(${p.id})" style="background:var(--err); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px;">Cancelar</button>`;
             }
             
             if((p.tipo_pedido === 'reserva' || p.tipo_pedido === 'mesa') && p.estado === 'reserva_confirmada' && diffMinutos <= 120 && diffMinutos >= -30) {
@@ -580,7 +627,7 @@
                     btnAcoes += `<span style="font-size:11px; color:var(--ok); font-weight:bold; margin-left:5px;"><i class="fas fa-check"></i> Receção Notificada</span>`;
                 } else {
                     btnAcoes += `<button onclick="sinalizarChegada(${p.id})" style="background:var(--ok); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;">Já Cheguei!</button>`;
-                    btnAcoes += `<button onclick="sinalizarAtraso(${p.id})" style="background:#f59e0b; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;"><i class="fas fa-clock"></i> Vou Atrasar</button>`;
+                    btnAcoes += `<button onclick="sinalizarAtraso(${p.id})" style="background:var(--warn); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; margin-left:5px;"><i class="fas fa-clock"></i> Vou Atrasar</button>`;
                 }
             }
 
@@ -663,7 +710,7 @@
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
                     
                     msgEl.innerText = `A sua mesa (${mesaAtribuida}) está pronta! A reencaminhar...`;
-                    alerta.style.background = "var(--primary)"; 
+                    alerta.style.background = "var(--s)"; 
                     alerta.classList.add('show');
                     
                     setTimeout(() => {
@@ -684,7 +731,7 @@
                 if(novoEstado === 'pendente') {
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
                     msgEl.innerText = "O restaurante confirmou o seu pedido! Vai para a cozinha.";
-                    alerta.style.background = "var(--primary)"; 
+                    alerta.style.background = "var(--s)"; 
                     alerta.classList.add('show');
                     setTimeout(() => alerta.classList.remove('show'), 6000);
                 } 
@@ -813,12 +860,36 @@
         return { aberto: true, motivo: "" };
     }
 
+    function aplicarTemaVisual(temaId) {
+        const root = document.documentElement;
+        // Se for "padrao", não faz nada (usa o que está no CSS). 
+        // Caso contrário, aplica as paletas claras criadas no painel do lojista.
+        if (temaId === 'minimalista') {
+            root.style.setProperty('--bg', '#ffffff');
+            root.style.setProperty('--p', '#1e293b');
+            root.style.setProperty('--s', '#64748b');
+            root.style.setProperty('--card-bg', '#f8fafc');
+            root.style.setProperty('--btn-bg', '#f1f5f9');
+        } else if (temaId === 'elegante') {
+            root.style.setProperty('--bg', '#fafafa');
+            root.style.setProperty('--p', '#3f3f46');
+            root.style.setProperty('--s', '#a1a1aa');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--btn-bg', '#f4f4f5');
+        } else if (temaId === 'bege') {
+            root.style.setProperty('--bg', '#fdf8f5');
+            root.style.setProperty('--p', '#451a03');
+            root.style.setProperty('--s', '#d97706');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--btn-bg', '#fef3c7');
+        }
+    }
+
     async function init() {
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('loja');
         let paramMesa = urlParams.get('mesa'); 
 
-        // 1. Redução do TTL para 2 horas
         const TTL_HOURS = 2;
         const storedSessaoObj = JSON.parse(localStorage.getItem('pv_mesa_sessao'));
         
@@ -845,14 +916,14 @@
         
         const estadoLoja = verificarSeAberto(loja);
         if (!loja || loja.status !== 'ativa' || loja.status_catalogo === false || !estadoLoja.aberto) {
-            document.getElementById('motivo-fecho').innerText = !estadoLoja.aberto ? estadoLoja.motivo : "O catálogo está temporariamente indisponível.";
+            document.getElementById('motivo-fecho').innerText = !estadoLoja.aberto ? estadoLoja.motivo : "O website está temporariamente indisponível.";
             document.getElementById('block-screen').style.display = 'flex';
             return;
         }
 
         lojaAtual = loja;
+        aplicarTemaVisual(loja.tema_sazonal);
 
-        // 2. VERIFICAÇÃO DE SEGURANÇA NA ENTRADA 
         if (mesaAtual) {
             const { data: pedidosAtivos } = await _sb
                 .from('pedidos')
@@ -913,7 +984,7 @@
             
             document.getElementById('dynamic-favicon').href = loja.logo_url;
             document.getElementById('dynamic-apple-icon').href = loja.logo_url;
-            document.title = loja.nome + " | Menu";
+            document.title = loja.nome + " | Website";
         }
 
         if (loja.mbway_num && !mesaAtual) {
@@ -940,9 +1011,36 @@
 
     function virarCartao(id) { document.getElementById(`card-${id}`).classList.toggle('flipped'); }
 
-    function adicionarAoCarrinho(idProduto, nome, precoRaw, desconto, event) {
+    function checarPontoCarne(idProduto, nome, precoRaw, desconto, categoria, event) {
         event.stopPropagation();
+        
+        // Verifica se a categoria exige pergunta de ponto da carne
+        const catLower = categoria.toLowerCase();
+        if (catLower.includes('carne') || catLower.includes('grelhado')) {
+            // Guarda dados na memória temporária para usar no pop-up
+            tempCarneId = idProduto;
+            tempCarneNome = nome;
+            tempCarnePreco = precoRaw;
+            tempCarneDesconto = desconto;
+            
+            document.getElementById('modal-ponto-carne').style.display = 'flex';
+        } else {
+            // Segue normal para o carrinho
+            adicionarAoCarrinho(idProduto, nome, precoRaw, desconto, null, event.currentTarget);
+        }
+    }
 
+    function confirmarAdicionarComPonto(pontoEscolhido) {
+        const nomeFinal = `${tempCarneNome} (Ponto: ${pontoEscolhido})`;
+        
+        adicionarAoCarrinho(tempCarneId, nomeFinal, tempCarnePreco, tempCarneDesconto, pontoEscolhido, null);
+        
+        fecharModal('modal-ponto-carne');
+        alert("Adicionado com sucesso!");
+    }
+
+    // BotaoDOM passado quando a inserção é direta, para fazer o efeito verde.
+    function adicionarAoCarrinho(idProduto, nome, precoRaw, desconto, pontoOpicional, botaoDOM) {
         if (!mesaAtual && !clienteAtual) {
             document.getElementById('authModal').style.display = 'block';
             alert("Para fazer encomendas de Takeaway ou Reservas, por favor inicie sessão ou crie conta primeiro.");
@@ -951,17 +1049,25 @@
 
         const precoFinal = calcularPrecoFinal(precoRaw, desconto);
         
-        const itemExistente = carrinho.find(item => item.id === idProduto);
-        if (itemExistente) { itemExistente.qtde += 1; } 
-        else { carrinho.push({ id: idProduto, nome: nome, preco: precoFinal, qtde: 1 }); }
+        // Se a carne tiver um ponto diferente, consideramos um produto diferente no carrinho.
+        const idUnicoCarrinho = pontoOpicional ? `${idProduto}-${pontoOpicional}` : idProduto;
+        
+        const itemExistente = carrinho.find(item => item.idUnico === idUnicoCarrinho);
+        if (itemExistente) { 
+            itemExistente.qtde += 1; 
+        } else { 
+            // O backend também precisará do ID real do produto para estatísticas, logo mandamos os dois.
+            carrinho.push({ idUnico: idUnicoCarrinho, id: idProduto, nome: nome, preco: precoFinal, qtde: 1 }); 
+        }
         
         atualizarFloater();
         
-        const btn = event.currentTarget;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `<i class="fas fa-check"></i> Adicionado!`;
-        btn.style.background = "#166534"; 
-        setTimeout(() => { btn.innerHTML = originalText; btn.style.background = "var(--ok)"; }, 1500);
+        if(botaoDOM) {
+            const originalText = botaoDOM.innerHTML;
+            botaoDOM.innerHTML = `<i class="fas fa-check"></i> Adicionado!`;
+            botaoDOM.style.background = "#166534"; 
+            setTimeout(() => { botaoDOM.innerHTML = originalText; botaoDOM.style.background = "var(--ok)"; }, 1500);
+        }
     }
 
     function atualizarFloater() {
@@ -1026,9 +1132,9 @@
                         <div class="cart-item-price">${item.preco.toFixed(2)}€ x ${item.qtde} = ${subtotal.toFixed(2)}€</div>
                     </div>
                     <div class="cart-item-actions">
-                        <button class="btn-qty" onclick="alterarQtde(${item.id}, -1)">-</button>
+                        <button class="btn-qty" onclick="alterarQtde('${item.idUnico}', -1)">-</button>
                         <span>${item.qtde}</span>
-                        <button class="btn-qty" onclick="alterarQtde(${item.id}, 1)">+</button>
+                        <button class="btn-qty" onclick="alterarQtde('${item.idUnico}', 1)">+</button>
                     </div>
                 </div>`;
         });
@@ -1040,11 +1146,11 @@
 
     function fecharCarrinho() { document.getElementById('cartModal').style.display = 'none'; }
 
-    function alterarQtde(idProduto, delta) {
-        const item = carrinho.find(i => i.id === idProduto);
+    function alterarQtde(idUnicoCarrinho, delta) {
+        const item = carrinho.find(i => i.idUnico === idUnicoCarrinho);
         if (item) {
             item.qtde += delta;
-            if (item.qtde <= 0) { carrinho = carrinho.filter(i => i.id !== idProduto); }
+            if (item.qtde <= 0) { carrinho = carrinho.filter(i => i.idUnico !== idUnicoCarrinho); }
             atualizarFloater();
             if (carrinho.length > 0) { abrirCarrinho(); }
         }
@@ -1153,8 +1259,9 @@
             const final = calcularPrecoFinal(precoFixo, desc).toFixed(2);
             
             let alergeniosHtml = '';
-            if(lojaAtual.tipo_negocio === 'restaurante' && p.alergenios && p.alergenios.length > 0) {
-                alergeniosHtml = `<div class="alergenios-badge"><i class="fas fa-exclamation-circle"></i> Contém: ${p.alergenios.join(', ')}</div>`;
+            // Exibimos alergenios sempre se o lojista preencheu.
+            if(p.alergenios && p.alergenios.length > 0) {
+                alergeniosHtml = `<div class="alergenios-badge" onclick="showLegal('alergenios'); event.stopPropagation();" style="cursor:pointer;" title="Ver detalhes"><i class="fas fa-exclamation-circle"></i> Contém: ${p.alergenios.join(', ')} <i class="fas fa-info-circle"></i></div>`;
             }
 
             let htmlPreco = `<span class="price">${final}€</span>`;
@@ -1175,9 +1282,10 @@
 
             let badgeEsgotado = isEsgotado ? `<div style="position:absolute; top:10px; left:10px; background:var(--err); color:white; padding:5px 10px; border-radius:8px; font-weight:bold; font-size:12px; z-index:10;"><i class="fas fa-ban"></i> Esgotado</div>` : '';
             
+            // O BOTÃO DE ADICIONAR MUDOU. AGORA CHAMA checarPontoCarne em vez de adicionarAoCarrinho direto.
             let btnAdicionar = isEsgotado 
                 ? `<button disabled style="background:#94a3b8; color:white; padding:14px; border-radius:16px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; border:none; width:100%; margin-top:auto; cursor:not-allowed;"><i class="fas fa-ban"></i> Produto Esgotado</button>`
-                : `<button onclick="adicionarAoCarrinho(${p.id}, '${p.nome.replace(/'/g, "\\'")}', ${precoFixo}, ${desc}, event)" class="btn-add-cart"><i class="fas fa-cart-plus"></i> Adicionar</button>`;
+                : `<button onclick="checarPontoCarne(${p.id}, '${p.nome.replace(/'/g, "\\'")}', ${precoFixo}, ${desc}, '${p.categoria || ''}', event)" class="btn-add-cart"><i class="fas fa-cart-plus"></i> Adicionar</button>`;
 
             return `
                 <div class="card-container" id="card-${p.id}">
@@ -1231,6 +1339,24 @@
         );
         renderizar(filtrados);
     }
+
+    // Adiciona o texto dos Alergénios dinamicamente no legalTexts
+    legalTexts.alergenios = `<h3 style="font-family: 'Playfair Display', serif; color: #2c3e50; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;"><i class="fas fa-info-circle"></i> Guia de Alergénios</h3>
+        <div style="font-size: 0.9em; line-height: 1.6; color: #475569; max-height: 60vh; overflow-y: auto;">
+            <p>Se tem dúvidas sobre os alergénios apresentados nos nossos pratos, consulte esta lista (Reg. 1169/2011):</p>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><b>Glúten:</b> Trigo, centeio, cevada, aveia.</li>
+                <li><b>Lactose:</b> Leite de vaca, ovelha, cabra e derivados (queijo, manteiga).</li>
+                <li><b>Ovos:</b> Ovos de todas as aves e produtos que os contenham.</li>
+                <li><b>Peixe:</b> Todos os tipos de peixe.</li>
+                <li><b>Amendoim:</b> Amendoins, manteiga ou óleo.</li>
+                <li><b>Soja:</b> Grãos de soja, molho, tofu.</li>
+                <li><b>Marisco:</b> Crustáceos (camarão, sapateira) e Moluscos (ameijoas, polvo).</li>
+                <li><b>Frutos de Casca:</b> Amêndoas, avelãs, nozes, cajus.</li>
+                <li><b>Sésamo:</b> Sementes, pasta e óleo de sésamo.</li>
+                <li><b>Mostarda:</b> Grão, pó ou líquido.</li>
+            </ul>
+        </div>`;
 
     init();
 </script>
