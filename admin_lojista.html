@@ -143,7 +143,7 @@
         .termos-box input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; cursor: pointer; }
 
         .alergenios-container { background: #fffbeb; padding: 12px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 15px; }
-        .alergenios-container h5 { margin: 0 0 10px 0; color: #b45309; font-size: 13px; }
+        .alergenios-container h5 { margin: 0 0 10px 0; color: #b45309; font-size: 13px; display: flex; align-items: center; }
 
         .staff-list { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .staff-list th { text-align: left; padding: 12px; font-size: 0.85rem; color: #64748b; border-bottom: 2px solid #f1f5f9; }
@@ -353,6 +353,14 @@
             <div id="ai-suggestion-box" class="ai-suggestion hidden"></div>
             
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+                <div style="grid-column: span 3; background: #f0f9ff; padding: 12px; border-radius: 8px; border: 1px solid #bae6fd; display: flex; align-items: center; gap: 10px;">
+                    <label style="font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="p-visibilidade" checked style="width: 18px; height: 18px; margin: 0;">
+                        Mostrar no Website Público
+                    </label>
+                    <span style="font-size: 11px; color: #475569;">(Desmarque se for um artigo de uso interno, ex: copo de vinho, bagaço)</span>
+                </div>
+
                 <input type="text" id="p-nome" placeholder="Nome (Ex: Bacalhau à Brás)" style="grid-column: span 2">
                 <input type="number" id="p-preco" placeholder="Preço (€)">
                 
@@ -389,7 +397,10 @@
             </div>
 
             <div id="sec-alergenios" class="alergenios-container">
-                <h5><i class="fas fa-exclamation-triangle"></i> Informação de Alergénios (Obrigatório por Lei)</h5>
+                <h5>
+                    <i class="fas fa-exclamation-triangle"></i> Informação de Alergénios (Obrigatório por Lei)
+                    <i class="fas fa-info-circle tooltip-icon" onclick="mostrarInfoAlergenios()" title="Ver detalhes sobre alergénios" style="color: var(--s); cursor: pointer; margin-left: 5px; font-size: 1.2em;"></i>
+                </h5>
                 <div class="tags-group" id="p-alergenios-container">
                     <label class="tag-item"><input type="checkbox" value="Glúten"> 🌾 Glúten</label>
                     <label class="tag-item"><input type="checkbox" value="Lactose"> 🥛 Lactose</label>
@@ -475,6 +486,28 @@
     </div>
 </div>
 
+<div id="modal-alergenios" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; padding: 25px; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <h3 style="margin-top:0; color:var(--p);"><i class="fas fa-info-circle" style="color:var(--s);"></i> Guia de Alergénios</h3>
+        <div style="font-size: 14px; color: #475569; max-height: 60vh; overflow-y: auto;">
+            <p>Selecione os ingredientes presentes no seu artigo para cumprir a regulamentação europeia (Reg. 1169/2011). Inclui:</p>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><b>Glúten:</b> Trigo, centeio, cevada, aveia, espelta, kamut.</li>
+                <li><b>Lactose:</b> Leite de vaca, ovelha, cabra e derivados (queijo, manteiga, natas, iogurte).</li>
+                <li><b>Ovos:</b> Ovos de todas as aves e produtos que os contenham (ex: maionese).</li>
+                <li><b>Peixe:</b> Todos os tipos de peixe e produtos à base de peixe.</li>
+                <li><b>Amendoim:</b> Amendoins, manteiga ou óleo de amendoim.</li>
+                <li><b>Soja:</b> Grãos de soja, molho de soja, tofu, pasta de soja.</li>
+                <li><b>Marisco:</b> Crustáceos (camarão, lagosta, sapateira) e Moluscos (ameijoas, polvo, lula, mexilhão).</li>
+                <li><b>Frutos de Casca:</b> Amêndoas, avelãs, nozes, cajus, pistácios, macadâmias.</li>
+                <li><b>Sésamo:</b> Sementes de sésamo, pasta e óleo de sésamo.</li>
+                <li><b>Mostarda:</b> Mostarda em grão, em pó ou formato líquido.</li>
+            </ul>
+        </div>
+        <button onclick="fecharInfoAlergenios()" style="margin-top: 20px; background:var(--ok);"><i class="fas fa-check"></i> Entendido</button>
+    </div>
+</div>
+
 <div id="print-area">
     <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px;">
         <h1 id="print-header-nome" style="margin: 0 0 10px 0;">Restaurante</h1>
@@ -520,6 +553,10 @@
             mostraAlergenios: false, placeholder: "Nome (Ex: Corte de Cabelo + Lavagem)"
         }
     };
+
+    // --- FUNÇÕES DO MODAL DE ALERGÉNIOS ---
+    function mostrarInfoAlergenios() { document.getElementById('modal-alergenios').classList.remove('hidden'); }
+    function fecharInfoAlergenios() { document.getElementById('modal-alergenios').classList.add('hidden'); }
 
     function atualizarLayoutNegocio() {
         const tipo = document.getElementById('v-tipo-negocio').value || 'restaurante';
@@ -1150,6 +1187,9 @@
         
         let diaVal = document.getElementById('p-dia-semana').value;
         diaVal = (diaVal !== "") ? parseInt(diaVal) : null;
+        
+        // CAPTURA O ESTADO DE VISIBILIDADE (inverso da checkbox)
+        const ocultarProduto = !document.getElementById('p-visibilidade').checked;
 
         const dados = {
             nome: document.getElementById('p-nome').value,
@@ -1161,7 +1201,8 @@
             descricao: document.getElementById('p-ingredientes').value,
             loja_id: lojaAtiva.id,
             stock: stockVal,             
-            dia_semana: diaVal           
+            dia_semana: diaVal,
+            oculto: ocultarProduto
         };
 
         btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A GUARDAR...`;
@@ -1210,6 +1251,10 @@
         });
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = false);
         document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = false);
+        
+        // Repor visibilidade padrão para ON
+        document.getElementById('p-visibilidade').checked = true;
+
         document.getElementById('form-title').innerHTML = `<i class="fas fa-box-open"></i> Publicar Artigo`;
         document.getElementById('btn-cancel').classList.add('hidden');
     }
@@ -1228,6 +1273,9 @@
         document.getElementById('p-stock').value = p.stock !== null ? p.stock : "";
         document.getElementById('p-dia-semana').value = p.dia_semana !== null ? p.dia_semana : "";
         
+        // Refletir a visibilidade do produto no formulário
+        document.getElementById('p-visibilidade').checked = !p.oculto;
+
         const tags = p.tipo_tag || [];
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = tags.includes(c.value));
         
