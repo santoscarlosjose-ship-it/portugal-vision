@@ -541,18 +541,24 @@
             </div>
             
             <div style="position: relative; margin-top: 10px;">
-                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição detalhada..." style="width:100%; height: 160px; resize: vertical;"></textarea>
-                <button type="button" id="btn-ia" class="btn-ia-action" onclick="gerarDescricaoIA()">
-                    <i class="fas fa-magic"></i> Gerar com IA
-                </button>
+                <textarea id="p-ingredientes" placeholder="Ingredientes e descrição detalhada para o cliente..." style="width:100%; height: 160px; resize: vertical;"></textarea>
             </div>
 
             <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; margin-top: 15px; margin-bottom: 15px;">
                 <h5 style="margin: 0 0 10px 0; color: #475569; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-medical"></i> Ficha Técnica (Apenas para uso interno na Cozinha)
                 </h5>
-                <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px;">Carregar Ficha Técnica (PDF/Imagem):</label>
-                <input type="file" id="p-ficha-file" accept="application/pdf,image/*" style="margin-top: 0; background: white;">
+                
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px;">Carregar Ficha Técnica (PDF/Imagem):</label>
+                        <input type="file" id="p-ficha-file" accept="application/pdf,image/*" style="margin-top: 0; background: white;">
+                    </div>
+                    
+                    <button type="button" id="btn-ia" class="btn-ia-action" style="position: static; margin-bottom: 12px; flex-shrink: 0;" onclick="gerarDescricaoIA()">
+                        <i class="fas fa-magic"></i> Extrair com IA
+                    </button>
+                </div>
                 
                 <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-top: 10px; margin-bottom: 5px;">Notas de Confeção (Ex: Custos, tempo de forno, gramagens):</label>
                 <textarea id="p-ficha-texto" placeholder="Notas exclusivas para os cozinheiros..." style="width:100%; height: 80px; resize: vertical; margin-top: 0;"></textarea>
@@ -1194,7 +1200,6 @@
         return html;
     }
 
-    // --- NOVA LÓGICA DE IMPRESSÃO DUPLA (MENU vs FICHA) ---
     function gerarMenuFisico(tipoImpressao) {
         let html = '';
         const nomeLoja = lojaAtiva.nome || "O Nosso Menu";
@@ -1225,7 +1230,6 @@
                 }
 
                 if(tipoImpressao === 'menu') {
-                    // LAYOUT A4 - MENU PARA CLIENTES
                     let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" class="print-menu-img">` : '<div style="margin-top: 1cm;"></div>';
                     let precoBloco = `<div class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</div>`;
                     
@@ -1259,7 +1263,6 @@
                         </div>
                     `;
                 } else if (tipoImpressao === 'ficha') {
-                    // LAYOUT A4 - FICHA TÉCNICA PARA COZINHA
                     let imgHtmlFicha = p.imagem_url ? `<img src="${p.imagem_url}" style="width:250px; height:200px; object-fit:cover; border-radius:12px; flex-shrink:0;">` : '';
                     
                     html += `
@@ -1423,7 +1426,6 @@
                     infoExtraHtml += `<div style="font-size: 11px; color: var(--accent); margin-top: 2px; font-weight: 600;"><i class="fas fa-fire"></i> Pede Ponto da Carne</div>`;
                 }
                 
-                // NOVO: Indicações de Almoço/Jantar no card
                 let horarioHtml = "";
                 if(p.disponivel_almoco && !p.disponivel_jantar) horarioHtml = `<div style="font-size: 11px; color: #065f46; margin-top: 2px; font-weight: bold;">☀️ Só Almoço</div>`;
                 else if(!p.disponivel_almoco && p.disponivel_jantar) horarioHtml = `<div style="font-size: 11px; color: #4338ca; margin-top: 2px; font-weight: bold;">🌙 Só Jantar</div>`;
@@ -1482,22 +1484,86 @@
 
     function criarSlug(texto) { return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'); }
 
+    // --- LÓGICA ATUALIZADA: GERAR DESCRICAO COM LEITURA DE PDF ---
     async function gerarDescricaoIA() {
         const nomeProd = document.getElementById('p-nome').value;
         const btn = document.getElementById('btn-ia');
-        if (!nomeProd) return alert("Escreve o nome do produto.");
+        const fichaFileInput = document.getElementById('p-ficha-file');
         
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A gerar...`; btn.disabled = true;
+        if (!nomeProd) return alert("Escreve o nome do produto primeiro.");
+        
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A analisar...`; 
+        btn.disabled = true;
+
         try {
-            const { data, error } = await _sb.functions.invoke('gerar-descricao', { body: { nomeProduto: nomeProd } });
+            let bodyData = { nomeProduto: nomeProd };
+
+            // Se houver um ficheiro carregado, vamos convertê-lo e enviá-lo para a IA
+            if (fichaFileInput.files && fichaFileInput.files.length > 0) {
+                const file = fichaFileInput.files[0];
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]); // Extrai apenas os dados base64
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+                
+                bodyData.ficheiroBase64 = base64Data;
+                bodyData.ficheiroMime = file.type;
+            }
+
+            const { data, error } = await _sb.functions.invoke('gerar-descricao', { body: bodyData });
+            
             if (error) throw new Error("Erro na IA: " + error.message);
-            if (data && data.descricao) { document.getElementById('p-ingredientes').value = data.descricao; lojaAtiva.creditos_ia = data.creditosRestantes; } 
-            else if (data && data.error) { throw new Error(data.error); } 
-            else { throw new Error("Resposta inválida do servidor."); }
-        } catch (e) { alert(e.message); } finally { btn.innerHTML = `<i class="fas fa-magic"></i> Gerar com IA`; btn.disabled = false; }
+            if (data && data.error) throw new Error(data.error);
+            if (!data || !data.dados_ia) throw new Error("Resposta inválida do servidor.");
+
+            const respostaIA = data.dados_ia;
+            
+            // 1. Atualizar Descrição Pública
+            if(respostaIA.descricao_publica) {
+                document.getElementById('p-ingredientes').value = respostaIA.descricao_publica;
+            }
+
+            // 2. Marcar Alergénios Automaticamente
+            if(respostaIA.alergenios && Array.isArray(respostaIA.alergenios)) {
+                // Primeiro desmarca todos
+                document.querySelectorAll('#p-alergenios-container input').forEach(c => c.checked = false);
+                // Depois marca os que a IA encontrou
+                document.querySelectorAll('#p-alergenios-container input').forEach(c => {
+                    // Verificação flexível (ignorando maiúsculas/minúsculas e acentos)
+                    const alergenioEncontrado = respostaIA.alergenios.some(a => 
+                        a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 
+                        c.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                    );
+                    if(alergenioEncontrado) c.checked = true;
+                });
+            }
+
+            // 3. Atualizar Notas Internas (Com confirmação se já existir texto)
+            if(respostaIA.notas_internas) {
+                const campoNotas = document.getElementById('p-ficha-texto');
+                const notasAtuais = campoNotas.value.trim();
+                
+                if(notasAtuais !== "" && notasAtuais !== respostaIA.notas_internas) {
+                    if(confirm("A IA extraiu novas Notas Técnicas do documento.\n\nDeseja substituir o texto que já tem escrito pelas novas notas?")) {
+                        campoNotas.value = respostaIA.notas_internas;
+                    }
+                } else {
+                    campoNotas.value = respostaIA.notas_internas;
+                }
+            }
+
+            lojaAtiva.creditos_ia = data.creditosRestantes;
+
+        } catch (e) { 
+            alert(e.message); 
+        } finally { 
+            btn.innerHTML = `<i class="fas fa-magic"></i> Extrair com IA`; 
+            btn.disabled = false; 
+        }
     }
 
-    // --- NOVA LÓGICA DE UPLOAD DUPLO E NOVOS CAMPOS ---
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const btn = document.getElementById('btn-save-prod');
@@ -1540,7 +1606,6 @@
             oculto: ocultarProduto,
             pede_ponto: pedePontoCarne,
             
-            // NOVOS CAMPOS
             disponivel_almoco: document.getElementById('p-almoco').checked,
             disponivel_jantar: document.getElementById('p-jantar').checked,
             ficha_tecnica_texto: document.getElementById('p-ficha-texto').value
@@ -1549,7 +1614,6 @@
         btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A GUARDAR...`;
 
         try {
-            // Upload Foto Principal
             if (file) {
                 const options = { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true };
                 const compressed = await imageCompression(file, options);
@@ -1562,9 +1626,7 @@
                 dados.tamanho_bytes = compressed.size;
             }
             
-            // Upload Ficha Técnica PDF/Img
             if (fichaFile) {
-                // Ficheiros PDF não podem ser comprimidos pela biblioteca de imagem, passamos direto
                 const isImage = fichaFile.type.startsWith('image/');
                 let finalFileToUpload = fichaFile;
                 
@@ -1618,7 +1680,6 @@
         document.getElementById('p-visibilidade').checked = true;
         document.getElementById('p-pede-ponto').checked = false;
         
-        // Repor checkboxes horário
         document.getElementById('p-almoco').checked = true;
         document.getElementById('p-jantar').checked = true;
 
@@ -1646,8 +1707,7 @@
         document.getElementById('p-visibilidade').checked = !p.oculto;
         document.getElementById('p-pede-ponto').checked = p.pede_ponto || false;
         
-        // Carregar novos campos
-        document.getElementById('p-almoco').checked = p.disponivel_almoco !== false; // !== false para compatibilidade com dados antigos nulos
+        document.getElementById('p-almoco').checked = p.disponivel_almoco !== false; 
         document.getElementById('p-jantar').checked = p.disponivel_jantar !== false;
         document.getElementById('p-ficha-texto').value = p.ficha_tecnica_texto || "";
 
