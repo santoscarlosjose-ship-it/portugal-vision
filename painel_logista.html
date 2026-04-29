@@ -169,7 +169,7 @@
         @keyframes pulse-ring { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
         /* -----------------------------------------------------
-           CSS MODO EDIÇÃO E IMPRESSÃO (NOVO)
+           CSS MODO EDIÇÃO E IMPRESSÃO
            ----------------------------------------------------- */
         
         [contenteditable="true"] { outline: none; border-radius: 6px; transition: 0.2s; padding: 2px 4px; box-sizing: border-box; }
@@ -198,7 +198,6 @@
         .print-store-name { font-size: 32px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 5px; font-family: 'Inter', sans-serif; }
         .print-cat-badge { font-size: 16px; letter-spacing: 4px; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; display: inline-block; width: 60%; font-family: 'Inter', sans-serif; }
 
-        /* IMAGEM UNIFORMIZADA (Correção 1) */
         .print-menu-img { 
             width: 100%; 
             max-width: 400px; 
@@ -215,13 +214,15 @@
         .print-footer-price { margin-top: auto; padding-top: 30px; width: 100%; border-top: 1px dashed #cbd5e1; }
         .print-price-row { display: flex; align-items: baseline; justify-content: center; gap: 15px; }
         
-        /* PREÇOS MAIS PEQUENOS (Correção 1) */
         .print-item-old-price { font-size: 20px; color: #94a3b8; text-decoration: line-through; font-family: 'Inter', sans-serif; font-weight: 600;}
         .print-item-price { font-size: 38px; color: #10b981; font-weight: 900; font-family: 'Inter', sans-serif; }
         
         .print-item-allergens { margin-top: 15px; font-size: 14px; color: #b45309; text-transform: uppercase; letter-spacing: 1px; font-family: 'Inter', sans-serif; font-weight: bold;}
 
-        /* SEPARAÇÃO DE ESTILOS DE IMPRESSÃO (Correção 2) */
+        /* ESTILOS ESPECÍFICOS: FICHA TÉCNICA */
+        .ficha-tecnica-box { text-align: left !important; align-items: flex-start !important; }
+        .ficha-internal-notes { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 10px; margin-top: 20px; width: 100%; font-size: 14px; color: #92400e; font-family: 'Inter', sans-serif; }
+
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: white; margin: 0; padding: 0; }
@@ -236,7 +237,7 @@
             .print-table th, .print-table td { border: 1px solid #ccc; padding: 12px; text-align: left; }
             .print-table td.money { text-align: right; font-weight: bold; }
             
-            /* MODO: MENU A4 */
+            /* MODO: MENU A4 E FICHA TÉCNICA */
             body.is-printing-menu .container { display: none !important; }
             body.is-printing-menu #print-area { display: none !important; }
             body.is-printing-menu #print-area-wrapper { display: block !important; padding: 0; background: transparent; }
@@ -415,7 +416,8 @@
                     <input type="date" id="data-export" style="margin: 0; padding: 8px; height: auto;">
                 </div>
                 <button style="background: #475569; width: auto; flex: 1;" onclick="gerarRelatorioPDF()"><i class="fas fa-file-pdf"></i> Exportar Fecho</button>
-                <button style="background: var(--ia); width: auto; flex: 1; border: 1px solid #7c3aed; box-shadow: 0 4px 10px rgba(139,92,246,0.3);" onclick="gerarMenuFisico()"><i class="fas fa-book-open"></i> Modo Imprimir Menu</button>
+                <button style="background: var(--ia); width: auto; flex: 1; border: 1px solid #7c3aed; box-shadow: 0 4px 10px rgba(139,92,246,0.3);" onclick="gerarMenuFisico('menu')"><i class="fas fa-book-open"></i> Modo Imprimir Menu</button>
+                <button style="background: var(--warn); width: auto; flex: 1; border: 1px solid #d97706; box-shadow: 0 4px 10px rgba(245,158,11,0.3);" onclick="gerarMenuFisico('ficha')"><i class="fas fa-utensils"></i> Imprimir Fichas Técnicas</button>
             </div>
             <hr style="border: 0; border-bottom: 1px dashed #e2e8f0; margin-bottom: 20px;">
 
@@ -463,6 +465,17 @@
                     <label style="font-weight: bold; color: var(--accent); cursor: pointer; display: flex; align-items: center; gap: 8px; background: #fef2f2; padding: 5px 10px; border-radius: 6px; border: 1px solid #fecaca;">
                         <input type="checkbox" id="p-pede-ponto" style="width: 16px; height: 16px; margin: 0;">
                         🥩 Perguntar Ponto da Carne?
+                    </label>
+                </div>
+
+                <div style="grid-column: span 3; background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label style="font-weight: bold; color: #065f46; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="p-almoco" checked style="width: 18px; height: 18px; margin: 0;">
+                        ☀️ Disponível ao Almoço
+                    </label>
+                    <label style="font-weight: bold; color: #065f46; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="p-jantar" checked style="width: 18px; height: 18px; margin: 0;">
+                        🌙 Disponível ao Jantar
                     </label>
                 </div>
 
@@ -532,6 +545,17 @@
                 <button type="button" id="btn-ia" class="btn-ia-action" onclick="gerarDescricaoIA()">
                     <i class="fas fa-magic"></i> Gerar com IA
                 </button>
+            </div>
+
+            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; margin-top: 15px; margin-bottom: 15px;">
+                <h5 style="margin: 0 0 10px 0; color: #475569; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-medical"></i> Ficha Técnica (Apenas para uso interno na Cozinha)
+                </h5>
+                <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px;">Carregar Ficha Técnica (PDF/Imagem):</label>
+                <input type="file" id="p-ficha-file" accept="application/pdf,image/*" style="margin-top: 0; background: white;">
+                
+                <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-top: 10px; margin-bottom: 5px;">Notas de Confeção (Ex: Custos, tempo de forno, gramagens):</label>
+                <textarea id="p-ficha-texto" placeholder="Notas exclusivas para os cozinheiros..." style="width:100%; height: 80px; resize: vertical; margin-top: 0;"></textarea>
             </div>
 
             <input type="file" id="p-media" accept="image/*,video/*" capture="environment">
@@ -627,7 +651,7 @@
 <div id="print-area-wrapper" class="hidden">
     <div class="print-toolbar no-print">
         <div>
-            <h3 style="margin:0; color: var(--p);"><i class="fas fa-magic"></i> Modo de Edição e Impressão</h3>
+            <h3 id="preview-title" style="margin:0; color: var(--p);"><i class="fas fa-magic"></i> Pré-visualização de Impressão</h3>
             <small style="color: #64748b;">Clica em qualquer texto da folha abaixo para alterar antes de imprimir.</small>
         </div>
         <div style="display: flex; gap: 10px;">
@@ -1066,7 +1090,6 @@
         const [ano, mes, dia] = dataSelecionada.split('-');
         const dataPt = `${dia}/${mes}/${ano}`;
         
-        // REESCRITO O CABEÇALHO DO PDF PARA FICAR LIMPO E SEM INTERFERIR NO MENU
         let html = `
         <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px;">
             <h1 style="margin: 0 0 10px 0;">${lojaAtiva.nome}</h1>
@@ -1136,16 +1159,12 @@
             Total Faturado no Dia: <b>${totalGlobal.toFixed(2)}€</b>
         </div>`;
         
-        // Impressão limpa do Relatório sem destruir a página
         document.getElementById('print-area').innerHTML = html;
         document.body.classList.add('is-printing-report');
         window.print();
         document.body.classList.remove('is-printing-report');
     }
 
-    // -----------------------------------------------------
-    // TRADUTOR DE MARKDOWN (IA PARA HTML VISUAL)
-    // -----------------------------------------------------
     function parseMarkdownToHTML(text) {
         if(!text) return '';
         let lines = text.split('\n');
@@ -1156,20 +1175,16 @@
             let t = l.trim();
             if(!t) return;
             
-            // Negritos
             t = t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
-            // Títulos H3
             if(t.startsWith('###')) {
                 if(inList) { html += '</ul>'; inList = false; }
                 html += `<div style="font-weight:bold; font-size:1.1em; margin-top:20px; margin-bottom:8px;">${t.replace(/^###\s*/, '')}</div>`;
             } 
-            // Listas
             else if (t.startsWith('* ')) {
                 if(!inList) { html += '<ul style="text-align:left; display:inline-block; margin: 5px auto; padding-left: 20px;">'; inList = true; }
                 html += `<li>${t.replace(/^\*\s*/, '')}</li>`;
             } 
-            // Texto Normal
             else {
                 if(inList) { html += '</ul>'; inList = false; }
                 html += `<div style="margin-bottom:8px;">${t}</div>`;
@@ -1179,17 +1194,14 @@
         return html;
     }
 
-    // -----------------------------------------------------
-    // SISTEMA AVANÇADO DE IMPRESSÃO - MODO EDITÁVEL
-    // -----------------------------------------------------
-    function gerarMenuFisico() {
+    // --- NOVA LÓGICA DE IMPRESSÃO DUPLA (MENU vs FICHA) ---
+    function gerarMenuFisico(tipoImpressao) {
         let html = '';
         const nomeLoja = lojaAtiva.nome || "O Nosso Menu";
         
         const produtosParaImprimir = produtosLocais.filter(p => !p.oculto);
         if(produtosParaImprimir.length === 0) return alert("Não existem artigos visíveis para imprimir.");
 
-        // 1. Extrair e Ordenar Categorias Master
         let categorias = [...new Set(produtosParaImprimir.map(p => p.categoria || ''))];
         const ordemMestra = ["entradas", "marisco", "mariscos", "pratos de carne", "carne", "pratos de peixe", "peixe", "sobremesas", "bebidas"];
         
@@ -1201,7 +1213,6 @@
             return indexA - indexB;
         });
 
-        // 2. Construir HTML (Com "contenteditable" ativo)
         categorias.forEach(cat => {
             produtosParaImprimir.filter(p => p.categoria === cat).forEach(p => {
                 const precoBase = parseFloat(p.preco) || 0;
@@ -1213,42 +1224,73 @@
                     alergeniosHtml = `<div class="print-item-allergens" contenteditable="true" spellcheck="false">⚠️ Contém: ${p.alergenios.join(' • ')}</div>`;
                 }
 
-                let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" class="print-menu-img">` : '<div style="margin-top: 1cm;"></div>';
+                if(tipoImpressao === 'menu') {
+                    // LAYOUT A4 - MENU PARA CLIENTES
+                    let imgHtml = p.imagem_url ? `<img src="${p.imagem_url}" class="print-menu-img">` : '<div style="margin-top: 1cm;"></div>';
+                    let precoBloco = `<div class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</div>`;
+                    
+                    if(desconto > 0) {
+                        precoBloco = `
+                            <div class="print-price-row">
+                                <span class="print-item-old-price" contenteditable="true" spellcheck="false">${precoBase.toFixed(2)}€</span>
+                                <span class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</span>
+                            </div>
+                        `;
+                    }
 
-                let precoBloco = `<div class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</div>`;
-                if(desconto > 0) {
-                    precoBloco = `
-                        <div class="print-price-row">
-                            <span class="print-item-old-price" contenteditable="true" spellcheck="false">${precoBase.toFixed(2)}€</span>
-                            <span class="print-item-price" contenteditable="true" spellcheck="false">${precoFinal.toFixed(2)}€</span>
+                    html += `
+                        <div class="print-menu-item">
+                            <div class="print-header">
+                                <div class="print-store-name" contenteditable="true" spellcheck="false">${nomeLoja}</div>
+                                <div class="print-cat-badge" contenteditable="true" spellcheck="false">${p.categoria || 'Sugestão'}</div>
+                            </div>
+                            
+                            ${imgHtml}
+                            
+                            <div class="print-content">
+                                <div class="print-item-title" contenteditable="true" spellcheck="false">${p.nome}</div>
+                                <div class="print-item-desc" contenteditable="true" spellcheck="false">${parseMarkdownToHTML(p.descricao)}</div>
+                            </div>
+
+                            <div class="print-footer-price">
+                                ${precoBloco}
+                                ${alergeniosHtml}
+                            </div>
+                        </div>
+                    `;
+                } else if (tipoImpressao === 'ficha') {
+                    // LAYOUT A4 - FICHA TÉCNICA PARA COZINHA
+                    let imgHtmlFicha = p.imagem_url ? `<img src="${p.imagem_url}" style="width:250px; height:200px; object-fit:cover; border-radius:12px; flex-shrink:0;">` : '';
+                    
+                    html += `
+                        <div class="print-menu-item ficha-tecnica-box">
+                            <div class="print-header" style="text-align:left; margin-bottom: 20px;">
+                                <div style="font-size: 14px; color: #64748b; font-weight: bold; letter-spacing: 2px;">FICHA TÉCNICA DE PREPARAÇÃO</div>
+                                <div class="print-item-title" contenteditable="true" spellcheck="false" style="margin-bottom: 0; margin-top: 5px;">${p.nome}</div>
+                                <div class="print-cat-badge" style="border:none; padding:0;">${p.categoria}</div>
+                            </div>
+                            
+                            <div style="display:flex; gap: 30px; width: 100%;">
+                                ${imgHtmlFicha}
+                                <div style="flex: 1;">
+                                    <h4 style="margin:0 0 10px 0; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">Ingredientes da Ementa:</h4>
+                                    <div class="print-item-desc" style="font-size: 14px;" contenteditable="true" spellcheck="false">${parseMarkdownToHTML(p.descricao)}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="ficha-internal-notes">
+                                <strong style="display:block; margin-bottom:10px;"><i class="fas fa-clipboard-list"></i> NOTAS INTERNAS / MODO DE PREPARO:</strong>
+                                <div contenteditable="true" spellcheck="false" style="white-space: pre-wrap;">${p.ficha_tecnica_texto ? p.ficha_tecnica_texto : 'Nenhuma nota interna registada para este artigo.'}</div>
+                            </div>
+                            
+                            ${p.ficha_tecnica_url ? `<div style="margin-top: 20px; font-size: 13px; color: var(--s); font-weight: bold;"><i class="fas fa-paperclip"></i> Este artigo possui um documento anexo digitalizado no sistema.</div>` : ''}
                         </div>
                     `;
                 }
-
-                html += `
-                    <div class="print-menu-item">
-                        <div class="print-header">
-                            <div class="print-store-name" contenteditable="true" spellcheck="false">${nomeLoja}</div>
-                            <div class="print-cat-badge" contenteditable="true" spellcheck="false">${p.categoria || 'Sugestão'}</div>
-                        </div>
-                        
-                        ${imgHtml}
-                        
-                        <div class="print-content">
-                            <div class="print-item-title" contenteditable="true" spellcheck="false">${p.nome}</div>
-                            <div class="print-item-desc" contenteditable="true" spellcheck="false">${parseMarkdownToHTML(p.descricao)}</div>
-                        </div>
-
-                        <div class="print-footer-price">
-                            ${precoBloco}
-                            ${alergeniosHtml}
-                        </div>
-                    </div>
-                `;
             });
         });
         
-        // 3. Trocar o Ecrã para o Modo de Edição Visual
+        document.getElementById('preview-title').innerHTML = tipoImpressao === 'menu' ? '<i class="fas fa-book-open"></i> Pré-visualização do Menu' : '<i class="fas fa-utensils"></i> Pré-visualização Fichas Técnicas';
         document.getElementById('print-preview-content').innerHTML = html;
         document.querySelector('.container').classList.add('hidden');
         document.getElementById('print-area-wrapper').classList.remove('hidden');
@@ -1380,6 +1422,11 @@
                 if (p.pede_ponto) {
                     infoExtraHtml += `<div style="font-size: 11px; color: var(--accent); margin-top: 2px; font-weight: 600;"><i class="fas fa-fire"></i> Pede Ponto da Carne</div>`;
                 }
+                
+                // NOVO: Indicações de Almoço/Jantar no card
+                let horarioHtml = "";
+                if(p.disponivel_almoco && !p.disponivel_jantar) horarioHtml = `<div style="font-size: 11px; color: #065f46; margin-top: 2px; font-weight: bold;">☀️ Só Almoço</div>`;
+                else if(!p.disponivel_almoco && p.disponivel_jantar) horarioHtml = `<div style="font-size: 11px; color: #4338ca; margin-top: 2px; font-weight: bold;">🌙 Só Jantar</div>`;
 
                 const precoFixo = parseFloat(p.preco) || 0;
                 const desc = parseInt(p.desconto_percent) || 0;
@@ -1405,9 +1452,11 @@
                         <small style="color: #64748b; font-weight: 600;">${p.categoria || 'Sem categoria'}</small><br>
                         <span style="font-weight: 600; font-size: 14px; display: block; margin: 4px 0;">${p.nome}</span>
                         ${htmlPreco}
+                        ${horarioHtml}
                         ${infoExtraHtml}
                         <br><span style="font-size: 11px; color: #94a3b8; font-weight: 500;">IVA incluído</span>
                         <br>${alergeniosHtml}
+                        ${p.ficha_tecnica_texto ? `<div style="font-size: 10px; color: #92400e; margin-top: 5px;"><i class="fas fa-file-medical"></i> Tem Ficha Técnica</div>` : ''}
                     </div>
                 </div>`;
             });
@@ -1448,11 +1497,16 @@
         } catch (e) { alert(e.message); } finally { btn.innerHTML = `<i class="fas fa-magic"></i> Gerar com IA`; btn.disabled = false; }
     }
 
+    // --- NOVA LÓGICA DE UPLOAD DUPLO E NOVOS CAMPOS ---
     async function salvarProduto() {
         const id = document.getElementById('edit-id').value;
         const btn = document.getElementById('btn-save-prod');
+        
         const fileInput = document.getElementById('p-media');
         const file = fileInput.files[0];
+        
+        const fichaInput = document.getElementById('p-ficha-file');
+        const fichaFile = fichaInput.files[0];
         
         const tags = Array.from(document.querySelectorAll('#p-tags-container input:checked')).map(cb => cb.value);
         const alergenios = Array.from(document.querySelectorAll('#p-alergenios-container input:checked')).map(cb => cb.value);
@@ -1484,12 +1538,18 @@
             stock: stockVal,             
             dia_semana: diaVal,
             oculto: ocultarProduto,
-            pede_ponto: pedePontoCarne
+            pede_ponto: pedePontoCarne,
+            
+            // NOVOS CAMPOS
+            disponivel_almoco: document.getElementById('p-almoco').checked,
+            disponivel_jantar: document.getElementById('p-jantar').checked,
+            ficha_tecnica_texto: document.getElementById('p-ficha-texto').value
         };
 
         btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A GUARDAR...`;
 
         try {
+            // Upload Foto Principal
             if (file) {
                 const options = { maxSizeMB: 0.2, maxWidthOrHeight: 1200, useWebWorker: true };
                 const compressed = await imageCompression(file, options);
@@ -1502,19 +1562,31 @@
                 dados.tamanho_bytes = compressed.size;
             }
             
+            // Upload Ficha Técnica PDF/Img
+            if (fichaFile) {
+                // Ficheiros PDF não podem ser comprimidos pela biblioteca de imagem, passamos direto
+                const isImage = fichaFile.type.startsWith('image/');
+                let finalFileToUpload = fichaFile;
+                
+                if(isImage) {
+                    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1600, useWebWorker: true };
+                    finalFileToUpload = await imageCompression(fichaFile, options);
+                }
+                
+                const ext = fichaFile.name.split('.').pop();
+                const fileName = `fichas_${lojaAtiva.id}/${Date.now()}.${ext}`;
+                
+                const { error: upErr } = await _sb.storage.from('produtos').upload(fileName, finalFileToUpload);
+                if(upErr) throw upErr;
+
+                dados.ficha_tecnica_url = _sb.storage.from('produtos').getPublicUrl(fileName).data.publicUrl;
+            }
+            
             let res;
             if (id) { res = await _sb.from('produtos').update(dados).eq('id', id); } 
             else { res = await _sb.from('produtos').insert([dados]); }
 
-            if(res.error) {
-                if(res.error.message.includes("Could not find the 'taxa_iva' column")) {
-                    throw new Error("A coluna 'taxa_iva' não existe na tabela 'produtos' no Supabase.");
-                }
-                if(res.error.message.includes("Could not find the 'pede_ponto' column")) {
-                    throw new Error("A coluna 'pede_ponto' não existe na tabela 'produtos' no Supabase. Por favor, crie-a como tipo 'boolean' antes de guardar.");
-                }
-                throw res.error;
-            }
+            if(res.error) throw res.error;
 
             cancelarEdicao(); 
             carregarDados();
@@ -1535,7 +1607,7 @@
     async function apagarProd(id) { if(confirm("Tem a certeza que deseja apagar este artigo?")) { const { error } = await _sb.from('produtos').delete().eq('id', id); if(!error) carregarDados(); } }
     
     function cancelarEdicao() {
-        ['edit-id', 'p-nome', 'p-preco', 'p-desc', 'p-categoria', 'p-ingredientes', 'p-media', 'p-stock', 'p-dia-semana'].forEach(id => {
+        ['edit-id', 'p-nome', 'p-preco', 'p-desc', 'p-categoria', 'p-ingredientes', 'p-media', 'p-stock', 'p-dia-semana', 'p-ficha-file', 'p-ficha-texto'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = "";
         });
@@ -1545,6 +1617,10 @@
         
         document.getElementById('p-visibilidade').checked = true;
         document.getElementById('p-pede-ponto').checked = false;
+        
+        // Repor checkboxes horário
+        document.getElementById('p-almoco').checked = true;
+        document.getElementById('p-jantar').checked = true;
 
         document.getElementById('form-title').innerHTML = `<i class="fas fa-box-open"></i> Publicar Artigo`;
         document.getElementById('btn-cancel').classList.add('hidden');
@@ -1569,6 +1645,11 @@
         
         document.getElementById('p-visibilidade').checked = !p.oculto;
         document.getElementById('p-pede-ponto').checked = p.pede_ponto || false;
+        
+        // Carregar novos campos
+        document.getElementById('p-almoco').checked = p.disponivel_almoco !== false; // !== false para compatibilidade com dados antigos nulos
+        document.getElementById('p-jantar').checked = p.disponivel_jantar !== false;
+        document.getElementById('p-ficha-texto').value = p.ficha_tecnica_texto || "";
 
         const tags = p.tipo_tag || [];
         document.querySelectorAll('#p-tags-container input').forEach(c => c.checked = tags.includes(c.value));
@@ -1578,8 +1659,6 @@
 
         document.getElementById('form-title').innerHTML = `<i class="fas fa-edit"></i> Editar Artigo`;
         document.getElementById('btn-cancel').classList.remove('hidden');
-        
-        // CORREÇÃO 3: Desliza suavemente até ao formulário em vez do topo
         document.getElementById('form-title').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 </script>
